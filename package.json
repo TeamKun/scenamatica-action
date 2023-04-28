@@ -1,0 +1,30 @@
+{
+  "name": "@scenamatica/action",
+  "version": "1.0.0",
+  "description": "Scenamatica is a scenario testing tool for PaperMC plugins.",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TeamKUN/scenamatica-action.git"
+  },
+  "author": "Peyang",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^3.0.0",
+    "@actions/cache": "^3.2.1",
+    "@actions/exec": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.12.1",
+    "@types/eslint": "^8.4.2",
+    "eslint": "^8.39.0",
+    "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-regexp": "^1.14.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "prettier": "^2.8.8",
+    "esbuild": "^0.17.18",
+    "typescript": "^5.0.4"
+  },
+  "packageManager": "pnpm@8.3.1"
+}

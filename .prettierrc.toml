@@ -1,0 +1,6 @@
+semi = false
+printWidth = 120
+trailingComma = "all"
+singleQuote = false
+
+htmlWhitespaceSensitivity = "ignore"
