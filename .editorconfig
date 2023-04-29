@@ -5,5 +5,4 @@ indent_style = space
 indent_size = 4
 
 [*{.md,.json,.yml,.yaml}]
-indent_style = space
 indent_size = 2

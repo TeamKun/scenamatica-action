@@ -1,6 +1,6 @@
 import {fail, getArguments} from "./utils";
 import * as fs from "fs";
-import {deployPlugin, deployServer} from "./server/deployer";
+import {deployServer} from "./server/deployer";
 import {startTests} from "./server/controller";
 
 async function main(): Promise<void> {

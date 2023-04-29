@@ -1,4 +1,4 @@
-import {PacketSessionEnd, PacketTestEnd, Scenario, TestResultCause, TestState} from "./packets";
+import {PacketSessionEnd, Scenario, TestResultCause, TestState} from "./packets";
 import {info, warn} from "./utils";
 import * as core from "@actions/core";
 import {SummaryTableRow} from "@actions/core/lib/summary";

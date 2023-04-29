@@ -7,7 +7,6 @@ import {
     TestResultCause
 } from "../packets"
 import {printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart} from "../outputs"
-import test from "node:test";
 import {endTests} from "./controller";
 
 let message: string | null = null
