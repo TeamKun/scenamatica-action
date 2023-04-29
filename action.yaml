@@ -1,0 +1,39 @@
+name: "Scenamatica Scenario Test"
+description: "Test your PaperMC Plugin with declared scenario."
+author: "TeamKUN., Peyang"
+branding:
+  icon: book-open
+  color: blue
+inputs:
+  minecraft:
+    description: "Target Minecraft version."
+    default: "1.16.5"
+  server-dir:
+    description: "Server directory."
+    default: "server"
+  plugin:
+    description: "The path to your plugin jar file."
+    required: true
+  scenamatica:
+    description: "Target Scenamatica version."
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+    - name: "Setup Java"
+      uses: actions/setup-java@v2
+      with:
+          java-version: "11"
+    - name: "Setup node.js"
+      uses: actions/setup-node@v2
+      with:
+        node-version-file: ".node-version"
+        cache: "pnpm"
+    - name: "Compile and run client"
+      shell: bash
+      run: |
+        pnpm i
+        pnpm run build
+        pnpm run start
