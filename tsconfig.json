@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "Node16",
     "outDir": "lib",
     "rootDir": "src",
     "strict": true,
