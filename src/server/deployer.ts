@@ -39,7 +39,7 @@ const restoreCache = async (
 }
 
 const retrieveLatestPaperBuildFor = async (mcVersion: string): Promise<string> => {
-    const url = PAPER_VERSION_URL.replace("{version}", mcVersion)
+    const url = PAPER_VERSION_URL.replace(/\{version}/g, mcVersion)
     const response = await fetch(url)
     const json = (await response.json()) as { builds: string[] }
 
@@ -53,7 +53,9 @@ const downloadLatestPaper = async (destDir: string, mcVersion: string) => {
 
     info(`Retrieved latest Paper build for ${mcVersion}: The latest build is ${build}`)
 
-    const url = PAPER_DOWNLOAD_URL.replace("{version}", mcVersion).replace("{build}", build)
+    const url = PAPER_DOWNLOAD_URL
+        .replace(/\{version}/g, mcVersion)
+        .replace(/\{build}/g, build)
 
     info(`Downloading Paper ${mcVersion} build ${build} from ${url}`)
 
@@ -79,7 +81,7 @@ const writeEula = async (dir: string) => {
 }
 
 const downloadScenamatica = async (destDir: string, version: string) => {
-    const url = SCENAMATICA_URL.replace("{version}", version)
+    const url = SCENAMATICA_URL.replace(/\{version}/g, version)
 
     info(`Downloading Scenamatica ${version} from ${url}`)
 
@@ -96,10 +98,10 @@ const fetchLatestJavaLinkFor = async (version: string) => {
     const arch = process.arch === "x64" ? "x86_64" : "x86"
     const ext = platform === "windows" ? "zip" : "tar.gz"
 
-    const url = JAVA_FETCH_URL.replace("{os}", platform)
-        .replace("{arch}", arch)
-        .replace("{ext}", ext)
-        .replace("{version}", version)
+    const url = JAVA_FETCH_URL.replace(/\{os}/g, platform)
+        .replace(/\{arch}/g, arch)
+        .replace(/\{ext}/g, ext)
+        .replace(/\{version}/g, version)
 
     const response = await fetch(url)
     const json = (await response.json()) as Array<{ url: string }>

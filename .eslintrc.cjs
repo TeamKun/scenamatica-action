@@ -243,6 +243,7 @@ module.exports = defineConfig({
         yoda: "error",
 
         "regexp/no-contradiction-with-assertion": "error",
+        "regexp/strict": "off",
 
         "sort-class-members/sort-class-members": [
             "error",

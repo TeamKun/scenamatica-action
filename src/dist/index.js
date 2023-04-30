@@ -15518,7 +15518,7 @@ var require_deployer = __commonJS({
       return false;
     }), "restoreCache");
     var retrieveLatestPaperBuildFor = /* @__PURE__ */ __name((mcVersion) => __awaiter2(void 0, void 0, void 0, function* () {
-      const url = PAPER_VERSION_URL.replace("{version}", mcVersion);
+      const url = PAPER_VERSION_URL.replace(/\{version}/g, mcVersion);
       const response = yield (0, node_fetch_1.default)(url);
       const json = yield response.json();
       return json.builds[0];
@@ -15527,7 +15527,7 @@ var require_deployer = __commonJS({
       (0, utils_js_12.info)(`Retrieving latest Paper build for ${mcVersion}`);
       const build = yield retrieveLatestPaperBuildFor(mcVersion);
       (0, utils_js_12.info)(`Retrieved latest Paper build for ${mcVersion}: The latest build is ${build}`);
-      const url = PAPER_DOWNLOAD_URL.replace("{version}", mcVersion).replace("{build}", build);
+      const url = PAPER_DOWNLOAD_URL.replace(/\{version}/g, mcVersion).replace(/\{build}/g, build);
       (0, utils_js_12.info)(`Downloading Paper ${mcVersion} build ${build} from ${url}`);
       yield io.mkdirP(destDir);
       const dest = yield tc.downloadTool(url, node_path_1.default.join(destDir, "paper.jar"));
@@ -15545,7 +15545,7 @@ var require_deployer = __commonJS({
       (0, utils_js_12.info)(`Wrote eula.txt to ${eulaPath}`);
     }), "writeEula");
     var downloadScenamatica = /* @__PURE__ */ __name((destDir, version2) => __awaiter2(void 0, void 0, void 0, function* () {
-      const url = SCENAMATICA_URL.replace("{version}", version2);
+      const url = SCENAMATICA_URL.replace(/\{version}/g, version2);
       (0, utils_js_12.info)(`Downloading Scenamatica ${version2} from ${url}`);
       const destPath = yield tc.downloadTool(url, node_path_1.default.join(destDir, `Scenamatica-${version2}.jar`));
       (0, utils_js_12.info)(`Downloaded Scenamatica ${version2} to ${destPath}`);
@@ -15556,7 +15556,7 @@ var require_deployer = __commonJS({
       const platform = processPlatform === "win32" ? "windows" : processPlatform === "darwin" ? "macos" : "linux";
       const arch = process.arch === "x64" ? "x86_64" : "x86";
       const ext = platform === "windows" ? "zip" : "tar.gz";
-      const url = JAVA_FETCH_URL.replace("{os}", platform).replace("{arch}", arch).replace("{ext}", ext).replace("{version}", version2);
+      const url = JAVA_FETCH_URL.replace(/\{os}/g, platform).replace(/\{arch}/g, arch).replace(/\{ext}/g, ext).replace(/\{version}/g, version2);
       const response = yield (0, node_fetch_1.default)(url);
       const json = yield response.json();
       return {
