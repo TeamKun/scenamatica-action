@@ -71,8 +71,11 @@ let sessionStartedAt: number | undefined
 const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionStart) => {
     switch (packet.type) {
         case "start": {
+            const sessionStart = packet as PacketSessionStart
+
             sessionStartedAt = packet.startedAt
-            printSessionStart(sessionStartedAt, packet.tests.length)
+
+            printSessionStart(sessionStartedAt, sessionStart.tests.length)
 
             break
         }
@@ -83,11 +86,11 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
             printSessionEnd(sessionEnd)
             await printSummary(sessionEnd)
 
-            const succeed = sessionEnd.tests.every(
+            const succeed = (sessionEnd.results as PacketTestEnd[]).every(
                 (test) =>
                     test.cause === TestResultCause.PASSED ||
                     test.cause === TestResultCause.SKIPPED ||
-                    test.cause === TestResultCause.CANCELLED,
+                    test.cause === TestResultCause.CANCELLED
             )
 
             endTests(succeed)

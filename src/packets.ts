@@ -76,7 +76,7 @@ export class PacketSessionEnd implements Packet<PacketSessionEnd> {
 
     public constructor(
         public date: number,
-        public tests: PacketTestEnd[],
+        public results: PacketTestEnd[],
         public startedAt: number,
         public finishedAt: number,
     ) {}
@@ -95,7 +95,7 @@ export const parsePacket = (
                 }
 
                 case "end": {
-                    return new PacketSessionEnd(json.date, json.tests, json.startedAt, json.finishedAt)
+                    return new PacketSessionEnd(json.date, json.results, json.startedAt, json.finishedAt)
                 }
             }
 

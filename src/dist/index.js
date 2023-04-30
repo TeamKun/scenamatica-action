@@ -14945,9 +14945,9 @@ var require_packets = __commonJS({
     __name(PacketSessionStart, "PacketSessionStart");
     exports2.PacketSessionStart = PacketSessionStart;
     var PacketSessionEnd = class {
-      constructor(date, tests, startedAt, finishedAt) {
+      constructor(date, results, startedAt, finishedAt) {
         this.date = date;
-        this.tests = tests;
+        this.results = results;
         this.startedAt = startedAt;
         this.finishedAt = finishedAt;
         this.genre = "session";
@@ -14965,7 +14965,7 @@ var require_packets = __commonJS({
               return new PacketSessionStart(json.date, json.tests, json.isAutoStart, json.startedAt);
             }
             case "end": {
-              return new PacketSessionEnd(json.date, json.tests, json.startedAt, json.finishedAt);
+              return new PacketSessionEnd(json.date, json.results, json.startedAt, json.finishedAt);
             }
           }
           break;
@@ -15112,9 +15112,10 @@ var require_outputs = __commonJS({
     exports2.printSessionStart = printSessionStart;
     var printSessionEnd = /* @__PURE__ */ __name((sessionEnd) => {
       const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const total = sessionEnd.tests.length;
-      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
+      const results = sessionEnd.results;
+      const total = results.length;
+      const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
+      const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
       (0, utils_js_12.info)(`
 Results:
 `);
@@ -15123,11 +15124,12 @@ Results:
     }, "printSessionEnd");
     exports2.printSessionEnd = printSessionEnd;
     var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter2(void 0, void 0, void 0, function* () {
+      const results = sessionEnd.results;
       const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const total = sessionEnd.tests.length;
-      const passed = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
-      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
+      const total = results.length;
+      const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
+      const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
+      const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
       let summaryText;
       if (total === passed + skipped)
         summaryText = "It's all green! \u{1F389}";
@@ -15174,7 +15176,7 @@ Results:
           }
         ]
       ];
-      for (const t2 of sessionEnd.tests) {
+      for (const t2 of results) {
         const testElapsed = `${Math.ceil((t2.finishedAt - t2.startedAt) / 1e3)} sec`;
         const emoji = getEmojiForCause(t2.cause);
         const { name } = t2.scenario;
@@ -15291,15 +15293,16 @@ var require_client = __commonJS({
     var processSessionPackets = /* @__PURE__ */ __name((packet) => __awaiter2(void 0, void 0, void 0, function* () {
       switch (packet.type) {
         case "start": {
+          const sessionStart = packet;
           sessionStartedAt = packet.startedAt;
-          (0, outputs_js_1.printSessionStart)(sessionStartedAt, packet.tests.length);
+          (0, outputs_js_1.printSessionStart)(sessionStartedAt, sessionStart.tests.length);
           break;
         }
         case "end": {
           const sessionEnd = packet;
           (0, outputs_js_1.printSessionEnd)(sessionEnd);
           yield (0, outputs_js_1.printSummary)(sessionEnd);
-          const succeed = sessionEnd.tests.every((test) => test.cause === packets_js_1.TestResultCause.PASSED || test.cause === packets_js_1.TestResultCause.SKIPPED || test.cause === packets_js_1.TestResultCause.CANCELLED);
+          const succeed = sessionEnd.results.every((test) => test.cause === packets_js_1.TestResultCause.PASSED || test.cause === packets_js_1.TestResultCause.SKIPPED || test.cause === packets_js_1.TestResultCause.CANCELLED);
           (0, controller_js_12.endTests)(succeed);
           break;
         }

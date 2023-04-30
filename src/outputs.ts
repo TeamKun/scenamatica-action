@@ -1,5 +1,5 @@
-import type { PacketSessionEnd, Scenario, TestState } from "./packets.js"
-import { TestResultCause } from "./packets.js"
+import type { PacketSessionEnd, Scenario, TestState ,PacketTestEnd} from "./packets.js"
+import { TestResultCause} from "./packets.js"
 import { info, warn } from "./utils.js"
 import * as core from "@actions/core"
 import type {SummaryTableRow} from "@actions/core/lib/summary.js"
@@ -74,9 +74,10 @@ const printSessionStart = (startedAt: number, tests: number): void => {
 
 const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
-    const total = sessionEnd.tests.length
+    const results = sessionEnd.results as PacketTestEnd[]
+    const total = results.length
 
-    const failures = sessionEnd.tests.filter(
+    const failures = results.filter(
         (t) =>
             !(
                 t.cause === TestResultCause.PASSED ||
@@ -85,18 +86,19 @@ const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
             ),
     ).length
 
-    const skipped = sessionEnd.tests.filter((t) => t.cause === TestResultCause.SKIPPED).length
+    const skipped = results.filter((t) => t.cause === TestResultCause.SKIPPED).length
 
     info(`\nResults:\n`)
     info(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}\n`)
 }
 
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
+    const results = sessionEnd.results as PacketTestEnd[]
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
-    const total = sessionEnd.tests.length
-    const passed = sessionEnd.tests.filter((t) => t.cause === TestResultCause.PASSED).length
+    const total = results.length
+    const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length
 
-    const failures = sessionEnd.tests.filter(
+    const failures = results.filter(
         (t) =>
             !(
                 t.cause === TestResultCause.PASSED ||
@@ -105,7 +107,7 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
             ),
     ).length
 
-    const skipped = sessionEnd.tests.filter((t) => t.cause === TestResultCause.SKIPPED).length
+    const skipped = results.filter((t) => t.cause === TestResultCause.SKIPPED).length
 
     let summaryText
 
@@ -155,7 +157,7 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
         ],
     ]
 
-    for (const t of sessionEnd.tests) {
+    for (const t of results) {
         const testElapsed = `${Math.ceil((t.finishedAt - t.startedAt) / 1000)} sec`
         const emoji = getEmojiForCause(t.cause)
         const { name } = t.scenario
