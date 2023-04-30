@@ -1,4 +1,5 @@
-dist/
 node_modules/
 
 src/packets.ts
+src/dist/
+
