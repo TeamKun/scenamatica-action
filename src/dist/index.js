@@ -15501,6 +15501,7 @@ var require_deployer = __commonJS({
     var utils_js_12 = require_utils2();
     var controller_js_12 = require_controller();
     var node_fetch_1 = __importDefault((init_src(), __toCommonJS(src_exports)));
+    var PAPER_NAME = "paper.jar";
     var PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/";
     var PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`;
     var SCENAMATICA_URL = "https://github.com/TeamKun/Scenamatica/releases/download/v{version}/Scenamatica-{version}.jar";
@@ -15531,11 +15532,10 @@ var require_deployer = __commonJS({
       (0, utils_js_12.info)(`Downloading Paper ${mcVersion} build ${build} from ${url}`);
       yield io.mkdirP(destDir);
       const dest = yield tc.downloadTool(url, node_path_1.default.join(destDir, "paper.jar"));
+      const os = process.platform === "win32" ? "windows" : "unix";
+      yield os === "unix" ? (0, exec_1.exec)("chmod", ["+x", dest]) : (0, exec_1.exec)("icacls", [dest, "/grant", "Everyone:(F)"]);
       (0, utils_js_12.info)(`Downloaded Paper ${mcVersion} build ${build} to ${dest}`);
-      return {
-        build,
-        paperPath: dest
-      };
+      return build;
     }), "downloadLatestPaper");
     var writeEula = /* @__PURE__ */ __name((dir) => __awaiter2(void 0, void 0, void 0, function* () {
       const eulaPath = node_path_1.default.join(dir, "eula.txt");
@@ -15588,17 +15588,17 @@ var require_deployer = __commonJS({
       const cached = yield restoreCache(dir, javaVersion, mcVersion, scenamaticaVersion);
       if (cached)
         return new Promise((resolve) => {
-          resolve(node_path_1.default.join(dir, "paper.jar"));
+          resolve(PAPER_NAME);
         });
       (0, utils_js_12.info)("Building server...");
       if (!(yield isJavaInstalled()))
         yield downloadJava(dir, javaVersion);
-      const { build, paperPath } = yield downloadLatestPaper(dir, mcVersion);
+      const build = yield downloadLatestPaper(dir, mcVersion);
       return new Promise((resolve, reject) => {
-        (0, controller_js_12.startServer)(dir, paperPath).on("exit", (code) => __awaiter2(void 0, void 0, void 0, function* () {
+        (0, controller_js_12.startServer)(dir, PAPER_NAME).on("exit", (code) => __awaiter2(void 0, void 0, void 0, function* () {
           if (code === 0) {
             yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
-            resolve(paperPath);
+            resolve(PAPER_NAME);
           } else {
             (0, utils_js_12.fail)(`Server exited with error code ${code}`);
             reject(code);
