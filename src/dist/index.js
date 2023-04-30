@@ -15374,6 +15374,10 @@ var require_controller = __commonJS({
         const line = data.toString("utf8");
         if (line.includes("Done") && line.includes('For help, type "help"'))
           serverStdin === null || serverStdin === void 0 ? void 0 : serverStdin.write("stop\n");
+        if (line.endsWith("\n"))
+          (0, utils_js_12.info)(line.slice(0, -1));
+        else
+          (0, utils_js_12.info)(line);
       });
       return new Promise((resolve, reject) => {
         cp.on("exit", (code) => {
