@@ -1,16 +1,22 @@
-import {PacketSessionEnd, Scenario, TestResultCause, TestState} from "./packets";
-import {info, warn} from "./utils";
-import * as core from "@actions/core";
-import {SummaryTableRow} from "@actions/core/lib/summary";
+import {PacketSessionEnd, Scenario, TestResultCause, TestState} from "./packets"
+import {info, warn} from "./utils"
+import * as core from "@actions/core"
+import {SummaryTableRow} from "@actions/core/lib/summary"
 
-function printTestStart(scenario: Scenario) {
-    info("Starting test: " + scenario.name + " (" + scenario.description + ")")
+function printTestStart(scenario: Scenario): void {
+    info(`Starting test: ${scenario.name} (${scenario.description})`)
 }
 
-function printTestEnd(name: String, state: TestState, cause: TestResultCause, startedAt: number, finishedAt: number) {
-    const elapsed = finishedAt - startedAt + " ms"
+function printTestEnd(
+    name: string,
+    state: TestState,
+    cause: TestResultCause,
+    startedAt: number,
+    finishedAt: number
+): void {
+    const elapsed = `${finishedAt - startedAt} ms`
 
-    let emoji = getEmojiForCause(cause);
+    const emoji = getEmojiForCause(cause)
 
     switch (cause) {
         case TestResultCause.CANCELLED:
@@ -28,7 +34,7 @@ function printTestEnd(name: String, state: TestState, cause: TestResultCause, st
     }
 }
 
-function getEmojiForCause(cause: TestResultCause) {
+function getEmojiForCause(cause: TestResultCause): string {
     switch (cause) {
         case TestResultCause.PASSED:
             return "✔"
@@ -41,27 +47,28 @@ function getEmojiForCause(cause: TestResultCause) {
     }
 }
 
-function printSessionStart(startedAt: number, tests: number) {
+function printSessionStart(startedAt: number, tests: number): void {
     info("--------------------------------------")
     info(" T E S T S")
     info("--------------------------------------")
     info(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`)
 }
 
-function printSessionEnd(sessionEnd: PacketSessionEnd) {
-    const elapsed = Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000) + " sec"
+function printSessionEnd(sessionEnd: PacketSessionEnd): void {
+    const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
     const total = sessionEnd.tests.length
-    const failures = sessionEnd.tests.filter(t =>
-        !(t.cause === TestResultCause.PASSED || t.cause === TestResultCause.SKIPPED || t.cause === TestResultCause.CANCELLED)
+    const failures = sessionEnd.tests.filter(
+        (t) => !(t.cause === TestResultCause.PASSED || t.cause === TestResultCause.SKIPPED || t.cause === TestResultCause.CANCELLED)
     ).length
-    const skipped = sessionEnd.tests.filter(t => t.cause === TestResultCause.SKIPPED).length
+    const skipped = sessionEnd.tests.filter((t) => t.cause === TestResultCause.SKIPPED).length
 
     info(`\nResults:\n`)
     info(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}\n`)
 }
 
+
 async function printSummary(sessionEnd: PacketSessionEnd) {
-    const elapsed = Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000) + " sec"
+    const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
     const total = sessionEnd.tests.length
     const passed = sessionEnd.tests.filter(t => t.cause === TestResultCause.PASSED).length
     const failures = sessionEnd.tests.filter(t =>
@@ -69,7 +76,7 @@ async function printSummary(sessionEnd: PacketSessionEnd) {
     ).length
     const skipped = sessionEnd.tests.filter(t => t.cause === TestResultCause.SKIPPED).length
 
-    let summaryText;
+    let summaryText
     if (total === passed + skipped)
         summaryText = "It's all green! 🎉"
     else if (failures === 0)
@@ -119,7 +126,7 @@ async function printSummary(sessionEnd: PacketSessionEnd) {
 
 
     sessionEnd.tests.forEach(t => {
-        const elapsed = Math.ceil((t.finishedAt - t.startedAt) / 1000) + " sec"
+        const elapsed = `${Math.ceil((t.finishedAt - t.startedAt) / 1000)} sec`
         const emoji = getEmojiForCause(t.cause)
         const name = t.scenario.name
         const description = t.scenario.description

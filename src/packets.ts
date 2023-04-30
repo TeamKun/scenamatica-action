@@ -1,15 +1,15 @@
 export class Packet<T extends Packet<T>> {
-   constructor(public genre: string, public type: string, public date: number) {}
+    constructor(public genre: string, public type: string, public date: number) {}
 }
 
-export type Scenario = {
+export interface Scenario {
     name: string
     description: string
 }
 
 export class PacketTestStart implements Packet<PacketTestStart> {
-    genre: string = "test"
-    type: string = "start"
+    public genre: string = "test"
+    public type: string = "start"
 
     constructor(public date: number, public scenario: Scenario) {}
 }
@@ -40,27 +40,27 @@ export enum TestResultCause {
     SKIPPED
 }
 
+
 export class PacketTestEnd implements Packet<PacketTestEnd> {
-    genre: string = "test"
-    type: string = "end"
+    public genre: string = "test"
+    public type: string = "end"
 
     constructor(public date: number, public scenario: Scenario, public state: TestState, public cause: TestResultCause, public startedAt: number, public finishedAt: number) {}
 }
 
 export class PacketSessionStart implements Packet<PacketSessionStart> {
-    genre: string = "session"
-    type: string = "start"
+    public genre: string = "session"
+    public type: string = "start"
 
     constructor(public date: number, public tests: PacketTestStart[], public isAutoStart: boolean, public startedAt: number) {}
 }
 
 export class PacketSessionEnd implements Packet<PacketSessionEnd> {
-    genre: string = "session"
-    type: string = "start"
+    public genre: string = "session"
+    public type: string = "end"
 
     constructor(public date: number, public tests: PacketTestEnd[], public startedAt: number, public finishedAt: number) {}
 }
-
 export function parsePacket(packet: string): Packet<any> | null
 {
     const json = JSON.parse(packet)

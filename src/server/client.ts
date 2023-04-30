@@ -7,7 +7,7 @@ import {
     TestResultCause
 } from "../packets"
 import {printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart} from "../outputs"
-import {endTests} from "./controller";
+import {endTests} from "./controller"
 
 let message: string | null = null
 export async function onDataReceived(chunkMessage: any) {

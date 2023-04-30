@@ -1,7 +1,7 @@
-import {ChildProcess, spawn} from "child_process";
-import {debug, fail, info} from "../utils";
-import {deployPlugin} from "./deployer";
-import {onDataReceived} from "./client";
+import {ChildProcess, spawn} from "child_process"
+import {debug, fail, info} from "../utils"
+import {deployPlugin} from "./deployer"
+import {onDataReceived} from "./client"
 
 const JAVA_COMMAND = "java {args} -jar {jar} nogui"
 
@@ -20,7 +20,7 @@ export function startServer(workDir: string, executable: string, args: string[] 
         cwd: workDir,
         shell: true,
         stdio: "inherit"
-    });
+    })
 
     attachProcessDebug(process)
 
@@ -45,7 +45,7 @@ export function stopServer() {
 
         serverProcess = null
         attemptStop = false
-    }, 1000 * 10);
+    }, 1000 * 10)
 }
 
 export async function startTests(serverDir: string, executable: string, pluginFile: string) {
@@ -80,13 +80,13 @@ function attachProcessDebug(process: ChildProcess) {
     process.on("error", (error) => {
         info(`Server exited with error ${error}`)
         fail("Server exited with error: " + error)
-    });
+    })
 
     process.stdout!.on("data", (data) => {
         debug(data.toString())
-    });
+    })
 
     process.stderr!.on("data", (data) => {
         debug(data.toString())
-    });
+    })
 }

@@ -4,9 +4,9 @@ import * as core from "@actions/core"
 import {fail, info} from "../utils"
 import {startServer} from "./controller"
 import path from "path"
-import * as fs from "fs";
+import * as fs from "fs"
 import * as yaml from "js-yaml"
-import {exec} from "@actions/exec";
+import {exec} from "@actions/exec"
 
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
 const PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`
@@ -19,26 +19,33 @@ function genCacheVersion(javaVersion: string, mcVersion: string, scenamaticaVers
     return `${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`
 }
 
-async function restoreCache(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string): Promise<boolean>
-{
-    const cacheDirectory = tc.find("scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
-    if (cacheDirectory)
-    {
+async function restoreCache(
+    dir: string,
+    javaVersion: string,
+    mcVersion: string,
+    scenamaticaVersion: string
+): Promise<boolean> {
+    const cacheDirectory = tc.find(
+        "scenamatica",
+        genCacheVersion(javaVersion, mcVersion, scenamaticaVersion)
+    )
+    if (cacheDirectory) {
         info(`Restoring server cache from ${cacheDirectory}`)
-        await io.cp(cacheDirectory, dir, {recursive: true})
+        await io.cp(cacheDirectory, dir, { recursive: true })
         return true
     }
 
     return false
 }
 
-async function retrieveLatestPaperBuildFor(mcVersion: string)
+async function retrieveLatestPaperBuildFor(mcVersion: string): Promise<string>
 {
     const url = PAPER_VERSION_URL.replace("{version}", mcVersion)
     const response = await fetch(url)
     const json = await response.json()
     return json.versions[0]
 }
+
 
 async function downloadLatestPaper(destDir: string, mcVersion: string)
 {
@@ -170,7 +177,7 @@ export async function deployServer(dir: string, javaVersion: string, mcVersion: 
                 reject(code)
             }
         })
-    });
+    })
 }
 
 export async function deployPlugin(serverDir: string, pluginFile: string)
