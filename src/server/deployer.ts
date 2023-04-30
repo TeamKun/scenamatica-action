@@ -1,4 +1,5 @@
 import * as tc from "@actions/tool-cache"
+import * as cache from "@actions/cache"
 import * as io from "@actions/io"
 import * as core from "@actions/core"
 import path from "node:path"
@@ -18,8 +19,8 @@ const SCENAMATICA_URL = "https://github.com/TeamKun/Scenamatica/releases/downloa
 const JAVA_FETCH_URL =
     "https://api.azul.com/zulu/download/community/v1.0/bundles/?os={os}&arch={arch}&ext={ext}&java_version={version}&type=jdk"
 
-const genCacheVersion = (javaVersion: string, mcVersion: string, scenamaticaVersion: string) => {
-    return `${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`
+const genCacheKey = (javaVersion: string, mcVersion: string, scenamaticaVersion: string) => {
+    return `server-${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`
 }
 
 const restoreCache = async (
@@ -27,17 +28,14 @@ const restoreCache = async (
     javaVersion: string,
     mcVersion: string,
     scenamaticaVersion: string,
-): Promise<boolean> => {
-    const cacheDirectory = tc.find("scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
+) => {
+    const cacheKey = genCacheKey(javaVersion, mcVersion, scenamaticaVersion)
 
-    if (cacheDirectory) {
-        info(`Restoring server cache from ${cacheDirectory}`)
-        await io.cp(cacheDirectory, dir, { recursive: true })
+    info(`Checking cache for ${cacheKey}`)
 
-        return true
-    }
+    const cachedKey = await cache.restoreCache([dir], cacheKey)
 
-    return false
+    return cachedKey === cacheKey
 }
 
 const retrieveLatestPaperBuildFor = async (mcVersion: string): Promise<string> => {
@@ -189,24 +187,24 @@ export const deployPlugin = async (serverDir: string, pluginFile: string) => {
 }
 
 const initServer = async (
-    dir: string,
+    serverDir: string,
     javaVersion: string,
     mcVersion: string,
     paperBuild: string,
     scenamaticaVersion: string,
 ) => {
-    const pluginDir = path.join(dir, "plugins")
+    const pluginDir = path.join(serverDir, "plugins")
 
     await io.mkdirP(pluginDir)
 
-    await writeEula(dir) // eula.txt を書き込まないと Paper が起動Vしない
+    await writeEula(serverDir) // eula.txt を書き込まないと Paper が起動Vしない
 
     // Scenamatica をインスコする
     await downloadScenamatica(pluginDir, scenamaticaVersion)
-    await startServerOnly(dir, PAPER_NAME)  // Scenaamtica の config を生成する
+    await startServerOnly(serverDir, PAPER_NAME)  // Scenaamtica の config を生成する
     await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
 
-    await tc.cacheDir(dir, "scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
+    await cache.saveCache([serverDir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion))
 }
 
 const initScenamaticaConfig = async (configDir: string) => {
