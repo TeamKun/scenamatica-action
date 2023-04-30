@@ -41,9 +41,9 @@ const restoreCache = async (
 const retrieveLatestPaperBuildFor = async (mcVersion: string): Promise<string> => {
     const url = PAPER_VERSION_URL.replace("{version}", mcVersion)
     const response = await fetch(url)
-    const json = (await response.json()) as { versions: string[] }
+    const json = (await response.json()) as { builds: string[] }
 
-    return json.versions[0] // 最新のビルド番号を返す
+    return json.builds[0] // 最新のビルド番号を返す
 }
 
 const downloadLatestPaper = async (destDir: string, mcVersion: string) => {

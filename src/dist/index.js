@@ -15521,7 +15521,7 @@ var require_deployer = __commonJS({
       const url = PAPER_VERSION_URL.replace("{version}", mcVersion);
       const response = yield (0, node_fetch_1.default)(url);
       const json = yield response.json();
-      return json.versions[0];
+      return json.builds[0];
     }), "retrieveLatestPaperBuildFor");
     var downloadLatestPaper = /* @__PURE__ */ __name((destDir, mcVersion) => __awaiter2(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)(`Retrieving latest Paper build for ${mcVersion}`);
