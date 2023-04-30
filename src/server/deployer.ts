@@ -45,7 +45,7 @@ const retrieveLatestPaperBuildFor = async (mcVersion: string): Promise<string> =
     const response = await fetch(url)
     const json = (await response.json()) as { builds: string[] }
 
-    return json.builds[0] // 最新のビルド番号を返す
+    return json.builds[json.builds.length - 1] // 最新のビルドを返す
 }
 
 const downloadLatestPaper = async (destDir: string, mcVersion: string) => {

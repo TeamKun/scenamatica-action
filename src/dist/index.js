@@ -15374,10 +15374,6 @@ var require_controller = __commonJS({
         const line = data.toString("utf8");
         if (line.includes("Done") && line.includes('For help, type "help"'))
           serverStdin === null || serverStdin === void 0 ? void 0 : serverStdin.write("stop\n");
-        if (line.endsWith("\n"))
-          (0, utils_js_12.info)(line.slice(0, -1));
-        else
-          (0, utils_js_12.info)(line);
       });
       return new Promise((resolve, reject) => {
         cp.on("exit", (code) => {
@@ -15529,7 +15525,7 @@ var require_deployer = __commonJS({
       const url = PAPER_VERSION_URL.replace(/\{version}/g, mcVersion);
       const response = yield (0, node_fetch_1.default)(url);
       const json = yield response.json();
-      return json.builds[0];
+      return json.builds[json.builds.length - 1];
     }), "retrieveLatestPaperBuildFor");
     var downloadLatestPaper = /* @__PURE__ */ __name((destDir, mcVersion) => __awaiter2(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)(`Retrieving latest Paper build for ${mcVersion}`);

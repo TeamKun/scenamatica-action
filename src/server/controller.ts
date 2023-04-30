@@ -43,10 +43,6 @@ export const startServerOnly = async (workDir: string, executable: string, args:
         if (line.includes("Done") && line.includes("For help, type \"help\""))
             serverStdin?.write("stop\n")
 
-        if (line.endsWith("\n"))
-            info(line.slice(0, -1))
-        else
-            info(line)
     })
 
     return new Promise<number>((resolve, reject) => {
