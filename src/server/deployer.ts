@@ -6,6 +6,7 @@ import {startServer} from "./controller"
 import path from "path"
 import * as fs from "fs";
 import * as yaml from "js-yaml"
+import {exec} from "@actions/exec";
 
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
 const PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`
@@ -122,6 +123,19 @@ async function downloadJava(destBaseDir: string,  version: string)
     info(`Installed Java ${version}`)
 }
 
+async function isJavaInstalled()
+{
+    try
+    {
+        await exec("java", ["-version"])
+        return true
+    }
+    catch (e)
+    {
+        return false
+    }
+}
+
 export async function deployServer(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string): Promise<string>
 {
     // キャッシュの復元
@@ -136,8 +150,8 @@ export async function deployServer(dir: string, javaVersion: string, mcVersion: 
     info("Building server...")
 
     // Java のダウンロード
-
-    await downloadJava(dir, javaVersion)
+    if (!await isJavaInstalled())
+        await downloadJava(dir, javaVersion)
 
     // Paper のダウンロード
     const {build, paperPath} = await downloadLatestPaper(dir, mcVersion)
