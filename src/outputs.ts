@@ -1,4 +1,4 @@
-import type { PacketSessionEnd, Scenario, TestState ,PacketTestEnd} from "./packets.js"
+import type { PacketSessionEnd, Scenario, TestState } from "./packets.js"
 import { TestResultCause} from "./packets.js"
 import { info, warn } from "./utils.js"
 import type {SummaryTableRow} from "@actions/core/lib/summary.js"
@@ -114,7 +114,7 @@ const printSessionStart = (startedAt: number, tests: number): void => {
 
 const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
-    const results = sessionEnd.results as PacketTestEnd[]
+    const {results} = sessionEnd 
     const total = results.length
 
     const failures = results.filter(
@@ -133,7 +133,7 @@ const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
 }
 
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
-    const results = sessionEnd.results as PacketTestEnd[]
+    const {results} = sessionEnd 
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
     const total = results.length
     const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length
@@ -159,7 +159,7 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
 
     summary.addHeading("Scenamatica", 1)
     summary.addHeading("Summary", 2)
-    summary.addRaw(`${summaryText}`)
+    summary.addHeading(`${summaryText}`, 4)
     summary.addBreak()
     summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`)
     summary.addHeading("Details", 2)
