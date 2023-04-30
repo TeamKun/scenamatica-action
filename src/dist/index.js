@@ -14965,7 +14965,7 @@ var require_packets = __commonJS({
               return new PacketSessionStart(json.date, json.tests, json.isAutoStart, json.startedAt);
             }
             case "end": {
-              return new PacketSessionEnd(json.date, json.results, json.startedAt, json.finishedAt);
+              return new PacketSessionEnd(json.date, json.results, json.startedAt, json.date);
             }
           }
           break;
@@ -15060,6 +15060,42 @@ var require_outputs = __commonJS({
     var packets_js_1 = require_packets();
     var utils_js_12 = require_utils2();
     var core = __importStar2(require_core());
+    var MESSAGES_PASSED = [
+      ":tada: Congrats! All tests passed! :star2:",
+      ":raised_hands: High-five! You nailed all the tests! :tada::tada:",
+      ":confetti_ball: Hooray! Everything's working perfectly! :tada::confetti_ball:",
+      ":100: Perfect score! All tests passed with flying colors! :rainbow::clap:",
+      ":thumbsup: Great job! All tests passed without a hitch! :rocket::star2:",
+      ":metal: Rock on! All tests passed flawlessly! :guitar::metal:",
+      ":partying_face: Celebrate good times! All tests passed with flying colors! :tada::confetti_ball::balloon:",
+      ":muscle: You crushed it! All tests passed with ease! :fire::muscle:",
+      ":1st_place_medal: Gold medal performance! All tests passed with flying colors! :medal::star2:",
+      ":champagne: Pop the champagne! All tests passed, time to celebrate! :champagne::tada:"
+    ];
+    var MESSAGES_NO_TESTS = [
+      "Alright, who forgot to write tests? :face_with_raised_eyebrow:",
+      "No tests? Time to break out the crystal ball. :crystal_ball:",
+      "Tests? Who writes tests? :person_shrugging:",
+      "No tests found. Did they run away? :man_running: :woman_running:",
+      "No tests, no glory. :trophy:",
+      "Tests? We don't need no stinkin' tests! :shushing_face:",
+      "No tests? I guess we'll just have to wing it. :eagle:",
+      "You get a test, and you get a test! Everybody gets a test! :gift: :tada:",
+      "No tests? That's unpossible! :dizzy_face:",
+      "Tests make the code go round. :carousel_horse:"
+    ];
+    var MESSAGES_FAILED = [
+      "Oops! Something went wrong! :scream_cat:",
+      "Oh no! The tests have betrayed us! :scream:",
+      "Houston, we have a problem. :rocket:",
+      "Looks like we have some debugging to do. :beetle:",
+      "Failures? More like opportunities to improve! :muscle:",
+      "This is not the result we were looking for. :confused:",
+      "Looks like we need to rethink our strategy. :thinking:",
+      "Don't worry, we'll get 'em next time! :sunglasses:",
+      "Keep calm and debug on. :female_detective:",
+      "The only way is up from here! :rocket:"
+    ];
     var printTestStart = /* @__PURE__ */ __name((scenario) => {
       (0, utils_js_12.info)(`Starting test: ${scenario.name} (${scenario.description})`);
     }, "printTestStart");
@@ -15096,7 +15132,7 @@ var require_outputs = __commonJS({
           return "\u2794";
         }
         case packets_js_1.TestResultCause.CANCELLED: {
-          return "\u26A0";
+          return ":no_entry:";
         }
         default: {
           return "\u274C";
@@ -15123,6 +15159,34 @@ Results:
 `);
     }, "printSessionEnd");
     exports2.printSessionEnd = printSessionEnd;
+    var printProfilerReport = /* @__PURE__ */ __name((tests) => {
+      const testNameAndElapsed = tests.map((t2) => {
+        return { name: t2.scenario.name, elapsed: t2.finishedAt - t2.startedAt };
+      });
+      const total = testNameAndElapsed.reduce((acc, t2) => acc + t2.elapsed, 0);
+      const percents = testNameAndElapsed.map((t2) => {
+        return { name: t2.name, percent: Math.round(t2.elapsed / total * 100) };
+      });
+      const rows = percents.map((t2) => {
+        const bar = "||".repeat(Math.round(t2.percent / 5));
+        return `${t2.name} [${t2.percent}%]: ${bar}`;
+      });
+      const markdown = `
+
+    ## Profiler report
+    
+    <details>
+        <summary>Click to expand</summary>
+        <pre>
+        <code>
+        ${rows.join("\n")}
+        </code>
+        </pre>
+    </details>
+    
+    `;
+      core.summary.addRaw(markdown);
+    }, "printProfilerReport");
     var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter2(void 0, void 0, void 0, function* () {
       const results = sessionEnd.results;
       const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
@@ -15130,24 +15194,25 @@ Results:
       const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
       const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
       const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-      let summaryText;
+      let messageSource;
       if (total === passed + skipped)
-        summaryText = "It's all green! \u{1F389}";
+        messageSource = MESSAGES_PASSED;
       else if (failures === 0)
-        summaryText = "Only skipped tests! \u{1F914}";
+        messageSource = MESSAGES_NO_TESTS;
       else
-        summaryText = "Some tests are failed! \u{1F622}";
+        messageSource = MESSAGES_FAILED;
+      const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)];
       const { summary } = core;
       summary.addHeading("Scenamatica", 1);
       summary.addHeading("Summary", 2);
-      summary.addRaw(summaryText);
+      summary.addRaw(`**${summaryText}**`);
       summary.addBreak();
-      summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
+      summary.addRaw(`Tests run: **${total}**, Failures: **${failures}**, Skipped: **${skipped}**, Time elapsed: **${elapsed}**`);
       summary.addHeading("Details", 2);
       const table = [
         [
           {
-            data: "x",
+            data: " ",
             header: true
           },
           {
@@ -15167,6 +15232,10 @@ Results:
             header: true
           },
           {
+            data: "Finished at",
+            header: true
+          },
+          {
             data: "Elapsed",
             header: true
           },
@@ -15181,19 +15250,23 @@ Results:
         const emoji = getEmojiForCause(t2.cause);
         const { name } = t2.scenario;
         const { description } = t2.scenario;
+        const startedAtStr = new Date(t2.startedAt).toLocaleString();
+        const finishedAtStr = new Date(t2.finishedAt).toLocaleString();
         table.push([
           { data: emoji },
           { data: name },
           { data: t2.cause.toString() },
           { data: t2.state.toString() },
-          { data: t2.startedAt.toString() },
+          { data: startedAtStr },
+          { data: finishedAtStr },
           { data: testElapsed },
           { data: description }
         ]);
       }
       summary.addTable(table);
+      printProfilerReport(results);
       summary.addHeading("License", 2);
-      summary.addRaw("This test report is generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE").addRaw(".");
+      summary.addRaw("This test report has been generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenamatica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE").addRaw(".");
       summary.addBreak();
       summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
       yield summary.write();

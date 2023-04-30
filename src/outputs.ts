@@ -4,6 +4,46 @@ import { info, warn } from "./utils.js"
 import * as core from "@actions/core"
 import type {SummaryTableRow} from "@actions/core/lib/summary.js"
 
+const MESSAGES_PASSED = [
+    ":tada: Congrats! All tests passed! :star2:",
+    ":raised_hands: High-five! You nailed all the tests! :tada::tada:",
+    ":confetti_ball: Hooray! Everything's working perfectly! :tada::confetti_ball:",
+    ":100: Perfect score! All tests passed with flying colors! :rainbow::clap:",
+    ":thumbsup: Great job! All tests passed without a hitch! :rocket::star2:",
+    ":metal: Rock on! All tests passed flawlessly! :guitar::metal:",
+    ":partying_face: Celebrate good times! All tests passed with flying colors! :tada::confetti_ball::balloon:",
+    ":muscle: You crushed it! All tests passed with ease! :fire::muscle:",
+    ":1st_place_medal: Gold medal performance! All tests passed with flying colors! :medal::star2:",
+    ":champagne: Pop the champagne! All tests passed, time to celebrate! :champagne::tada:"
+];
+
+const MESSAGES_NO_TESTS = [
+    "Alright, who forgot to write tests? :face_with_raised_eyebrow:",
+    "No tests? Time to break out the crystal ball. :crystal_ball:",
+    "Tests? Who writes tests? :person_shrugging:",
+    "No tests found. Did they run away? :man_running: :woman_running:",
+    "No tests, no glory. :trophy:",
+    "Tests? We don't need no stinkin' tests! :shushing_face:",
+    "No tests? I guess we'll just have to wing it. :eagle:",
+    "You get a test, and you get a test! Everybody gets a test! :gift: :tada:",
+    "No tests? That's unpossible! :dizzy_face:",
+    "Tests make the code go round. :carousel_horse:"
+];
+
+const MESSAGES_FAILED = [
+    "Oops! Something went wrong! :scream_cat:",
+    "Oh no! The tests have betrayed us! :scream:",
+    "Houston, we have a problem. :rocket:",
+    "Looks like we have some debugging to do. :beetle:",
+    "Failures? More like opportunities to improve! :muscle:",
+    "This is not the result we were looking for. :confused:",
+    "Looks like we need to rethink our strategy. :thinking:",
+    "Don't worry, we'll get 'em next time! :sunglasses:",
+    "Keep calm and debug on. :female_detective:",
+    "The only way is up from here! :rocket:"
+];
+
+
 const printTestStart = (scenario: Scenario): void => {
     info(`Starting test: ${scenario.name} (${scenario.description})`)
 }
@@ -56,7 +96,7 @@ const getEmojiForCause = (cause: TestResultCause): string => {
         }
 
         case TestResultCause.CANCELLED: {
-            return "⚠"
+            return ":no_entry:"
         }
 
         default: {
@@ -92,6 +132,41 @@ const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
     info(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}\n`)
 }
 
+const printProfilerReport = (tests: PacketTestEnd[]): void => {
+    const testNameAndElapsed = tests.map((t) => {
+        return {name: t.scenario.name, elapsed: t.finishedAt - t.startedAt}
+    })
+
+    const total = testNameAndElapsed.reduce((acc, t) => acc + t.elapsed, 0)
+
+    const percents = testNameAndElapsed.map((t) => {
+        return {name: t.name, percent: Math.round((t.elapsed / total) * 100)}
+    })
+
+    const rows = percents.map((t) => {
+        const bar = "||".repeat(Math.round(t.percent / 5))
+
+        return `${t.name} [${t.percent}%]: ${bar}`
+    })
+
+    const markdown = `
+
+    ## Profiler report
+    
+    <details>
+        <summary>Click to expand</summary>
+        <pre>
+        <code>
+        ${rows.join("\n")}
+        </code>
+        </pre>
+    </details>
+    
+    `
+
+    core.summary.addRaw(markdown)
+}
+
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
     const results = sessionEnd.results as PacketTestEnd[]
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
@@ -109,25 +184,26 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
 
     const skipped = results.filter((t) => t.cause === TestResultCause.SKIPPED).length
 
-    let summaryText
+    let messageSource;
 
-    if (total === passed + skipped) summaryText = "It's all green! 🎉"
-    else if (failures === 0) summaryText = "Only skipped tests! 🤔"
-    else summaryText = "Some tests are failed! 😢"
+    if (total === passed + skipped) messageSource = MESSAGES_PASSED
+    else if (failures === 0) messageSource = MESSAGES_NO_TESTS
+    else messageSource = MESSAGES_FAILED
 
+    const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)]
     const { summary } = core
 
     summary.addHeading("Scenamatica", 1)
     summary.addHeading("Summary", 2)
-    summary.addRaw(summaryText)
+    summary.addRaw(`**${summaryText}**`)
     summary.addBreak()
-    summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`)
+    summary.addRaw(`Tests run: **${total}**, Failures: **${failures}**, Skipped: **${skipped}**, Time elapsed: **${elapsed}**`)
     summary.addHeading("Details", 2)
 
     const table: SummaryTableRow[] = [
         [
             {
-                data: "x",
+                data: " ",
                 header: true,
             },
             {
@@ -147,6 +223,10 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
                 header: true,
             },
             {
+                data: "Finished at",
+                header: true,
+            },
+            {
                 data: "Elapsed",
                 header: true,
             },
@@ -162,13 +242,16 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
         const emoji = getEmojiForCause(t.cause)
         const { name } = t.scenario
         const { description } = t.scenario
+        const startedAtStr = new Date(t.startedAt).toLocaleString()
+        const finishedAtStr = new Date(t.finishedAt).toLocaleString()
 
         table.push([
             { data: emoji },
             { data: name },
             { data: t.cause.toString() },
             { data: t.state.toString() },
-            { data: t.startedAt.toString() },
+            { data: startedAtStr },
+            { data: finishedAtStr },
             { data: testElapsed },
             { data: description },
         ])
@@ -176,12 +259,14 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
 
     summary.addTable(table)
 
+    printProfilerReport(results)
+
     summary.addHeading("License", 2)
     summary
-        .addRaw("This test report is generated by ")
-        .addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica")
+        .addRaw("This test report has been generated by ")
+        .addLink("Scenamatica", "https://github.com/TeamKUN/Scenamatica")
         .addRaw(" and licensed under ")
-        .addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE")
+        .addLink("MIT License", "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE")
         .addRaw(".")
     summary.addBreak()
     summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.")
