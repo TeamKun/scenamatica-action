@@ -14898,25 +14898,25 @@ var require_packets = __commonJS({
     exports2.PacketTestStart = PacketTestStart;
     var TestState;
     (function(TestState2) {
-      TestState2[TestState2["STAND_BY"] = 0] = "STAND_BY";
-      TestState2[TestState2["CONTEXT_PREPARING"] = 1] = "CONTEXT_PREPARING";
-      TestState2[TestState2["STARTING"] = 2] = "STARTING";
-      TestState2[TestState2["RUNNING_BEFORE"] = 3] = "RUNNING_BEFORE";
-      TestState2[TestState2["RUNNING_MAIN"] = 4] = "RUNNING_MAIN";
-      TestState2[TestState2["RUNNING_AFTER"] = 5] = "RUNNING_AFTER";
-      TestState2[TestState2["FINISHED"] = 6] = "FINISHED";
+      TestState2["STAND_BY"] = "STAND_BY";
+      TestState2["CONTEXT_PREPARING"] = "CONTEXT_PREPARING";
+      TestState2["STARTING"] = "STARTING";
+      TestState2["RUNNING_BEFORE"] = "RUNNING_BEFORE";
+      TestState2["RUNNING_MAIN"] = "RUNNING_MAIN";
+      TestState2["RUNNING_AFTER"] = "RUNNING_AFTER";
+      TestState2["FINISHED"] = "FINISHED";
     })(TestState = exports2.TestState || (exports2.TestState = {}));
     var TestResultCause;
     (function(TestResultCause2) {
-      TestResultCause2[TestResultCause2["PASSED"] = 0] = "PASSED";
-      TestResultCause2[TestResultCause2["CONTEXT_PREPARATION_FAILED"] = 1] = "CONTEXT_PREPARATION_FAILED";
-      TestResultCause2[TestResultCause2["ACTION_EXECUTION_FAILED"] = 2] = "ACTION_EXECUTION_FAILED";
-      TestResultCause2[TestResultCause2["ACTION_EXPECTATION_JUMPED"] = 3] = "ACTION_EXPECTATION_JUMPED";
-      TestResultCause2[TestResultCause2["SCENARIO_TIMED_OUT"] = 4] = "SCENARIO_TIMED_OUT";
-      TestResultCause2[TestResultCause2["ILLEGAL_CONDITION"] = 5] = "ILLEGAL_CONDITION";
-      TestResultCause2[TestResultCause2["INTERNAL_ERROR"] = 6] = "INTERNAL_ERROR";
-      TestResultCause2[TestResultCause2["CANCELLED"] = 7] = "CANCELLED";
-      TestResultCause2[TestResultCause2["SKIPPED"] = 8] = "SKIPPED";
+      TestResultCause2["PASSED"] = "PASSED";
+      TestResultCause2["CONTEXT_PREPARATION_FAILED"] = "CONTEXT_PREPARATION_FAILED";
+      TestResultCause2["ACTION_EXECUTION_FAILED"] = "ACTION_EXECUTION_FAILED";
+      TestResultCause2["ACTION_EXPECTATION_JUMPED"] = "ACTION_EXPECTATION_JUMPED";
+      TestResultCause2["SCENARIO_TIMED_OUT"] = "SCENARIO_TIMED_OUT";
+      TestResultCause2["ILLEGAL_CONDITION"] = "ILLEGAL_CONDITION";
+      TestResultCause2["INTERNAL_ERROR"] = "INTERNAL_ERROR";
+      TestResultCause2["CANCELLED"] = "CANCELLED";
+      TestResultCause2["SKIPPED"] = "SKIPPED";
     })(TestResultCause = exports2.TestResultCause || (exports2.TestResultCause = {}));
     var PacketTestEnd = class {
       constructor(date, scenario, state, cause, startedAt, finishedAt) {
@@ -14965,7 +14965,7 @@ var require_packets = __commonJS({
               return new PacketSessionStart(json.date, json.tests, json.isAutoStart, json.startedAt);
             }
             case "end": {
-              return new PacketSessionEnd(json.date, json.tests, json.isAutoStart, json.startedAt);
+              return new PacketSessionEnd(json.date, json.tests, json.startedAt, json.finishedAt);
             }
           }
           break;
