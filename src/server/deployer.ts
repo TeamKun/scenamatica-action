@@ -5,9 +5,9 @@ import path from "node:path"
 import * as fs from "node:fs"
 import * as yaml from "js-yaml"
 import { exec } from "@actions/exec"
-import {fail, info} from "../utils.js";
-import {startServer} from "./controller.js";
+import { info} from "../utils.js";
 import fetch from "node-fetch"
+import {startServerOnly} from "./controller";
 
 const PAPER_NAME = "paper.jar"
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
@@ -169,18 +169,10 @@ export const deployServer = async (
     // Paper のダウンロード
     const build = await downloadLatestPaper(dir, mcVersion)
 
-    // Paper にビルドさせる(初回実行）
-    return new Promise<string>((resolve, reject) => {
-        startServer(dir, PAPER_NAME).on("exit", async (code: number) => {
-            if (code === 0) {
-                await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
-                resolve(PAPER_NAME)
-            } else {
-                fail(`Server exited with error code ${code}`)
-                reject(code)
-            }
-        })
-    })
+    await startServerOnly(dir, PAPER_NAME)
+    await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
+
+    return PAPER_NAME
 }
 
 export const deployPlugin = async (serverDir: string, pluginFile: string) => {

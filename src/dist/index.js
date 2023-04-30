@@ -8513,574 +8513,6 @@ var require_js_yaml = __commonJS({
   }
 });
 
-// lib/packets.js
-var require_packets = __commonJS({
-  "lib/packets.js"(exports2) {
-    "use strict";
-    var __createBinding2 = exports2 && exports2.__createBinding || (Object.create ? function(o, m2, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
-      var desc = Object.getOwnPropertyDescriptor(m2, k);
-      if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function() {
-          return m2[k];
-        } };
-      }
-      Object.defineProperty(o, k2, desc);
-    } : function(o, m2, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
-      o[k2] = m2[k];
-    });
-    var __exportStar = exports2 && exports2.__exportStar || function(m2, exports3) {
-      for (var p in m2)
-        if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p))
-          __createBinding2(exports3, m2, p);
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.parsePacket = exports2.PacketSessionEnd = exports2.PacketSessionStart = exports2.PacketTestEnd = exports2.TestResultCause = exports2.TestState = exports2.PacketTestStart = exports2.Packet = void 0;
-    var Packet = class {
-      constructor(genre, type, date) {
-        this.genre = genre;
-        this.type = type;
-        this.date = date;
-      }
-    };
-    __name(Packet, "Packet");
-    exports2.Packet = Packet;
-    var PacketTestStart = class {
-      constructor(date, scenario) {
-        this.date = date;
-        this.scenario = scenario;
-        this.genre = "test";
-        this.type = "start";
-      }
-    };
-    __name(PacketTestStart, "PacketTestStart");
-    exports2.PacketTestStart = PacketTestStart;
-    var TestState;
-    (function(TestState2) {
-      TestState2[TestState2["STAND_BY"] = 0] = "STAND_BY";
-      TestState2[TestState2["CONTEXT_PREPARING"] = 1] = "CONTEXT_PREPARING";
-      TestState2[TestState2["STARTING"] = 2] = "STARTING";
-      TestState2[TestState2["RUNNING_BEFORE"] = 3] = "RUNNING_BEFORE";
-      TestState2[TestState2["RUNNING_MAIN"] = 4] = "RUNNING_MAIN";
-      TestState2[TestState2["RUNNING_AFTER"] = 5] = "RUNNING_AFTER";
-      TestState2[TestState2["FINISHED"] = 6] = "FINISHED";
-    })(TestState = exports2.TestState || (exports2.TestState = {}));
-    var TestResultCause;
-    (function(TestResultCause2) {
-      TestResultCause2[TestResultCause2["PASSED"] = 0] = "PASSED";
-      TestResultCause2[TestResultCause2["CONTEXT_PREPARATION_FAILED"] = 1] = "CONTEXT_PREPARATION_FAILED";
-      TestResultCause2[TestResultCause2["ACTION_EXECUTION_FAILED"] = 2] = "ACTION_EXECUTION_FAILED";
-      TestResultCause2[TestResultCause2["ACTION_EXPECTATION_JUMPED"] = 3] = "ACTION_EXPECTATION_JUMPED";
-      TestResultCause2[TestResultCause2["SCENARIO_TIMED_OUT"] = 4] = "SCENARIO_TIMED_OUT";
-      TestResultCause2[TestResultCause2["ILLEGAL_CONDITION"] = 5] = "ILLEGAL_CONDITION";
-      TestResultCause2[TestResultCause2["INTERNAL_ERROR"] = 6] = "INTERNAL_ERROR";
-      TestResultCause2[TestResultCause2["CANCELLED"] = 7] = "CANCELLED";
-      TestResultCause2[TestResultCause2["SKIPPED"] = 8] = "SKIPPED";
-    })(TestResultCause = exports2.TestResultCause || (exports2.TestResultCause = {}));
-    var PacketTestEnd = class {
-      constructor(date, scenario, state, cause, startedAt, finishedAt) {
-        this.date = date;
-        this.scenario = scenario;
-        this.state = state;
-        this.cause = cause;
-        this.startedAt = startedAt;
-        this.finishedAt = finishedAt;
-        this.genre = "test";
-        this.type = "end";
-      }
-    };
-    __name(PacketTestEnd, "PacketTestEnd");
-    exports2.PacketTestEnd = PacketTestEnd;
-    var PacketSessionStart = class {
-      constructor(date, tests, isAutoStart, startedAt) {
-        this.date = date;
-        this.tests = tests;
-        this.isAutoStart = isAutoStart;
-        this.startedAt = startedAt;
-        this.genre = "session";
-        this.type = "start";
-      }
-    };
-    __name(PacketSessionStart, "PacketSessionStart");
-    exports2.PacketSessionStart = PacketSessionStart;
-    var PacketSessionEnd = class {
-      constructor(date, tests, startedAt, finishedAt) {
-        this.date = date;
-        this.tests = tests;
-        this.startedAt = startedAt;
-        this.finishedAt = finishedAt;
-        this.genre = "session";
-        this.type = "end";
-      }
-    };
-    __name(PacketSessionEnd, "PacketSessionEnd");
-    exports2.PacketSessionEnd = PacketSessionEnd;
-    var parsePacket = /* @__PURE__ */ __name((packet) => {
-      const json = JSON.parse(packet);
-      switch (json.genre) {
-        case "session": {
-          switch (json.type) {
-            case "start": {
-              return new PacketSessionStart(json.date, json.scenario, json.isAutoStart, json.startedAt);
-            }
-            case "end": {
-              return new PacketSessionEnd(json.date, json.tests, json.isAutoStart, json.startedAt);
-            }
-          }
-          break;
-        }
-        case "test": {
-          switch (json.type) {
-            case "start": {
-              return new PacketTestStart(json.date, json.scenario);
-            }
-            case "end": {
-              return new PacketTestEnd(json.date, json.scenario, json.state, json.cause, json.startedAt, json.finishedAt);
-            }
-          }
-        }
-      }
-      return null;
-    }, "parsePacket");
-    exports2.parsePacket = parsePacket;
-    __exportStar(require_packets(), exports2);
-  }
-});
-
-// lib/outputs.js
-var require_outputs = __commonJS({
-  "lib/outputs.js"(exports2) {
-    "use strict";
-    var __createBinding2 = exports2 && exports2.__createBinding || (Object.create ? function(o, m2, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
-      var desc = Object.getOwnPropertyDescriptor(m2, k);
-      if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function() {
-          return m2[k];
-        } };
-      }
-      Object.defineProperty(o, k2, desc);
-    } : function(o, m2, k, k2) {
-      if (k2 === void 0)
-        k2 = k;
-      o[k2] = m2[k];
-    });
-    var __setModuleDefault2 = exports2 && exports2.__setModuleDefault || (Object.create ? function(o, v) {
-      Object.defineProperty(o, "default", { enumerable: true, value: v });
-    } : function(o, v) {
-      o["default"] = v;
-    });
-    var __importStar2 = exports2 && exports2.__importStar || function(mod) {
-      if (mod && mod.__esModule)
-        return mod;
-      var result = {};
-      if (mod != null) {
-        for (var k in mod)
-          if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
-            __createBinding2(result, mod, k);
-      }
-      __setModuleDefault2(result, mod);
-      return result;
-    };
-    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
-      function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-          resolve(value);
-        });
-      }
-      __name(adopt, "adopt");
-      return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-          try {
-            step(generator.next(value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(fulfilled, "fulfilled");
-        function rejected(value) {
-          try {
-            step(generator["throw"](value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(rejected, "rejected");
-        function step(result) {
-          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        __name(step, "step");
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
-    var packets_js_1 = require_packets();
-    var utils_js_12 = require_utils2();
-    var core = __importStar2(require_core());
-    var printTestStart = /* @__PURE__ */ __name((scenario) => {
-      (0, utils_js_12.info)(`Starting test: ${scenario.name} (${scenario.description})`);
-    }, "printTestStart");
-    exports2.printTestStart = printTestStart;
-    var printTestEnd = /* @__PURE__ */ __name((name, state, cause, startedAt, finishedAt) => {
-      const elapsed = `${finishedAt - startedAt} ms`;
-      const emoji = getEmojiForCause(cause);
-      switch (cause) {
-        case packets_js_1.TestResultCause.CANCELLED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is cancelled with state ${state} in ${elapsed}.`);
-          break;
-        }
-        case packets_js_1.TestResultCause.PASSED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is passed with state ${state} in ${elapsed}.`);
-          break;
-        }
-        case packets_js_1.TestResultCause.SKIPPED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is skipped with state ${state} in ${elapsed}.`);
-          break;
-        }
-        default: {
-          (0, utils_js_12.warn)(`${emoji} The test ${name} is failed with state ${state} in ${elapsed}.`);
-          break;
-        }
-      }
-    }, "printTestEnd");
-    exports2.printTestEnd = printTestEnd;
-    var getEmojiForCause = /* @__PURE__ */ __name((cause) => {
-      switch (cause) {
-        case packets_js_1.TestResultCause.PASSED: {
-          return "\u2714";
-        }
-        case packets_js_1.TestResultCause.SKIPPED: {
-          return "\u2794";
-        }
-        case packets_js_1.TestResultCause.CANCELLED: {
-          return "\u26A0";
-        }
-        default: {
-          return "\u274C";
-        }
-      }
-    }, "getEmojiForCause");
-    var printSessionStart = /* @__PURE__ */ __name((startedAt, tests) => {
-      (0, utils_js_12.info)("--------------------------------------");
-      (0, utils_js_12.info)(" T E S T S");
-      (0, utils_js_12.info)("--------------------------------------");
-      (0, utils_js_12.info)(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`);
-    }, "printSessionStart");
-    exports2.printSessionStart = printSessionStart;
-    var printSessionEnd = /* @__PURE__ */ __name((sessionEnd) => {
-      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const total = sessionEnd.tests.length;
-      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-      (0, utils_js_12.info)(`
-Results:
-`);
-      (0, utils_js_12.info)(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}
-`);
-    }, "printSessionEnd");
-    exports2.printSessionEnd = printSessionEnd;
-    var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter2(void 0, void 0, void 0, function* () {
-      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const total = sessionEnd.tests.length;
-      const passed = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
-      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-      let summaryText;
-      if (total === passed + skipped)
-        summaryText = "It's all green! \u{1F389}";
-      else if (failures === 0)
-        summaryText = "Only skipped tests! \u{1F914}";
-      else
-        summaryText = "Some tests are failed! \u{1F622}";
-      const { summary } = core;
-      summary.addHeading("Scenamatica", 1);
-      summary.addHeading("Summary", 2);
-      summary.addRaw(summaryText);
-      summary.addBreak();
-      summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
-      summary.addHeading("Details", 2);
-      const table = [
-        [
-          {
-            data: "x",
-            header: true
-          },
-          {
-            data: "Test",
-            header: true
-          },
-          {
-            data: "Cause",
-            header: true
-          },
-          {
-            data: "State",
-            header: true
-          },
-          {
-            data: "Started at",
-            header: true
-          },
-          {
-            data: "Elapsed",
-            header: true
-          },
-          {
-            data: "Test Description",
-            header: true
-          }
-        ]
-      ];
-      for (const t2 of sessionEnd.tests) {
-        const testElapsed = `${Math.ceil((t2.finishedAt - t2.startedAt) / 1e3)} sec`;
-        const emoji = getEmojiForCause(t2.cause);
-        const { name } = t2.scenario;
-        const { description } = t2.scenario;
-        table.push([
-          { data: emoji },
-          { data: name },
-          { data: t2.cause.toString() },
-          { data: t2.state.toString() },
-          { data: t2.startedAt.toString() },
-          { data: testElapsed },
-          { data: description }
-        ]);
-      }
-      summary.addTable(table);
-      summary.addHeading("License", 2);
-      summary.addRaw("This test report is generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE").addRaw(".");
-      summary.addBreak();
-      summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
-      yield summary.write();
-    }), "printSummary");
-    exports2.printSummary = printSummary;
-  }
-});
-
-// lib/server/client.js
-var require_client = __commonJS({
-  "lib/server/client.js"(exports2) {
-    "use strict";
-    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
-      function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-          resolve(value);
-        });
-      }
-      __name(adopt, "adopt");
-      return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-          try {
-            step(generator.next(value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(fulfilled, "fulfilled");
-        function rejected(value) {
-          try {
-            step(generator["throw"](value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(rejected, "rejected");
-        function step(result) {
-          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        __name(step, "step");
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.onDataReceived = void 0;
-    var packets_js_1 = require_packets();
-    var outputs_js_1 = require_outputs();
-    var controller_js_12 = require_controller();
-    var message;
-    var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter2(void 0, void 0, void 0, function* () {
-      message = message ? message + chunkMessage : chunkMessage;
-      while (message && message.includes("\n")) {
-        const messages = message.split("\n");
-        yield processPacket(messages[0]);
-        message = messages.slice(1).join("\n") || void 0;
-      }
-    }), "onDataReceived");
-    exports2.onDataReceived = onDataReceived;
-    var processPacket = /* @__PURE__ */ __name((msg) => __awaiter2(void 0, void 0, void 0, function* () {
-      let packet;
-      try {
-        packet = (0, packets_js_1.parsePacket)(msg);
-      } catch (_a) {
-        console.warn(`Failed to parse packet: ${msg}`);
-        return;
-      }
-      if (!packet) {
-        return;
-      }
-      switch (packet.genre) {
-        case "session": {
-          yield processSessionPackets(packet);
-          break;
-        }
-        case "test": {
-          processTestsPacket(packet);
-          break;
-        }
-      }
-    }), "processPacket");
-    var processTestsPacket = /* @__PURE__ */ __name((packet) => {
-      switch (packet.type) {
-        case "start": {
-          const test = packet;
-          (0, outputs_js_1.printTestStart)(test.scenario);
-          break;
-        }
-        case "end": {
-          const testEnd = packet;
-          (0, outputs_js_1.printTestEnd)(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt);
-        }
-      }
-    }, "processTestsPacket");
-    var sessionStartedAt;
-    var processSessionPackets = /* @__PURE__ */ __name((packet) => __awaiter2(void 0, void 0, void 0, function* () {
-      switch (packet.type) {
-        case "start": {
-          sessionStartedAt = packet.startedAt;
-          (0, outputs_js_1.printSessionStart)(sessionStartedAt, packet.tests.length);
-          break;
-        }
-        case "end": {
-          const sessionEnd = packet;
-          (0, outputs_js_1.printSessionEnd)(sessionEnd);
-          yield (0, outputs_js_1.printSummary)(sessionEnd);
-          const succeed = sessionEnd.tests.every((test) => test.cause === packets_js_1.TestResultCause.PASSED || test.cause === packets_js_1.TestResultCause.SKIPPED || test.cause === packets_js_1.TestResultCause.CANCELLED);
-          (0, controller_js_12.endTests)(succeed);
-          break;
-        }
-      }
-    }), "processSessionPackets");
-  }
-});
-
-// lib/server/controller.js
-var require_controller = __commonJS({
-  "lib/server/controller.js"(exports2) {
-    "use strict";
-    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
-      function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-          resolve(value);
-        });
-      }
-      __name(adopt, "adopt");
-      return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-          try {
-            step(generator.next(value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(fulfilled, "fulfilled");
-        function rejected(value) {
-          try {
-            step(generator["throw"](value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(rejected, "rejected");
-        function step(result) {
-          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        __name(step, "step");
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.endTests = exports2.startTests = exports2.stopServer = exports2.startServer = void 0;
-    var node_child_process_1 = require("node:child_process");
-    var utils_js_12 = require_utils2();
-    var deployer_js_12 = require_deployer();
-    var client_js_1 = require_client();
-    var JAVA_COMMAND = "java {args} -jar {jar} nogui";
-    var serverProcess;
-    var attemptStop = false;
-    var startServer = /* @__PURE__ */ __name((workDir, executable, args = []) => {
-      if (serverProcess)
-        throw new Error("Server is already running");
-      (0, utils_js_12.info)(`Starting server with executable ${executable} and args ${args.join(" ")}`);
-      const command = JAVA_COMMAND.replace("{args}", args.join(" ")).replace("{jar}", executable);
-      const javaProcess = (0, node_child_process_1.spawn)(command, {
-        cwd: workDir,
-        shell: true,
-        stdio: "inherit"
-      });
-      attachProcessDebug(javaProcess);
-      serverProcess = javaProcess;
-      return javaProcess;
-    }, "startServer");
-    exports2.startServer = startServer;
-    var stopServer = /* @__PURE__ */ __name(() => {
-      if (serverProcess === void 0 || attemptStop)
-        return;
-      attemptStop = true;
-      (0, utils_js_12.info)("Stopping server...");
-      serverProcess.stdin.write("stop\n");
-      setTimeout(() => {
-        if (serverProcess !== void 0 && !serverProcess.killed) {
-          (0, utils_js_12.info)("Server did not stop in time, killing...");
-          serverProcess.kill();
-        }
-        serverProcess = void 0;
-        attemptStop = false;
-      }, 1e3 * 10);
-    }, "stopServer");
-    exports2.stopServer = stopServer;
-    var startTests = /* @__PURE__ */ __name((serverDir, executable, pluginFile) => __awaiter2(void 0, void 0, void 0, function* () {
-      (0, utils_js_12.info)(`Starting tests of plugin ${pluginFile}.`);
-      yield (0, deployer_js_12.deployPlugin)(serverDir, pluginFile);
-      const javaProcess = (0, exports2.startServer)(serverDir, executable);
-      attachProcessDebug(javaProcess);
-      javaProcess.stdout.on("data", client_js_1.onDataReceived);
-    }), "startTests");
-    exports2.startTests = startTests;
-    var endTests = /* @__PURE__ */ __name((succeed) => {
-      (0, utils_js_12.info)("Ending tests, shutting down server...");
-      (0, exports2.stopServer)();
-      if (succeed) {
-        (0, utils_js_12.info)("Tests succeeded");
-        process.exit(0);
-      } else {
-        (0, utils_js_12.info)("Tests failed");
-        (0, utils_js_12.fail)("Some tests failed");
-      }
-    }, "endTests");
-    exports2.endTests = endTests;
-    var attachProcessDebug = /* @__PURE__ */ __name((childProcess) => {
-      childProcess.on("error", (error) => {
-        const errorMessage = error.message;
-        (0, utils_js_12.info)(`Server exited with error ${errorMessage}`);
-        (0, utils_js_12.fail)(error);
-      });
-      childProcess.stdout.on("data", (data) => {
-        const dataString = data.toString();
-        (0, utils_js_12.debug)(dataString);
-      });
-      childProcess.stderr.on("data", (data) => {
-        const dataString = data.toString();
-        (0, utils_js_12.debug)(dataString);
-      });
-    }, "attachProcessDebug");
-  }
-});
-
 // node_modules/.pnpm/data-uri-to-buffer@4.0.1/node_modules/data-uri-to-buffer/dist/index.js
 function dataUriToBuffer(uri) {
   if (!/^data:/i.test(uri)) {
@@ -15419,6 +14851,560 @@ var init_src = __esm({
   }
 });
 
+// lib/packets.js
+var require_packets = __commonJS({
+  "lib/packets.js"(exports2) {
+    "use strict";
+    var __createBinding2 = exports2 && exports2.__createBinding || (Object.create ? function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      var desc = Object.getOwnPropertyDescriptor(m2, k);
+      if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() {
+          return m2[k];
+        } };
+      }
+      Object.defineProperty(o, k2, desc);
+    } : function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      o[k2] = m2[k];
+    });
+    var __exportStar = exports2 && exports2.__exportStar || function(m2, exports3) {
+      for (var p in m2)
+        if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p))
+          __createBinding2(exports3, m2, p);
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.parsePacket = exports2.PacketSessionEnd = exports2.PacketSessionStart = exports2.PacketTestEnd = exports2.TestResultCause = exports2.TestState = exports2.PacketTestStart = exports2.Packet = void 0;
+    var Packet = class {
+      constructor(genre, type, date) {
+        this.genre = genre;
+        this.type = type;
+        this.date = date;
+      }
+    };
+    __name(Packet, "Packet");
+    exports2.Packet = Packet;
+    var PacketTestStart = class {
+      constructor(date, scenario) {
+        this.date = date;
+        this.scenario = scenario;
+        this.genre = "test";
+        this.type = "start";
+      }
+    };
+    __name(PacketTestStart, "PacketTestStart");
+    exports2.PacketTestStart = PacketTestStart;
+    var TestState;
+    (function(TestState2) {
+      TestState2[TestState2["STAND_BY"] = 0] = "STAND_BY";
+      TestState2[TestState2["CONTEXT_PREPARING"] = 1] = "CONTEXT_PREPARING";
+      TestState2[TestState2["STARTING"] = 2] = "STARTING";
+      TestState2[TestState2["RUNNING_BEFORE"] = 3] = "RUNNING_BEFORE";
+      TestState2[TestState2["RUNNING_MAIN"] = 4] = "RUNNING_MAIN";
+      TestState2[TestState2["RUNNING_AFTER"] = 5] = "RUNNING_AFTER";
+      TestState2[TestState2["FINISHED"] = 6] = "FINISHED";
+    })(TestState = exports2.TestState || (exports2.TestState = {}));
+    var TestResultCause;
+    (function(TestResultCause2) {
+      TestResultCause2[TestResultCause2["PASSED"] = 0] = "PASSED";
+      TestResultCause2[TestResultCause2["CONTEXT_PREPARATION_FAILED"] = 1] = "CONTEXT_PREPARATION_FAILED";
+      TestResultCause2[TestResultCause2["ACTION_EXECUTION_FAILED"] = 2] = "ACTION_EXECUTION_FAILED";
+      TestResultCause2[TestResultCause2["ACTION_EXPECTATION_JUMPED"] = 3] = "ACTION_EXPECTATION_JUMPED";
+      TestResultCause2[TestResultCause2["SCENARIO_TIMED_OUT"] = 4] = "SCENARIO_TIMED_OUT";
+      TestResultCause2[TestResultCause2["ILLEGAL_CONDITION"] = 5] = "ILLEGAL_CONDITION";
+      TestResultCause2[TestResultCause2["INTERNAL_ERROR"] = 6] = "INTERNAL_ERROR";
+      TestResultCause2[TestResultCause2["CANCELLED"] = 7] = "CANCELLED";
+      TestResultCause2[TestResultCause2["SKIPPED"] = 8] = "SKIPPED";
+    })(TestResultCause = exports2.TestResultCause || (exports2.TestResultCause = {}));
+    var PacketTestEnd = class {
+      constructor(date, scenario, state, cause, startedAt, finishedAt) {
+        this.date = date;
+        this.scenario = scenario;
+        this.state = state;
+        this.cause = cause;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
+        this.genre = "test";
+        this.type = "end";
+      }
+    };
+    __name(PacketTestEnd, "PacketTestEnd");
+    exports2.PacketTestEnd = PacketTestEnd;
+    var PacketSessionStart = class {
+      constructor(date, tests, isAutoStart, startedAt) {
+        this.date = date;
+        this.tests = tests;
+        this.isAutoStart = isAutoStart;
+        this.startedAt = startedAt;
+        this.genre = "session";
+        this.type = "start";
+      }
+    };
+    __name(PacketSessionStart, "PacketSessionStart");
+    exports2.PacketSessionStart = PacketSessionStart;
+    var PacketSessionEnd = class {
+      constructor(date, tests, startedAt, finishedAt) {
+        this.date = date;
+        this.tests = tests;
+        this.startedAt = startedAt;
+        this.finishedAt = finishedAt;
+        this.genre = "session";
+        this.type = "end";
+      }
+    };
+    __name(PacketSessionEnd, "PacketSessionEnd");
+    exports2.PacketSessionEnd = PacketSessionEnd;
+    var parsePacket = /* @__PURE__ */ __name((packet) => {
+      const json = JSON.parse(packet);
+      switch (json.genre) {
+        case "session": {
+          switch (json.type) {
+            case "start": {
+              return new PacketSessionStart(json.date, json.scenario, json.isAutoStart, json.startedAt);
+            }
+            case "end": {
+              return new PacketSessionEnd(json.date, json.tests, json.isAutoStart, json.startedAt);
+            }
+          }
+          break;
+        }
+        case "test": {
+          switch (json.type) {
+            case "start": {
+              return new PacketTestStart(json.date, json.scenario);
+            }
+            case "end": {
+              return new PacketTestEnd(json.date, json.scenario, json.state, json.cause, json.startedAt, json.finishedAt);
+            }
+          }
+        }
+      }
+      return null;
+    }, "parsePacket");
+    exports2.parsePacket = parsePacket;
+    __exportStar(require_packets(), exports2);
+  }
+});
+
+// lib/outputs.js
+var require_outputs = __commonJS({
+  "lib/outputs.js"(exports2) {
+    "use strict";
+    var __createBinding2 = exports2 && exports2.__createBinding || (Object.create ? function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      var desc = Object.getOwnPropertyDescriptor(m2, k);
+      if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() {
+          return m2[k];
+        } };
+      }
+      Object.defineProperty(o, k2, desc);
+    } : function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      o[k2] = m2[k];
+    });
+    var __setModuleDefault2 = exports2 && exports2.__setModuleDefault || (Object.create ? function(o, v) {
+      Object.defineProperty(o, "default", { enumerable: true, value: v });
+    } : function(o, v) {
+      o["default"] = v;
+    });
+    var __importStar2 = exports2 && exports2.__importStar || function(mod) {
+      if (mod && mod.__esModule)
+        return mod;
+      var result = {};
+      if (mod != null) {
+        for (var k in mod)
+          if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
+            __createBinding2(result, mod, k);
+      }
+      __setModuleDefault2(result, mod);
+      return result;
+    };
+    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
+      function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+          resolve(value);
+        });
+      }
+      __name(adopt, "adopt");
+      return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+          try {
+            step(generator.next(value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(fulfilled, "fulfilled");
+        function rejected(value) {
+          try {
+            step(generator["throw"](value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(rejected, "rejected");
+        function step(result) {
+          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        __name(step, "step");
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
+    var packets_js_1 = require_packets();
+    var utils_js_12 = require_utils2();
+    var core = __importStar2(require_core());
+    var printTestStart = /* @__PURE__ */ __name((scenario) => {
+      (0, utils_js_12.info)(`Starting test: ${scenario.name} (${scenario.description})`);
+    }, "printTestStart");
+    exports2.printTestStart = printTestStart;
+    var printTestEnd = /* @__PURE__ */ __name((name, state, cause, startedAt, finishedAt) => {
+      const elapsed = `${finishedAt - startedAt} ms`;
+      const emoji = getEmojiForCause(cause);
+      switch (cause) {
+        case packets_js_1.TestResultCause.CANCELLED: {
+          (0, utils_js_12.info)(`${emoji} The test ${name} is cancelled with state ${state} in ${elapsed}.`);
+          break;
+        }
+        case packets_js_1.TestResultCause.PASSED: {
+          (0, utils_js_12.info)(`${emoji} The test ${name} is passed with state ${state} in ${elapsed}.`);
+          break;
+        }
+        case packets_js_1.TestResultCause.SKIPPED: {
+          (0, utils_js_12.info)(`${emoji} The test ${name} is skipped with state ${state} in ${elapsed}.`);
+          break;
+        }
+        default: {
+          (0, utils_js_12.warn)(`${emoji} The test ${name} is failed with state ${state} in ${elapsed}.`);
+          break;
+        }
+      }
+    }, "printTestEnd");
+    exports2.printTestEnd = printTestEnd;
+    var getEmojiForCause = /* @__PURE__ */ __name((cause) => {
+      switch (cause) {
+        case packets_js_1.TestResultCause.PASSED: {
+          return "\u2714";
+        }
+        case packets_js_1.TestResultCause.SKIPPED: {
+          return "\u2794";
+        }
+        case packets_js_1.TestResultCause.CANCELLED: {
+          return "\u26A0";
+        }
+        default: {
+          return "\u274C";
+        }
+      }
+    }, "getEmojiForCause");
+    var printSessionStart = /* @__PURE__ */ __name((startedAt, tests) => {
+      (0, utils_js_12.info)("--------------------------------------");
+      (0, utils_js_12.info)(" T E S T S");
+      (0, utils_js_12.info)("--------------------------------------");
+      (0, utils_js_12.info)(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`);
+    }, "printSessionStart");
+    exports2.printSessionStart = printSessionStart;
+    var printSessionEnd = /* @__PURE__ */ __name((sessionEnd) => {
+      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
+      const total = sessionEnd.tests.length;
+      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
+      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
+      (0, utils_js_12.info)(`
+Results:
+`);
+      (0, utils_js_12.info)(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}
+`);
+    }, "printSessionEnd");
+    exports2.printSessionEnd = printSessionEnd;
+    var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter2(void 0, void 0, void 0, function* () {
+      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
+      const total = sessionEnd.tests.length;
+      const passed = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
+      const failures = sessionEnd.tests.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
+      const skipped = sessionEnd.tests.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
+      let summaryText;
+      if (total === passed + skipped)
+        summaryText = "It's all green! \u{1F389}";
+      else if (failures === 0)
+        summaryText = "Only skipped tests! \u{1F914}";
+      else
+        summaryText = "Some tests are failed! \u{1F622}";
+      const { summary } = core;
+      summary.addHeading("Scenamatica", 1);
+      summary.addHeading("Summary", 2);
+      summary.addRaw(summaryText);
+      summary.addBreak();
+      summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
+      summary.addHeading("Details", 2);
+      const table = [
+        [
+          {
+            data: "x",
+            header: true
+          },
+          {
+            data: "Test",
+            header: true
+          },
+          {
+            data: "Cause",
+            header: true
+          },
+          {
+            data: "State",
+            header: true
+          },
+          {
+            data: "Started at",
+            header: true
+          },
+          {
+            data: "Elapsed",
+            header: true
+          },
+          {
+            data: "Test Description",
+            header: true
+          }
+        ]
+      ];
+      for (const t2 of sessionEnd.tests) {
+        const testElapsed = `${Math.ceil((t2.finishedAt - t2.startedAt) / 1e3)} sec`;
+        const emoji = getEmojiForCause(t2.cause);
+        const { name } = t2.scenario;
+        const { description } = t2.scenario;
+        table.push([
+          { data: emoji },
+          { data: name },
+          { data: t2.cause.toString() },
+          { data: t2.state.toString() },
+          { data: t2.startedAt.toString() },
+          { data: testElapsed },
+          { data: description }
+        ]);
+      }
+      summary.addTable(table);
+      summary.addHeading("License", 2);
+      summary.addRaw("This test report is generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE").addRaw(".");
+      summary.addBreak();
+      summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
+      yield summary.write();
+    }), "printSummary");
+    exports2.printSummary = printSummary;
+  }
+});
+
+// lib/server/client.js
+var require_client = __commonJS({
+  "lib/server/client.js"(exports2) {
+    "use strict";
+    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
+      function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+          resolve(value);
+        });
+      }
+      __name(adopt, "adopt");
+      return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+          try {
+            step(generator.next(value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(fulfilled, "fulfilled");
+        function rejected(value) {
+          try {
+            step(generator["throw"](value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(rejected, "rejected");
+        function step(result) {
+          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        __name(step, "step");
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.onDataReceived = void 0;
+    var packets_js_1 = require_packets();
+    var outputs_js_1 = require_outputs();
+    var controller_js_12 = require_controller();
+    var utils_1 = require_utils2();
+    var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter2(void 0, void 0, void 0, function* () {
+      yield processPacket(chunkMessage);
+    }), "onDataReceived");
+    exports2.onDataReceived = onDataReceived;
+    var processPacket = /* @__PURE__ */ __name((msg) => __awaiter2(void 0, void 0, void 0, function* () {
+      let packet;
+      try {
+        packet = (0, packets_js_1.parsePacket)(msg);
+      } catch (_a) {
+        (0, utils_1.warn)(`Failed to parse packet: ${msg}`);
+        return;
+      }
+      if (!packet) {
+        return;
+      }
+      switch (packet.genre) {
+        case "session": {
+          yield processSessionPackets(packet);
+          break;
+        }
+        case "test": {
+          processTestsPacket(packet);
+          break;
+        }
+      }
+    }), "processPacket");
+    var processTestsPacket = /* @__PURE__ */ __name((packet) => {
+      switch (packet.type) {
+        case "start": {
+          const test = packet;
+          (0, outputs_js_1.printTestStart)(test.scenario);
+          break;
+        }
+        case "end": {
+          const testEnd = packet;
+          (0, outputs_js_1.printTestEnd)(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt);
+        }
+      }
+    }, "processTestsPacket");
+    var sessionStartedAt;
+    var processSessionPackets = /* @__PURE__ */ __name((packet) => __awaiter2(void 0, void 0, void 0, function* () {
+      switch (packet.type) {
+        case "start": {
+          sessionStartedAt = packet.startedAt;
+          (0, outputs_js_1.printSessionStart)(sessionStartedAt, packet.tests.length);
+          break;
+        }
+        case "end": {
+          const sessionEnd = packet;
+          (0, outputs_js_1.printSessionEnd)(sessionEnd);
+          yield (0, outputs_js_1.printSummary)(sessionEnd);
+          const succeed = sessionEnd.tests.every((test) => test.cause === packets_js_1.TestResultCause.PASSED || test.cause === packets_js_1.TestResultCause.SKIPPED || test.cause === packets_js_1.TestResultCause.CANCELLED);
+          (0, controller_js_12.endTests)(succeed);
+          break;
+        }
+      }
+    }), "processSessionPackets");
+  }
+});
+
+// lib/server/controller.js
+var require_controller = __commonJS({
+  "lib/server/controller.js"(exports2) {
+    "use strict";
+    var __awaiter2 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
+      function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+          resolve(value);
+        });
+      }
+      __name(adopt, "adopt");
+      return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+          try {
+            step(generator.next(value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(fulfilled, "fulfilled");
+        function rejected(value) {
+          try {
+            step(generator["throw"](value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(rejected, "rejected");
+        function step(result) {
+          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        __name(step, "step");
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.endTests = exports2.startTests = exports2.stopServer = exports2.startServerOnly = void 0;
+    var utils_js_12 = require_utils2();
+    var deployer_js_12 = require_deployer();
+    var exec_1 = require_exec();
+    var client_1 = require_client();
+    var serverStdin;
+    var genArgs = /* @__PURE__ */ __name((executable, args) => {
+      return [
+        ...args,
+        "-jar",
+        executable,
+        "nogui"
+      ];
+    }, "genArgs");
+    var startServerOnly = /* @__PURE__ */ __name((workDir, executable, args = []) => __awaiter2(void 0, void 0, void 0, function* () {
+      (0, utils_js_12.info)(`Starting server with executable ${executable} and args ${args.join(" ")}`);
+      const stdin = Buffer.alloc(1024);
+      return (0, exec_1.exec)("java", genArgs(executable, args), {
+        cwd: workDir,
+        input: stdin,
+        listeners: {
+          stdline: (data) => {
+            (0, utils_js_12.info)(data);
+            if (data.includes("Done") && data.includes("For help, type "))
+              stdin.write("stop\n");
+          },
+          errline: (data) => {
+            (0, utils_js_12.warn)(data);
+          }
+        }
+      });
+    }), "startServerOnly");
+    exports2.startServerOnly = startServerOnly;
+    var stopServer = /* @__PURE__ */ __name(() => {
+      if (!serverStdin)
+        return;
+      (0, utils_js_12.info)("Stopping server...");
+      serverStdin.write("stop\n");
+    }, "stopServer");
+    exports2.stopServer = stopServer;
+    var startTests = /* @__PURE__ */ __name((serverDir, executable, pluginFile) => __awaiter2(void 0, void 0, void 0, function* () {
+      (0, utils_js_12.info)(`Starting tests of plugin ${pluginFile}.`);
+      yield (0, deployer_js_12.deployPlugin)(serverDir, pluginFile);
+      const stdin = Buffer.alloc(1024);
+      return (0, exec_1.exec)("java", genArgs(executable, []), {
+        cwd: serverDir,
+        input: stdin,
+        listeners: {
+          stdline: client_1.onDataReceived
+        }
+      });
+    }), "startTests");
+    exports2.startTests = startTests;
+    var endTests = /* @__PURE__ */ __name((succeed) => {
+      (0, utils_js_12.info)("Ending tests, shutting down server...");
+      (0, exports2.stopServer)();
+      if (succeed) {
+        (0, utils_js_12.info)("Tests succeeded");
+        process.exit(0);
+      } else {
+        (0, utils_js_12.info)("Tests failed");
+        (0, utils_js_12.fail)("Some tests failed");
+      }
+    }, "endTests");
+    exports2.endTests = endTests;
+  }
+});
+
 // lib/server/deployer.js
 var require_deployer = __commonJS({
   "lib/server/deployer.js"(exports2) {
@@ -15499,8 +15485,8 @@ var require_deployer = __commonJS({
     var yaml = __importStar2(require_js_yaml());
     var exec_1 = require_exec();
     var utils_js_12 = require_utils2();
-    var controller_js_12 = require_controller();
     var node_fetch_1 = __importDefault((init_src(), __toCommonJS(src_exports)));
+    var controller_1 = require_controller();
     var PAPER_NAME = "paper.jar";
     var PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/";
     var PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`;
@@ -15594,17 +15580,9 @@ var require_deployer = __commonJS({
       if (!(yield isJavaInstalled()))
         yield downloadJava(dir, javaVersion);
       const build = yield downloadLatestPaper(dir, mcVersion);
-      return new Promise((resolve, reject) => {
-        (0, controller_js_12.startServer)(dir, PAPER_NAME).on("exit", (code) => __awaiter2(void 0, void 0, void 0, function* () {
-          if (code === 0) {
-            yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
-            resolve(PAPER_NAME);
-          } else {
-            (0, utils_js_12.fail)(`Server exited with error code ${code}`);
-            reject(code);
-          }
-        }));
-      });
+      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME);
+      yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
+      return PAPER_NAME;
     }), "deployServer");
     exports2.deployServer = deployServer;
     var deployPlugin = /* @__PURE__ */ __name((serverDir, pluginFile) => __awaiter2(void 0, void 0, void 0, function* () {

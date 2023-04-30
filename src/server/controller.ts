@@ -1,52 +1,47 @@
-import type { ChildProcess } from "node:child_process"
-import { spawn } from "node:child_process"
-import { debug, fail, info } from "../utils.js"
-import { deployPlugin } from "./deployer.js"
-import { onDataReceived } from "./client.js"
+import {fail, info, warn} from "../utils.js"
+import {deployPlugin} from "./deployer.js"
+import {exec} from "@actions/exec";
+import {onDataReceived} from "./client";
 
-const JAVA_COMMAND = "java {args} -jar {jar} nogui"
+let serverStdin: Buffer | undefined
 
-let serverProcess: ChildProcess | undefined
-let attemptStop = false
+const genArgs = (executable: string, args: string[]) => {
+    return [
+        ...args,
+        "-jar",
+        executable,
+        "nogui"
+    ]
+}
 
-export const startServer = (workDir: string, executable: string, args: string[] = []) => {
-    if (serverProcess) throw new Error("Server is already running")
-
+export const startServerOnly = async (workDir: string, executable: string, args: string[] = []): Promise<number> => {
     info(`Starting server with executable ${executable} and args ${args.join(" ")}`)
 
-    const command = JAVA_COMMAND.replace("{args}", args.join(" ")).replace("{jar}", executable)
+    const stdin = Buffer.alloc(1024)
 
-    const javaProcess = spawn(command, {
+    return exec("java", genArgs(executable, args), {
         cwd: workDir,
-        shell: true,
-        stdio: "inherit",
+        input: stdin,
+        listeners: {
+            stdline: (data: string) => {
+                info(data)
+                if (data.includes("Done") && data.includes("For help, type "))
+                    stdin.write("stop\n")
+            },
+            errline: (data: string) => {
+                warn(data)
+            }
+        }
     })
-
-    attachProcessDebug(javaProcess)
-
-    serverProcess = javaProcess
-
-    return javaProcess
 }
 
 export const stopServer = () => {
-    if (serverProcess === undefined || attemptStop) return
-
-    attemptStop = true
+    if (!serverStdin)
+        return
 
     info("Stopping server...")
 
-    serverProcess.stdin!.write("stop\n")
-
-    setTimeout(() => {
-        if (serverProcess !== undefined && !serverProcess.killed) {
-            info("Server did not stop in time, killing...")
-            serverProcess.kill()
-        }
-
-        serverProcess = undefined
-        attemptStop = false
-    }, 1000 * 10)
+    serverStdin.write("stop\n")
 }
 
 export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
@@ -54,11 +49,15 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
 
     await deployPlugin(serverDir, pluginFile)
 
-    const javaProcess = startServer(serverDir, executable)
+    const stdin = Buffer.alloc(1024)
 
-    attachProcessDebug(javaProcess)
-
-    javaProcess.stdout!.on("data", onDataReceived)
+    return exec("java", genArgs(executable, []), {
+        cwd: serverDir,
+        input: stdin,
+        listeners: {
+            stdline: onDataReceived
+        }
+    })
 }
 
 export const endTests = (succeed: boolean) => {
@@ -74,25 +73,4 @@ export const endTests = (succeed: boolean) => {
 
         fail("Some tests failed")
     }
-}
-
-const attachProcessDebug = (childProcess: ChildProcess) => {
-    childProcess.on("error", (error: Error) => {
-        const errorMessage = error.message
-
-        info(`Server exited with error ${errorMessage}`)
-        fail(error)
-    })
-
-    childProcess.stdout!.on("data", (data) => {
-        const dataString = (data as Buffer).toString()
-
-        debug(dataString)
-    })
-
-    childProcess.stderr!.on("data", (data) => {
-        const dataString = (data as Buffer).toString()
-
-        debug(dataString)
-    })
 }
