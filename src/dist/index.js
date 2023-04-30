@@ -15367,16 +15367,27 @@ var require_controller = __commonJS({
       serverProcess = cp;
       return cp;
     }, "createServerProcess");
-    var startServerOnly = /* @__PURE__ */ __name((workDir, executable, args = []) => {
+    var startServerOnly = /* @__PURE__ */ __name((workDir, executable, args = []) => __awaiter2(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)(`Starting server with executable ${executable} and args ${args.join(" ")}`);
       const cp = createServerProcess(workDir, executable, args);
       cp.stdout.on("data", (data) => {
         const line = data.toString("utf8");
         if (line.includes("Done") && line.includes('For help, type "help"'))
           serverStdin === null || serverStdin === void 0 ? void 0 : serverStdin.write("stop\n");
-        (0, utils_js_12.info)(line);
+        if (line.endsWith("\n"))
+          (0, utils_js_12.info)(line.slice(0, -1));
+        else
+          (0, utils_js_12.info)(line);
       });
-    }, "startServerOnly");
+      return new Promise((resolve, reject) => {
+        cp.on("exit", (code) => {
+          if (code === 0)
+            resolve(code);
+          else
+            reject(code);
+        });
+      });
+    }), "startServerOnly");
     exports2.startServerOnly = startServerOnly;
     var stopServer = /* @__PURE__ */ __name(() => {
       if (!serverStdin || !serverProcess)
@@ -15590,8 +15601,11 @@ var require_deployer = __commonJS({
       if (!(yield isJavaInstalled()))
         yield downloadJava(dir, javaVersion);
       const build = yield downloadLatestPaper(dir, mcVersion);
-      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME);
-      yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
+      (0, controller_1.startServerOnly)(dir, PAPER_NAME).then(() => __awaiter2(void 0, void 0, void 0, function* () {
+        yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
+      })).catch((error) => {
+        throw error;
+      });
       return PAPER_NAME;
     }), "deployServer");
     exports2.deployServer = deployServer;

@@ -169,8 +169,13 @@ export const deployServer = async (
     // Paper のダウンロード
     const build = await downloadLatestPaper(dir, mcVersion)
 
-    await startServerOnly(dir, PAPER_NAME)
-    await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
+    startServerOnly(dir, PAPER_NAME)
+        .then(async () => {
+            await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
+        })
+        .catch((error) => {
+            throw error  // リスロー
+        })
 
     return PAPER_NAME
 }

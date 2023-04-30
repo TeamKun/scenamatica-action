@@ -32,7 +32,7 @@ const createServerProcess = (workDir: string, executable: string, args: string[]
     return cp
 }
 
-export const startServerOnly = (workDir: string, executable: string, args: string[] = []) => {
+export const startServerOnly = async (workDir: string, executable: string, args: string[] = []) => {
     info(`Starting server with executable ${executable} and args ${args.join(" ")}`)
 
     const cp = createServerProcess(workDir, executable, args)
@@ -43,7 +43,19 @@ export const startServerOnly = (workDir: string, executable: string, args: strin
         if (line.includes("Done") && line.includes("For help, type \"help\""))
             serverStdin?.write("stop\n")
 
-        info(line)
+        if (line.endsWith("\n"))
+            info(line.slice(0, -1))
+        else
+            info(line)
+    })
+
+    return new Promise<number>((resolve, reject) => {
+        cp.on("exit", (code) => {
+            if (code === 0)
+                resolve(code)
+            else
+                reject(code)
+        })
     })
 }
 
