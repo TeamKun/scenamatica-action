@@ -1,5 +1,5 @@
 import * as fs from "node:fs"
-import { fail } from "./utils.js"
+import {fail, info} from "./utils.js"
 import { deployServer } from "./server/deployer.js"
 import { startTests } from "./server/controller.js"
 import type { Args } from "./utils.js"
@@ -20,6 +20,8 @@ const main = async (): Promise<void> => {
     }
 
     const paper = await deployServer(serverDir, javaVersion, mcVersion, scenamaticaVersion)
+
+    info("Starting tests...")
 
     await startTests(serverDir, paper, pluginFile)
 }

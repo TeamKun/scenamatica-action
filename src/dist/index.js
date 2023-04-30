@@ -15601,7 +15601,7 @@ var require_deployer = __commonJS({
       if (!(yield isJavaInstalled()))
         yield downloadJava(dir, javaVersion);
       const build = yield downloadLatestPaper(dir, mcVersion);
-      (0, controller_1.startServerOnly)(dir, PAPER_NAME).then(() => __awaiter2(void 0, void 0, void 0, function* () {
+      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME).then(() => __awaiter2(void 0, void 0, void 0, function* () {
         yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
       })).catch((error) => {
         throw error;
@@ -15715,6 +15715,7 @@ var main = /* @__PURE__ */ __name(() => __awaiter(void 0, void 0, void 0, functi
     return;
   }
   const paper = yield (0, deployer_js_1.deployServer)(serverDir, javaVersion, mcVersion, scenamaticaVersion);
+  (0, utils_js_1.info)("Starting tests...");
   yield (0, controller_js_1.startTests)(serverDir, paper, pluginFile);
 }), "main");
 main().catch((error) => {

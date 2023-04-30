@@ -169,7 +169,7 @@ export const deployServer = async (
     // Paper のダウンロード
     const build = await downloadLatestPaper(dir, mcVersion)
 
-    startServerOnly(dir, PAPER_NAME)
+    await startServerOnly(dir, PAPER_NAME)
         .then(async () => {
             await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
         })
