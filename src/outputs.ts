@@ -1,8 +1,8 @@
 import type { PacketSessionEnd, Scenario, TestState ,PacketTestEnd} from "./packets.js"
 import { TestResultCause} from "./packets.js"
 import { info, warn } from "./utils.js"
-import * as core from "@actions/core"
 import type {SummaryTableRow} from "@actions/core/lib/summary.js"
+import {summary} from "@actions/core";
 
 const MESSAGES_PASSED = [
     ":tada: Congrats! All tests passed! :star2:",
@@ -140,31 +140,17 @@ const printProfilerReport = (tests: PacketTestEnd[]): void => {
     const total = testNameAndElapsed.reduce((acc, t) => acc + t.elapsed, 0)
 
     const percents = testNameAndElapsed.map((t) => {
-        return {name: t.name, percent: Math.round((t.elapsed / total) * 100)}
+        return {name: t.name, percent: Math.round((t.elapsed / total) * 100), elapsed: t.elapsed}
     })
 
     const rows = percents.map((t) => {
         const bar = "||".repeat(Math.round(t.percent / 5))
 
-        return `${t.name} [${t.percent}%]: ${bar}`
+        return `${t.name} [${t.percent}% ${t.elapsed} sec] ${bar}`
     })
 
-    const markdown = `
-
-    ## Profiler report
-    
-    <details>
-        <summary>Click to expand</summary>
-        <pre>
-        <code>
-        ${rows.join("\n")}
-        </code>
-        </pre>
-    </details>
-    
-    `
-
-    core.summary.addRaw(markdown)
+    summary.addHeading("Profiling", 2)
+        .addCodeBlock(rows.join("\n"), "text")
 }
 
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
@@ -191,7 +177,6 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
     else messageSource = MESSAGES_FAILED
 
     const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)]
-    const { summary } = core
 
     summary.addHeading("Scenamatica", 1)
     summary.addHeading("Summary", 2)
