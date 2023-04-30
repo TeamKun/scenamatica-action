@@ -1,12 +1,9 @@
 // @ts-check
-const { builtinModules } = require("node:module")
-
 const { defineConfig } = require("eslint-define-config")
 
 module.exports = defineConfig({
     root: true,
     env: {
-        browser: true,
         node: true,
     },
     extends: [
@@ -14,12 +11,12 @@ module.exports = defineConfig({
         "plugin:eslint-comments/recommended",
         "plugin:regexp/recommended",
         "plugin:unicorn/recommended",
-        "plugin:import/recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:import/typescript",
     ],
     parserOptions: {
-        project: ["./tsconfig.json"],
+        project: ["tsconfig.json"],
+        sourceType: "module",
+        parser: "@typescript-eslint/parser",
     },
     plugins: ["sort-class-members", "unused-imports"],
     rules: {
@@ -195,12 +192,8 @@ module.exports = defineConfig({
         "no-octal-escape": "error",
         "no-param-reassign": "error",
 
-        // For web apps
-        "no-process-exit": "error",
-
         "no-proto": "error",
         "no-return-assign": "error",
-        "no-script-url": "error",
         "no-self-compare": "error",
         "no-sequences": "error",
         "no-undef-init": "error",
@@ -252,28 +245,6 @@ module.exports = defineConfig({
         ],
         yoda: "error",
 
-        "import/newline-after-import": "error",
-        "import/no-nodejs-modules": ["error", { allow: builtinModules.map((mod) => `node:${mod}`) }],
-        "import/no-self-import": "error",
-        "import/no-useless-path-segments": "error",
-        "import/order": [
-            "error",
-            {
-                alphabetize: {
-                    order: "asc",
-                },
-                groups: ["builtin", "external", "parent", "sibling", "index", "object", "type"],
-                "newlines-between": "always",
-                pathGroups: [
-                    {
-                        group: "parent",
-                        pattern: "@/**",
-                        position: "before",
-                    },
-                ],
-            },
-        ],
-
         "regexp/no-contradiction-with-assertion": "error",
 
         "sort-class-members/sort-class-members": [
@@ -295,10 +266,12 @@ module.exports = defineConfig({
         ],
 
         "unicorn/better-regex": "off",
+        "unicorn/prefer-top-level-await": "off",
 
         // This rule is too strict
         "unicorn/prefer-module": "off",
         "unicorn/prevent-abbreviations": "off",
+        "unicorn/no-process-exit": "off",
 
         "unused-imports/no-unused-imports": "warn",
 
@@ -336,13 +309,6 @@ module.exports = defineConfig({
             rules: {
                 "@typescript-eslint/no-require-imports": "off",
                 "@typescript-eslint/no-var-requires": "off",
-            },
-        },
-        // Project-specific overrides
-        {
-            files: ["src/**/*.ts", "src/**/*.js"],
-            parserOptions: {
-                project: ["src/tsconfig.json"],
             },
         },
     ],

@@ -1,31 +1,34 @@
-import * as fs from "fs"
+import * as fs from "node:fs"
 import { fail } from "./utils"
 import { deployServer } from "./server/deployer"
 import { startTests } from "./server/controller"
-import { getArguments, Args } from "./utils"
+import type { Args } from "./utils"
+import { getArguments } from "./utils"
 
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
     const args: Args = getArguments()
-
-    const mcVersion: string = args.mcVersion
-    const scenamaticaVersion: string = args.scenamaticaVersion
-    const serverDir: string = args.serverDir
-    const pluginFile: string = args.pluginFile
-    const javaVersion: string = args.javaVersion
+    const { mcVersion } = args
+    const { scenamaticaVersion } = args
+    const { serverDir } = args
+    const { pluginFile } = args
+    const { javaVersion } = args
 
     if (!fs.existsSync(pluginFile)) {
-        await fail(`Plugin file ${pluginFile} does not exist`)
+        fail(`Plugin file ${pluginFile} does not exist`)
+
         return
     }
 
-    try {
-        const paper = await deployServer(serverDir, javaVersion, mcVersion, scenamaticaVersion)
-        await startTests(serverDir, paper, pluginFile)
-    } catch (error: any) {
-        fail(error)
-    }
+    const paper = await deployServer(serverDir, javaVersion, mcVersion, scenamaticaVersion)
+
+    await startTests(serverDir, paper, pluginFile)
 }
 
 main().catch((error) => {
-    fail(error)
+    if (error instanceof Error) fail(error)
+    else {
+        const message = error as string
+
+        fail(message)
+    }
 })

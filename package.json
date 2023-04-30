@@ -4,7 +4,10 @@
   "description": "Scenamatica is a scenario testing tool for PaperMC plugins.",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --platform=node --target=node16 --outfile=dist/index.js",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "format:eslint": "eslint --fix --cache .",
+    "format:prettier": "prettier --write .",
+    "format": "npm run format:eslint && npm run format:prettier"
   },
   "repository": {
     "type": "git",
@@ -13,24 +16,30 @@
   "author": "Peyang",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@actions/github": "^3.0.0",
     "@actions/cache": "^3.2.1",
-    "@actions/tool-cache": "^2.0.1",
-    "@actions/io": "^1.1.0",
+    "@actions/core": "^1.10.0",
     "@actions/exec": "^1.1.0",
+    "@actions/github": "^3.0.0",
+    "@actions/io": "^1.1.0",
+    "@actions/tool-cache": "^2.0.1",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@types/node": "^18.12.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@types/eslint": "^8.4.2",
     "@types/js-yaml": "^4.0.5",
+    "@types/node": "^18.12.1",
     "eslint": "^8.39.0",
+    "eslint-define-config": "^1.20.0",
     "eslint-import-resolver-typescript": "^3.5.5",
+    "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-regexp": "^1.14.0",
+    "eslint-plugin-sort-class-members": "^1.17.1",
+    "eslint-plugin-unicorn": "^46.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
-    "prettier": "^2.8.8",
     "esbuild": "^0.17.18",
+    "husky": "^8.0.3",
+    "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   },
   "packageManager": "pnpm@8.3.1"

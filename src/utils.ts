@@ -1,22 +1,22 @@
 import * as core from "@actions/core"
 
-export function fail(message: string | Error): void {
+const fail = (message: Error | string) => {
     core.setFailed(message)
 }
 
-export function warn(message: string): void {
+const warn = (message: string) => {
     core.warning(message)
 }
 
-export function info(message: string): void {
+const info = (message: string) => {
     core.info(message)
 }
 
-export function debug(message: string): void {
+const debug = (message: string) => {
     core.debug(message)
 }
 
-export interface Args {
+interface Args {
     mcVersion: string
     scenamaticaVersion: string
     serverDir: string
@@ -24,12 +24,14 @@ export interface Args {
     javaVersion: string
 }
 
-export function getArguments(): Args {
+const getArguments = (): Args => {
     return {
-        mcVersion: core.getInput("minecraft") ?? "1.16.5",
+        mcVersion: core.getInput("minecraft") || "1.16.5",
         scenamaticaVersion: core.getInput("scenamatica", { required: true }),
-        serverDir: core.getInput("server-dir") ?? "server",
+        serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
-        javaVersion: core.getInput("java") ?? "17",
+        javaVersion: core.getInput("java") || "17",
     }
 }
+
+export { fail, warn, info, debug, getArguments, Args }

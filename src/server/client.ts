@@ -1,32 +1,29 @@
-import {
-    PacketSessionEnd,
-    PacketSessionStart,
-    PacketTestEnd,
-    PacketTestStart,
-    parsePacket,
-    TestResultCause
-} from "../packets"
-import {printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart} from "../outputs"
-import {endTests} from "./controller"
+import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart } from "../packets"
+import { parsePacket, TestResultCause } from "../packets"
+import { printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart } from "../outputs"
+import { endTests } from "./controller"
 
-let message: string | null = null
-export async function onDataReceived(chunkMessage: any) {
+let message: string | undefined
+
+export const onDataReceived = async (chunkMessage: string) => {
     message = message ? message + chunkMessage : chunkMessage
 
-    while (message && message.includes('\n')) {
-        const messages = message.split('\n')
+    while (message && message.includes("\n")) {
+        const messages: string[] = message.split("\n")
+
         await processPacket(messages[0])
-        message = messages.slice(1).join('\n') || null
+        message = messages.slice(1).join("\n") || undefined
     }
 }
 
-async function processPacket(msg: string) {
+const processPacket = async (msg: string) => {
     let packet
+
     try {
         packet = parsePacket(msg)
-    }
-    catch (e) {
+    } catch {
         console.warn(`Failed to parse packet: ${msg}`)
+
         return
     }
 
@@ -35,50 +32,65 @@ async function processPacket(msg: string) {
     }
 
     switch (packet.genre) {
-        case "session":
-            await processSessionPackets(packet as PacketSessionStart | PacketSessionEnd)
+        case "session": {
+            await processSessionPackets(packet as PacketSessionEnd | PacketSessionStart)
+
             break
-        case "test":
-            processTestsPacket(packet as PacketTestStart | PacketTestEnd)
+        }
+
+        case "test": {
+            processTestsPacket(packet as PacketTestEnd | PacketTestStart)
+
             break
+        }
     }
 }
 
-function processTestsPacket(packet: PacketTestStart | PacketTestEnd) {
+const processTestsPacket = (packet: PacketTestEnd | PacketTestStart) => {
     switch (packet.type) {
-        case "start":
+        case "start": {
             const test = packet as PacketTestStart
+
             printTestStart(test.scenario)
+
             break
-        case "end":
+        }
+
+        case "end": {
             const testEnd = packet as PacketTestEnd
 
-            printTestEnd(
-                testEnd.scenario.name,
-                testEnd.state,
-                testEnd.cause,
-                testEnd.startedAt,
-                testEnd.finishedAt
-            )
+            printTestEnd(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt)
+        }
     }
 }
 
-let sessionStartedAt: number | null = null
-async function processSessionPackets(packet: PacketSessionStart | PacketSessionEnd) {
+let sessionStartedAt: number | undefined
+
+const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionStart) => {
     switch (packet.type) {
-        case "start":
+        case "start": {
             sessionStartedAt = packet.startedAt
             printSessionStart(sessionStartedAt, packet.tests.length)
+
             break
-        case "end":
+        }
+
+        case "end": {
             const sessionEnd = packet as PacketSessionEnd
+
             printSessionEnd(sessionEnd)
             await printSummary(sessionEnd)
-            const succeed = sessionEnd.tests.every(test =>
-                test.cause === TestResultCause.PASSED || test.cause === TestResultCause.SKIPPED || test.cause === TestResultCause.CANCELLED
+
+            const succeed = sessionEnd.tests.every(
+                (test) =>
+                    test.cause === TestResultCause.PASSED ||
+                    test.cause === TestResultCause.SKIPPED ||
+                    test.cause === TestResultCause.CANCELLED,
             )
 
-            await endTests(succeed)
+            endTests(succeed)
+
             break
+        }
     }
 }

@@ -10,11 +10,11 @@ See [action.yaml](./action.yaml)
 - uses: TeamKUN/
   with:
     # The path to the plugin jar file.
-    plugin: 'target/YourPlugin-1.0.0.jar'
+    plugin: "target/YourPlugin-1.0.0.jar"
     # The scenamatica version to use.
-    scenamatica: '0.4.0'
+    scenamatica: "0.4.0"
     # The Minecraft version(default: 1.16.5)
-    minecraft: '1.16.5'
+    minecraft: "1.16.5"
     # The server directory to run the tests.
-    server-dir: 'server'
+    server-dir: "server"
 ```

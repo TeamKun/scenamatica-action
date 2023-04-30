@@ -1,35 +1,36 @@
-import {ChildProcess, spawn} from "child_process"
-import {debug, fail, info} from "../utils"
-import {deployPlugin} from "./deployer"
-import {onDataReceived} from "./client"
+import type { ChildProcess } from "node:child_process"
+import { spawn } from "node:child_process"
+import { debug, fail, info } from "../utils"
+import { deployPlugin } from "./deployer"
+import { onDataReceived } from "./client"
 
 const JAVA_COMMAND = "java {args} -jar {jar} nogui"
 
-let serverProcess: ChildProcess | null = null
+let serverProcess: ChildProcess | undefined
 let attemptStop = false
 
-export function startServer(workDir: string, executable: string, args: string[] = []) {
-    if (serverProcess !== null)
-        throw new Error("Server is already running")
+export const startServer = (workDir: string, executable: string, args: string[] = []) => {
+    if (serverProcess) throw new Error("Server is already running")
 
     info(`Starting server with executable ${executable} and args ${args.join(" ")}`)
 
     const command = JAVA_COMMAND.replace("{args}", args.join(" ")).replace("{jar}", executable)
 
-    const process = spawn(command, {
+    const javaProcess = spawn(command, {
         cwd: workDir,
         shell: true,
-        stdio: "inherit"
+        stdio: "inherit",
     })
 
-    attachProcessDebug(process)
+    attachProcessDebug(javaProcess)
 
-    return serverProcess = process
+    serverProcess = javaProcess
+
+    return javaProcess
 }
 
-export function stopServer() {
-    if (serverProcess === null || attemptStop)
-        return
+export const stopServer = () => {
+    if (serverProcess === undefined || attemptStop) return
 
     attemptStop = true
 
@@ -38,29 +39,29 @@ export function stopServer() {
     serverProcess.stdin!.write("stop\n")
 
     setTimeout(() => {
-        if (serverProcess !== null && !serverProcess.killed) {
+        if (serverProcess !== undefined && !serverProcess.killed) {
             info("Server did not stop in time, killing...")
             serverProcess.kill()
         }
 
-        serverProcess = null
+        serverProcess = undefined
         attemptStop = false
     }, 1000 * 10)
 }
 
-export async function startTests(serverDir: string, executable: string, pluginFile: string) {
+export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
     info(`Starting tests of plugin ${pluginFile}.`)
 
     await deployPlugin(serverDir, pluginFile)
 
-    const process = startServer(serverDir, executable)
+    const javaProcess = startServer(serverDir, executable)
 
-    attachProcessDebug(process)
+    attachProcessDebug(javaProcess)
 
-    process.stdout!.on("data", onDataReceived)
+    javaProcess.stdout!.on("data", onDataReceived)
 }
 
-export async function endTests(succeed: boolean) {
+export const endTests = (succeed: boolean) => {
     info("Ending tests, shutting down server...")
     stopServer()
 
@@ -68,7 +69,6 @@ export async function endTests(succeed: boolean) {
         info("Tests succeeded")
 
         process.exit(0)
-
     } else {
         info("Tests failed")
 
@@ -76,17 +76,23 @@ export async function endTests(succeed: boolean) {
     }
 }
 
-function attachProcessDebug(process: ChildProcess) {
-    process.on("error", (error) => {
-        info(`Server exited with error ${error}`)
-        fail("Server exited with error: " + error)
+const attachProcessDebug = (childProcess: ChildProcess) => {
+    childProcess.on("error", (error: Error) => {
+        const errorMessage = error.message
+
+        info(`Server exited with error ${errorMessage}`)
+        fail(error)
     })
 
-    process.stdout!.on("data", (data) => {
-        debug(data.toString())
+    childProcess.stdout!.on("data", (data) => {
+        const dataString = (data as Buffer).toString()
+
+        debug(dataString)
     })
 
-    process.stderr!.on("data", (data) => {
-        debug(data.toString())
+    childProcess.stderr!.on("data", (data) => {
+        const dataString = (data as Buffer).toString()
+
+        debug(dataString)
     })
 }
