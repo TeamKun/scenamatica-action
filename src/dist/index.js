@@ -14962,7 +14962,7 @@ var require_packets = __commonJS({
         case "session": {
           switch (json.type) {
             case "start": {
-              return new PacketSessionStart(json.date, json.scenario, json.isAutoStart, json.startedAt);
+              return new PacketSessionStart(json.date, json.tests, json.isAutoStart, json.startedAt);
             }
             case "end": {
               return new PacketSessionEnd(json.date, json.tests, json.isAutoStart, json.startedAt);
@@ -15247,7 +15247,7 @@ var require_client = __commonJS({
       while (message && message.includes("\n")) {
         const messages = message.split("\n");
         if (!(yield processPacket(messages[0])))
-          (0, utils_1.info)(message[0]);
+          (0, utils_1.info)(messages[0]);
         message = messages.slice(1).join("\n") || void 0;
       }
     }), "onDataReceived");

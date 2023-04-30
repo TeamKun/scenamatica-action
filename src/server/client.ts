@@ -13,7 +13,7 @@ export const onDataReceived = async (chunkMessage: string) => {
         const messages: string[] = message.split("\n")
 
         if (!await processPacket(messages[0]))
-            info(message[0])
+            info(messages[0])
         message = messages.slice(1).join("\n") || undefined
     }
 }

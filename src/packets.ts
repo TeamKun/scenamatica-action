@@ -91,7 +91,7 @@ export const parsePacket = (
         case "session": {
             switch (json.type) {
                 case "start": {
-                    return new PacketSessionStart(json.date, json.scenario, json.isAutoStart, json.startedAt)
+                    return new PacketSessionStart(json.date, json.tests, json.isAutoStart, json.startedAt)
                 }
 
                 case "end": {
