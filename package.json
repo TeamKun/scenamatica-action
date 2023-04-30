@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Scenamatica is a scenario testing tool for PaperMC plugins.",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --target=node16 --outfile=dist/index.js",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node16 --outfile=src/dist/index.js",
     "start": "node dist/index.js",
     "format:eslint": "eslint --fix --cache .",
     "format:prettier": "prettier --write .",
@@ -42,5 +42,10 @@
     "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   },
-  "packageManager": "pnpm@8.3.1"
+  "packageManager": "pnpm@8.3.1",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run format && npm run build"
+    }
+  }
 }
