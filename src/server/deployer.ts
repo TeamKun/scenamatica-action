@@ -195,15 +195,17 @@ const initServer = async (
     await io.mkdirP(pluginDir)
 
     await writeEula(dir) // eula.txt を書き込まないと Paper が起動Vしない
-    await downloadScenamatica(pluginDir, scenamaticaVersion)
 
+    // Scenamatica をインスコする
+    await downloadScenamatica(pluginDir, scenamaticaVersion)
+    await startServerOnly(dir, PAPER_NAME)  // Scenaamtica の config を生成する
     await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
 
     await tc.cacheDir(dir, "scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
 }
 
 const initScenamaticaConfig = async (configDir: string) => {
-    const configPath = path.join(configDir, "configDir.yml")
+    const configPath = path.join(configDir, "config.yml")
 
     const configData = yaml.load(await fs.promises.readFile(configPath, "utf8")) as {
         interfaces: {

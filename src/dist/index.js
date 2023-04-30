@@ -15359,12 +15359,8 @@ var require_controller = __commonJS({
         input: stdin,
         listeners: {
           stdline: (data) => {
-            (0, utils_js_12.info)(data);
             if (data.includes("Done") && data.includes("For help, type "))
               stdin.write("stop\n");
-          },
-          errline: (data) => {
-            (0, utils_js_12.warn)(data);
           }
         }
       });
@@ -15596,11 +15592,12 @@ var require_deployer = __commonJS({
       yield io.mkdirP(pluginDir);
       yield writeEula(dir);
       yield downloadScenamatica(pluginDir, scenamaticaVersion);
+      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME);
       yield initScenamaticaConfig(node_path_1.default.join(pluginDir, "Scenamatica"));
       yield tc.cacheDir(dir, "scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion));
     }), "initServer");
     var initScenamaticaConfig = /* @__PURE__ */ __name((configDir) => __awaiter2(void 0, void 0, void 0, function* () {
-      const configPath = node_path_1.default.join(configDir, "configDir.yml");
+      const configPath = node_path_1.default.join(configDir, "config.yml");
       const configData = yaml.load(yield fs3.promises.readFile(configPath, "utf8"));
       configData["interfaces"]["raw"] = true;
       yield fs3.promises.writeFile(configPath, yaml.dump(configData));

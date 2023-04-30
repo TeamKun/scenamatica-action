@@ -1,4 +1,4 @@
-import {fail, info, warn} from "../utils.js"
+import {fail, info} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
 import {exec} from "@actions/exec";
 import {onDataReceived} from "./client";
@@ -24,12 +24,8 @@ export const startServerOnly = async (workDir: string, executable: string, args:
         input: stdin,
         listeners: {
             stdline: (data: string) => {
-                info(data)
                 if (data.includes("Done") && data.includes("For help, type "))
                     stdin.write("stop\n")
-            },
-            errline: (data: string) => {
-                warn(data)
             }
         }
     })
