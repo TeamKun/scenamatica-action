@@ -1,5 +1,6 @@
 import * as tc from "@actions/tool-cache"
 import * as io from "@actions/io"
+import * as core from "@actions/core"
 import {fail, info} from "../utils"
 import {startServer} from "./controller"
 import path from "path"
@@ -8,13 +9,18 @@ import * as yaml from "js-yaml"
 
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
 const PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`
-
 const SCENAMATICA_URL = "https://github.com/TeamKun/Scenamatica/releases/download/v{version}/Scenamatica-{version}.jar"
 
-async function restoreCache(dir: string, mcVersion: string, scenamaticaVersion: string): Promise<boolean>
-{
-    const cacheDirectory = tc.find("runner", `${mcVersion}-scenamatica-v${scenamaticaVersion}`)
+const JAVA_FETCH_URL = "https://api.azul.com/zulu/download/community/v1.0/bundles/?os={os}&arch={arch}&ext={ext}&java_version={version}&javafx=false&hotspot=true&version={version}&type=jdk"
 
+function genCacheVersion(javaVersion: string, mcVersion: string, scenamaticaVersion: string)
+{
+    return `${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`
+}
+
+async function restoreCache(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string): Promise<boolean>
+{
+    const cacheDirectory = tc.find("scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
     if (cacheDirectory)
     {
         info(`Restoring server cache from ${cacheDirectory}`)
@@ -73,10 +79,53 @@ async function downloadScenamatica(destDir: string, version: string)
     return destPath
 }
 
-export async function deployServer(dir: string, mcVersion: string, scenamaticaVersion: string): Promise<string>
+async function fetchLatestJavaLinkFor(version: string)
+{
+    const processPlatform = process.platform
+    const platform = processPlatform === "win32" ? "windows" : processPlatform === "darwin" ? "macos" : "linux"
+    const arch = process.arch === "x64" ? "x86_64" : "x86"
+    const ext = platform === "windows" ? "zip" : "tar.gz"
+
+    const url = JAVA_FETCH_URL
+        .replace(/{os}/g, platform)
+        .replace(/{arch}/g, arch)
+        .replace(/{ext}/g, ext)
+        .replace(/{version}/g, version)
+
+    const response = await fetch(url)
+    const json = await response.json()
+    return {
+        url: json[0].url,
+        isTar: ext === "tar.gz"
+    }
+}
+
+async function downloadJava(destBaseDir: string,  version: string)
+{
+    info(`Retrieving latest Java build for ${version}`)
+    const {url, isTar} = await fetchLatestJavaLinkFor(version)
+    info(`Retrieved latest Java build for ${version}: ${url}`)
+
+    const dest = await tc.downloadTool(url, path.join(destBaseDir, "java-package"))
+    info(`Downloaded Java ${version} to ${dest}`)
+
+    const destDir = path.join(destBaseDir, "java")
+
+    info("Extracting...")
+    if (isTar)
+        await tc.extractTar(dest, destDir)
+    else
+        await tc.extractZip(dest, destDir)
+
+    core.addPath(path.join(destDir, "bin"))
+
+    info(`Installed Java ${version}`)
+}
+
+export async function deployServer(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string): Promise<string>
 {
     // キャッシュの復元
-    const cached = await restoreCache(dir, mcVersion, scenamaticaVersion)
+    const cached = await restoreCache(dir, javaVersion, mcVersion, scenamaticaVersion)
 
     if (cached)
         return new Promise<string>((resolve) => {
@@ -85,6 +134,11 @@ export async function deployServer(dir: string, mcVersion: string, scenamaticaVe
     // キャッシュがないので Paper をビルドする。
 
     info("Building server...")
+
+    // Java のダウンロード
+
+    await downloadJava(dir, javaVersion)
+
     // Paper のダウンロード
     const {build, paperPath} = await downloadLatestPaper(dir, mcVersion)
 
@@ -93,7 +147,7 @@ export async function deployServer(dir: string, mcVersion: string, scenamaticaVe
         startServer(dir, paperPath).on("exit", (code) => {
             if (code === 0)
             {
-                initServer(dir, mcVersion, build, scenamaticaVersion)
+                initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
                 resolve(paperPath)
             }
             else
@@ -113,7 +167,7 @@ export async function deployPlugin(serverDir: string, pluginFile: string)
     await io.cp(pluginFile, pluginDir)
 }
 
-async function initServer(dir: string, mcVersion: string, paperBuild: string, scenamaticaVersion: string)
+async function initServer(dir: string, javaVersion: string, mcVersion: string, paperBuild: string, scenamaticaVersion: string)
 {
     const pluginDir = path.join(dir, "plugins")
     await io.mkdirP(pluginDir)
@@ -123,7 +177,7 @@ async function initServer(dir: string, mcVersion: string, paperBuild: string, sc
 
     await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
 
-    await tc.cacheDir(dir, "paperclip", `${mcVersion}+${paperBuild}-scenamatica-v${scenamaticaVersion}`)
+    await tc.cacheDir(dir, "scenamatica", genCacheVersion(javaVersion, mcVersion, scenamaticaVersion))
 }
 
 async function initScenamaticaConfig(configDir: string)

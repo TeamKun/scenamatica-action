@@ -10,12 +10,13 @@ async function main(): Promise<void> {
     const scenamaticaVersion = args.scenamaticaVersion
     const serverDir = args.serverDir
     const pluginFile = args.pluginFile
+    const javaVersion = args.javaVersion
 
     if (!fs.existsSync(pluginFile)) {
         await fail(`Plugin file ${pluginFile} does not exist`)
         return
     }
-    await deployServer(serverDir, mcVersion, scenamaticaVersion)
+    await deployServer(serverDir, javaVersion, mcVersion, scenamaticaVersion)
         .then(paper => {
             startTests(serverDir, paper, pluginFile)
         })

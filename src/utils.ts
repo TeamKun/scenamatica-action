@@ -21,13 +21,15 @@ type Input = {
     scenamaticaVersion: string;
     serverDir: string;
     pluginFile: string;
+    javaVersion: string;
 }
 
 export function getArguments(): Input {
     return {
-        mcVersion: core.getInput("minecraft", {required: true}) || "1.16.5",
+        mcVersion: core.getInput("minecraft") || "1.16.5",
         scenamaticaVersion: core.getInput("scenamatica", {required: true}),
         serverDir: core.getInput("server-dir") || "server",
-        pluginFile: core.getInput("plugin", {required: true})
+        pluginFile: core.getInput("plugin", {required: true}),
+        javaVersion: core.getInput("java") || "17"
     };
 }
