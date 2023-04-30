@@ -60,9 +60,6 @@ module.exports = defineConfig({
         "@typescript-eslint/no-require-imports": "error",
         "@typescript-eslint/no-shadow": [
             "error",
-            {
-                builtinGlobals: true,
-            },
         ],
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/no-throw-literal": "error",
