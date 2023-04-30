@@ -95,7 +95,7 @@ export const parsePacket = (
                 }
 
                 case "end": {
-                    return new PacketSessionEnd(json.date, json.tests, json.isAutoStart, json.startedAt)
+                    return new PacketSessionEnd(json.date, json.tests, json.startedAt, json.finishedAt)
                 }
             }
 
