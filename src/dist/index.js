@@ -15241,8 +15241,15 @@ var require_client = __commonJS({
     var outputs_js_1 = require_outputs();
     var controller_js_12 = require_controller();
     var utils_1 = require_utils2();
+    var message;
     var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter2(void 0, void 0, void 0, function* () {
-      yield processPacket(chunkMessage);
+      message = message ? message + chunkMessage : chunkMessage;
+      while (message && message.includes("\n")) {
+        const messages = message.split("\n");
+        if (!(yield processPacket(messages[0])))
+          (0, utils_1.info)(message[0]);
+        message = messages.slice(1).join("\n") || void 0;
+      }
     }), "onDataReceived");
     exports2.onDataReceived = onDataReceived;
     var processPacket = /* @__PURE__ */ __name((msg) => __awaiter2(void 0, void 0, void 0, function* () {
@@ -15250,11 +15257,10 @@ var require_client = __commonJS({
       try {
         packet = (0, packets_js_1.parsePacket)(msg);
       } catch (_a) {
-        (0, utils_1.warn)(`Failed to parse packet: ${msg}`);
-        return;
+        return false;
       }
       if (!packet) {
-        return;
+        return false;
       }
       switch (packet.genre) {
         case "session": {
@@ -15266,6 +15272,7 @@ var require_client = __commonJS({
           break;
         }
       }
+      return true;
     }), "processPacket");
     var processTestsPacket = /* @__PURE__ */ __name((packet) => {
       switch (packet.type) {
@@ -15340,8 +15347,9 @@ var require_controller = __commonJS({
     exports2.endTests = exports2.startTests = exports2.stopServer = exports2.startServerOnly = void 0;
     var utils_js_12 = require_utils2();
     var deployer_js_12 = require_deployer();
-    var exec_1 = require_exec();
     var client_1 = require_client();
+    var node_child_process_1 = require("node:child_process");
+    var serverProcess;
     var serverStdin;
     var genArgs = /* @__PURE__ */ __name((executable, args) => {
       return [
@@ -15351,39 +15359,45 @@ var require_controller = __commonJS({
         "nogui"
       ];
     }, "genArgs");
-    var startServerOnly = /* @__PURE__ */ __name((workDir, executable, args = []) => __awaiter2(void 0, void 0, void 0, function* () {
-      (0, utils_js_12.info)(`Starting server with executable ${executable} and args ${args.join(" ")}`);
-      const stdin = Buffer.alloc(1024);
-      return (0, exec_1.exec)("java", genArgs(executable, args), {
-        cwd: workDir,
-        input: stdin,
-        listeners: {
-          stdline: (data) => {
-            if (data.includes("Done") && data.includes("For help, type "))
-              stdin.write("stop\n");
-          }
-        }
+    var createServerProcess = /* @__PURE__ */ __name((workDir, executable, args = []) => {
+      const cp = (0, node_child_process_1.spawn)("java", genArgs(executable, args), {
+        cwd: workDir
       });
-    }), "startServerOnly");
+      serverStdin = cp.stdin;
+      serverProcess = cp;
+      return cp;
+    }, "createServerProcess");
+    var startServerOnly = /* @__PURE__ */ __name((workDir, executable, args = []) => {
+      (0, utils_js_12.info)(`Starting server with executable ${executable} and args ${args.join(" ")}`);
+      const cp = createServerProcess(workDir, executable, args);
+      cp.stdout.on("data", (data) => {
+        const line = data.toString("utf8");
+        if (line.includes("Done") && line.includes('For help, type "help"'))
+          serverStdin === null || serverStdin === void 0 ? void 0 : serverStdin.write("stop\n");
+        (0, utils_js_12.info)(line);
+      });
+    }, "startServerOnly");
     exports2.startServerOnly = startServerOnly;
     var stopServer = /* @__PURE__ */ __name(() => {
-      if (!serverStdin)
+      if (!serverStdin || !serverProcess)
         return;
       (0, utils_js_12.info)("Stopping server...");
       serverStdin.write("stop\n");
+      setTimeout(() => {
+        if (serverProcess.killed)
+          return;
+        (0, utils_js_12.warn)("Server didn't stop in time, killing it...");
+        serverProcess === null || serverProcess === void 0 ? void 0 : serverProcess.kill();
+      }, 5e3);
     }, "stopServer");
     exports2.stopServer = stopServer;
     var startTests = /* @__PURE__ */ __name((serverDir, executable, pluginFile) => __awaiter2(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)(`Starting tests of plugin ${pluginFile}.`);
       yield (0, deployer_js_12.deployPlugin)(serverDir, pluginFile);
-      const stdin = Buffer.alloc(1024);
-      return (0, exec_1.exec)("java", genArgs(executable, []), {
-        cwd: serverDir,
-        input: stdin,
-        listeners: {
-          stdline: client_1.onDataReceived
-        }
-      });
+      const cp = createServerProcess(serverDir, executable);
+      cp.stdout.on("data", (data) => __awaiter2(void 0, void 0, void 0, function* () {
+        yield (0, client_1.onDataReceived)(data.toString("utf8"));
+      }));
     }), "startTests");
     exports2.startTests = startTests;
     var endTests = /* @__PURE__ */ __name((succeed) => {

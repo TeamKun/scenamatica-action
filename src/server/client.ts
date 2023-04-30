@@ -2,10 +2,20 @@ import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestSta
 import { parsePacket, TestResultCause } from "../packets.js"
 import { printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart } from "../outputs.js"
 import { endTests } from "./controller.js"
-import {warn} from "../utils";
+import {info} from "../utils";
+
+let message: string | undefined
 
 export const onDataReceived = async (chunkMessage: string) => {
-    await processPacket(chunkMessage)
+    message = message ? message + chunkMessage : chunkMessage
+
+    while (message && message.includes("\n")) {
+        const messages: string[] = message.split("\n")
+
+        if (!await processPacket(messages[0]))
+            info(message[0])
+        message = messages.slice(1).join("\n") || undefined
+    }
 }
 
 const processPacket = async (msg: string) => {
@@ -14,13 +24,11 @@ const processPacket = async (msg: string) => {
     try {
         packet = parsePacket(msg)
     } catch {
-        warn(`Failed to parse packet: ${msg}`)
-
-        return
+        return false
     }
 
     if (!packet) {
-        return
+        return false
     }
 
     switch (packet.genre) {
@@ -36,6 +44,8 @@ const processPacket = async (msg: string) => {
             break
         }
     }
+
+    return true
 }
 
 const processTestsPacket = (packet: PacketTestEnd | PacketTestStart) => {

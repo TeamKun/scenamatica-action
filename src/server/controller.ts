@@ -1,9 +1,12 @@
-import {fail, info} from "../utils.js"
+import {fail, info, warn} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
-import {exec} from "@actions/exec";
 import {onDataReceived} from "./client";
+import {spawn} from "node:child_process";
+import type {Writable} from "node:stream";
+import type {ChildProcess} from "node:child_process";
 
-let serverStdin: Buffer | undefined
+let serverProcess: ChildProcess | undefined
+let serverStdin: Writable | undefined
 
 const genArgs = (executable: string, args: string[]) => {
     return [
@@ -14,30 +17,51 @@ const genArgs = (executable: string, args: string[]) => {
     ]
 }
 
-export const startServerOnly = async (workDir: string, executable: string, args: string[] = []): Promise<number> => {
+const createServerProcess = (workDir: string, executable: string, args: string[] = []) => {
+    const cp = spawn(
+        "java",
+        genArgs(executable, args),
+        {
+            cwd: workDir
+        }
+    )
+
+    serverStdin = cp.stdin
+    serverProcess = cp
+
+    return cp
+}
+
+export const startServerOnly = (workDir: string, executable: string, args: string[] = []) => {
     info(`Starting server with executable ${executable} and args ${args.join(" ")}`)
 
-    const stdin = Buffer.alloc(1024)
+    const cp = createServerProcess(workDir, executable, args)
 
-    return exec("java", genArgs(executable, args), {
-        cwd: workDir,
-        input: stdin,
-        listeners: {
-            stdline: (data: string) => {
-                if (data.includes("Done") && data.includes("For help, type "))
-                    stdin.write("stop\n")
-            }
-        }
+    cp.stdout.on("data", (data: Buffer) => {
+        const line = data.toString("utf8")
+
+        if (line.includes("Done") && line.includes("For help, type \"help\""))
+            serverStdin?.write("stop\n")
+
+        info(line)
     })
 }
 
 export const stopServer = () => {
-    if (!serverStdin)
+    if (!serverStdin || !serverProcess)
         return
 
     info("Stopping server...")
 
     serverStdin.write("stop\n")
+    
+    setTimeout(() => {
+        if (serverProcess!.killed)
+            return
+
+        warn("Server didn't stop in time, killing it...")
+        serverProcess?.kill()
+    }, 5000)
 }
 
 export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
@@ -45,14 +69,10 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
 
     await deployPlugin(serverDir, pluginFile)
 
-    const stdin = Buffer.alloc(1024)
+    const cp = createServerProcess(serverDir, executable)
 
-    return exec("java", genArgs(executable, []), {
-        cwd: serverDir,
-        input: stdin,
-        listeners: {
-            stdline: onDataReceived
-        }
+    cp.stdout.on("data", async (data: Buffer) => {
+        await onDataReceived(data.toString("utf8"))
     })
 }
 
