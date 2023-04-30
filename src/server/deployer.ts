@@ -62,6 +62,10 @@ const downloadLatestPaper = async (destDir: string, mcVersion: string) => {
     await io.mkdirP(destDir)
 
     const dest = await tc.downloadTool(url, path.join(destDir, "paper.jar"))
+    // permission がないと起動できないので、chmod で付与する
+    const os = process.platform === "win32" ? "windows" : "unix"
+
+    await (os === "unix" ? exec("chmod", ["+x", dest]) : exec("icacls", [dest, "/grant", "Everyone:(F)"]));
 
     info(`Downloaded Paper ${mcVersion} build ${build} to ${dest}`)
 
