@@ -1,8 +1,8 @@
-import type { PacketSessionEnd, Scenario, TestState } from "./packets"
-import { TestResultCause } from "./packets"
-import { info, warn } from "./utils"
+import type { PacketSessionEnd, Scenario, TestState } from "./packets.js"
+import { TestResultCause } from "./packets.js"
+import { info, warn } from "./utils.js"
 import * as core from "@actions/core"
-import type { SummaryTableRow } from "@actions/core/lib/summary"
+import type {SummaryTableRow} from "@actions/core/lib/summary.js"
 
 const printTestStart = (scenario: Scenario): void => {
     info(`Starting test: ${scenario.name} (${scenario.description})`)

@@ -1,9 +1,9 @@
 import * as fs from "node:fs"
-import { fail } from "./utils"
-import { deployServer } from "./server/deployer"
-import { startTests } from "./server/controller"
-import type { Args } from "./utils"
-import { getArguments } from "./utils"
+import { fail } from "./utils.js"
+import { deployServer } from "./server/deployer.js"
+import { startTests } from "./server/controller.js"
+import type { Args } from "./utils.js"
+import { getArguments } from "./utils.js"
 
 const main = async (): Promise<void> => {
     const args: Args = getArguments()

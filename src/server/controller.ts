@@ -1,8 +1,8 @@
 import type { ChildProcess } from "node:child_process"
 import { spawn } from "node:child_process"
-import { debug, fail, info } from "../utils"
-import { deployPlugin } from "./deployer"
-import { onDataReceived } from "./client"
+import { debug, fail, info } from "../utils.js"
+import { deployPlugin } from "./deployer.js"
+import { onDataReceived } from "./client.js"
 
 const JAVA_COMMAND = "java {args} -jar {jar} nogui"
 

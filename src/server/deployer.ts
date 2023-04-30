@@ -1,12 +1,12 @@
 import * as tc from "@actions/tool-cache"
 import * as io from "@actions/io"
 import * as core from "@actions/core"
-import { fail, info } from "../utils"
-import { startServer } from "./controller"
 import path from "node:path"
 import * as fs from "node:fs"
 import * as yaml from "js-yaml"
 import { exec } from "@actions/exec"
+import {fail, info} from "../utils.js";
+import {startServer} from "./controller.js";
 
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
 const PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`

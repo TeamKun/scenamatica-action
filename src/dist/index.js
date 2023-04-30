@@ -5238,10 +5238,10 @@ var require_tool_cache = __commonJS({
 });
 
 // src/main.ts
-var fs2 = __toESM(require("node:fs"));
+var fs2 = __toESM(require("node:fs"), 1);
 
 // src/utils.ts
-var core = __toESM(require_core());
+var core = __toESM(require_core(), 1);
 var fail = (message2) => {
   core.setFailed(message2);
 };
@@ -5265,364 +5265,11 @@ var getArguments = () => {
 };
 
 // src/server/deployer.ts
-var tc = __toESM(require_tool_cache());
-var io = __toESM(require_io());
-var core4 = __toESM(require_core());
-
-// src/server/controller.ts
-var import_node_child_process = require("node:child_process");
-
-// src/packets.ts
-var PacketTestStart = class {
-  constructor(date, scenario) {
-    this.date = date;
-    this.scenario = scenario;
-  }
-  genre = "test";
-  type = "start";
-};
-var PacketTestEnd = class {
-  constructor(date, scenario, state, cause, startedAt, finishedAt) {
-    this.date = date;
-    this.scenario = scenario;
-    this.state = state;
-    this.cause = cause;
-    this.startedAt = startedAt;
-    this.finishedAt = finishedAt;
-  }
-  genre = "test";
-  type = "end";
-};
-var PacketSessionStart = class {
-  constructor(date, tests, isAutoStart, startedAt) {
-    this.date = date;
-    this.tests = tests;
-    this.isAutoStart = isAutoStart;
-    this.startedAt = startedAt;
-  }
-  genre = "session";
-  type = "start";
-};
-var PacketSessionEnd = class {
-  constructor(date, tests, startedAt, finishedAt) {
-    this.date = date;
-    this.tests = tests;
-    this.startedAt = startedAt;
-    this.finishedAt = finishedAt;
-  }
-  genre = "session";
-  type = "end";
-};
-var parsePacket = (packet) => {
-  const json2 = JSON.parse(packet);
-  switch (json2.genre) {
-    case "session": {
-      switch (json2.type) {
-        case "start": {
-          return new PacketSessionStart(json2.date, json2.scenario, json2.isAutoStart, json2.startedAt);
-        }
-        case "end": {
-          return new PacketSessionEnd(json2.date, json2.tests, json2.isAutoStart, json2.startedAt);
-        }
-      }
-      break;
-    }
-    case "test": {
-      switch (json2.type) {
-        case "start": {
-          return new PacketTestStart(json2.date, json2.scenario);
-        }
-        case "end": {
-          return new PacketTestEnd(
-            json2.date,
-            json2.scenario,
-            json2.state,
-            json2.cause,
-            json2.startedAt,
-            json2.finishedAt
-          );
-        }
-      }
-    }
-  }
-  return null;
-};
-
-// src/outputs.ts
-var core2 = __toESM(require_core());
-var printTestStart = (scenario) => {
-  info2(`Starting test: ${scenario.name} (${scenario.description})`);
-};
-var printTestEnd = (name, state, cause, startedAt, finishedAt) => {
-  const elapsed = `${finishedAt - startedAt} ms`;
-  const emoji = getEmojiForCause(cause);
-  switch (cause) {
-    case 7 /* CANCELLED */: {
-      info2(`${emoji} The test ${name} is cancelled with state ${state} in ${elapsed}.`);
-      break;
-    }
-    case 0 /* PASSED */: {
-      info2(`${emoji} The test ${name} is passed with state ${state} in ${elapsed}.`);
-      break;
-    }
-    case 8 /* SKIPPED */: {
-      info2(`${emoji} The test ${name} is skipped with state ${state} in ${elapsed}.`);
-      break;
-    }
-    default: {
-      warn(`${emoji} The test ${name} is failed with state ${state} in ${elapsed}.`);
-      break;
-    }
-  }
-};
-var getEmojiForCause = (cause) => {
-  switch (cause) {
-    case 0 /* PASSED */: {
-      return "\u2714";
-    }
-    case 8 /* SKIPPED */: {
-      return "\u2794";
-    }
-    case 7 /* CANCELLED */: {
-      return "\u26A0";
-    }
-    default: {
-      return "\u274C";
-    }
-  }
-};
-var printSessionStart = (startedAt, tests) => {
-  info2("--------------------------------------");
-  info2(" T E S T S");
-  info2("--------------------------------------");
-  info2(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`);
-};
-var printSessionEnd = (sessionEnd) => {
-  const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-  const total = sessionEnd.tests.length;
-  const failures = sessionEnd.tests.filter(
-    (t) => !(t.cause === 0 /* PASSED */ || t.cause === 8 /* SKIPPED */ || t.cause === 7 /* CANCELLED */)
-  ).length;
-  const skipped = sessionEnd.tests.filter((t) => t.cause === 8 /* SKIPPED */).length;
-  info2(`
-Results:
-`);
-  info2(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}
-`);
-};
-var printSummary = async (sessionEnd) => {
-  const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-  const total = sessionEnd.tests.length;
-  const passed = sessionEnd.tests.filter((t) => t.cause === 0 /* PASSED */).length;
-  const failures = sessionEnd.tests.filter(
-    (t) => !(t.cause === 0 /* PASSED */ || t.cause === 8 /* SKIPPED */ || t.cause === 7 /* CANCELLED */)
-  ).length;
-  const skipped = sessionEnd.tests.filter((t) => t.cause === 8 /* SKIPPED */).length;
-  let summaryText;
-  if (total === passed + skipped)
-    summaryText = "It's all green! \u{1F389}";
-  else if (failures === 0)
-    summaryText = "Only skipped tests! \u{1F914}";
-  else
-    summaryText = "Some tests are failed! \u{1F622}";
-  const { summary } = core2;
-  summary.addHeading("Scenamatica", 1);
-  summary.addHeading("Summary", 2);
-  summary.addRaw(summaryText);
-  summary.addBreak();
-  summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
-  summary.addHeading("Details", 2);
-  const table = [
-    [
-      {
-        data: "x",
-        header: true
-      },
-      {
-        data: "Test",
-        header: true
-      },
-      {
-        data: "Cause",
-        header: true
-      },
-      {
-        data: "State",
-        header: true
-      },
-      {
-        data: "Started at",
-        header: true
-      },
-      {
-        data: "Elapsed",
-        header: true
-      },
-      {
-        data: "Test Description",
-        header: true
-      }
-    ]
-  ];
-  for (const t of sessionEnd.tests) {
-    const testElapsed = `${Math.ceil((t.finishedAt - t.startedAt) / 1e3)} sec`;
-    const emoji = getEmojiForCause(t.cause);
-    const { name } = t.scenario;
-    const { description } = t.scenario;
-    table.push([
-      { data: emoji },
-      { data: name },
-      { data: t.cause.toString() },
-      { data: t.state.toString() },
-      { data: t.startedAt.toString() },
-      { data: testElapsed },
-      { data: description }
-    ]);
-  }
-  summary.addTable(table);
-  summary.addHeading("License", 2);
-  summary.addRaw("This test report is generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE").addRaw(".");
-  summary.addBreak();
-  summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
-  await summary.write();
-};
-
-// src/server/client.ts
-var message;
-var onDataReceived = async (chunkMessage) => {
-  message = message ? message + chunkMessage : chunkMessage;
-  while (message && message.includes("\n")) {
-    const messages = message.split("\n");
-    await processPacket(messages[0]);
-    message = messages.slice(1).join("\n") || void 0;
-  }
-};
-var processPacket = async (msg) => {
-  let packet;
-  try {
-    packet = parsePacket(msg);
-  } catch {
-    console.warn(`Failed to parse packet: ${msg}`);
-    return;
-  }
-  if (!packet) {
-    return;
-  }
-  switch (packet.genre) {
-    case "session": {
-      await processSessionPackets(packet);
-      break;
-    }
-    case "test": {
-      processTestsPacket(packet);
-      break;
-    }
-  }
-};
-var processTestsPacket = (packet) => {
-  switch (packet.type) {
-    case "start": {
-      const test = packet;
-      printTestStart(test.scenario);
-      break;
-    }
-    case "end": {
-      const testEnd = packet;
-      printTestEnd(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt);
-    }
-  }
-};
-var sessionStartedAt;
-var processSessionPackets = async (packet) => {
-  switch (packet.type) {
-    case "start": {
-      sessionStartedAt = packet.startedAt;
-      printSessionStart(sessionStartedAt, packet.tests.length);
-      break;
-    }
-    case "end": {
-      const sessionEnd = packet;
-      printSessionEnd(sessionEnd);
-      await printSummary(sessionEnd);
-      const succeed = sessionEnd.tests.every(
-        (test) => test.cause === 0 /* PASSED */ || test.cause === 8 /* SKIPPED */ || test.cause === 7 /* CANCELLED */
-      );
-      endTests(succeed);
-      break;
-    }
-  }
-};
-
-// src/server/controller.ts
-var JAVA_COMMAND = "java {args} -jar {jar} nogui";
-var serverProcess;
-var attemptStop = false;
-var startServer = (workDir, executable, args = []) => {
-  if (serverProcess)
-    throw new Error("Server is already running");
-  info2(`Starting server with executable ${executable} and args ${args.join(" ")}`);
-  const command = JAVA_COMMAND.replace("{args}", args.join(" ")).replace("{jar}", executable);
-  const javaProcess = (0, import_node_child_process.spawn)(command, {
-    cwd: workDir,
-    shell: true,
-    stdio: "inherit"
-  });
-  attachProcessDebug(javaProcess);
-  serverProcess = javaProcess;
-  return javaProcess;
-};
-var stopServer = () => {
-  if (serverProcess === void 0 || attemptStop)
-    return;
-  attemptStop = true;
-  info2("Stopping server...");
-  serverProcess.stdin.write("stop\n");
-  setTimeout(() => {
-    if (serverProcess !== void 0 && !serverProcess.killed) {
-      info2("Server did not stop in time, killing...");
-      serverProcess.kill();
-    }
-    serverProcess = void 0;
-    attemptStop = false;
-  }, 1e3 * 10);
-};
-var startTests = async (serverDir, executable, pluginFile) => {
-  info2(`Starting tests of plugin ${pluginFile}.`);
-  await deployPlugin(serverDir, pluginFile);
-  const javaProcess = startServer(serverDir, executable);
-  attachProcessDebug(javaProcess);
-  javaProcess.stdout.on("data", onDataReceived);
-};
-var endTests = (succeed) => {
-  info2("Ending tests, shutting down server...");
-  stopServer();
-  if (succeed) {
-    info2("Tests succeeded");
-    process.exit(0);
-  } else {
-    info2("Tests failed");
-    fail("Some tests failed");
-  }
-};
-var attachProcessDebug = (childProcess) => {
-  childProcess.on("error", (error) => {
-    const errorMessage = error.message;
-    info2(`Server exited with error ${errorMessage}`);
-    fail(error);
-  });
-  childProcess.stdout.on("data", (data) => {
-    const dataString = data.toString();
-    debug2(dataString);
-  });
-  childProcess.stderr.on("data", (data) => {
-    const dataString = data.toString();
-    debug2(dataString);
-  });
-};
-
-// src/server/deployer.ts
-var import_node_path = __toESM(require("node:path"));
-var fs = __toESM(require("node:fs"));
+var tc = __toESM(require_tool_cache(), 1);
+var io = __toESM(require_io(), 1);
+var core4 = __toESM(require_core(), 1);
+var import_node_path = __toESM(require("node:path"), 1);
+var fs = __toESM(require("node:fs"), 1);
 
 // node_modules/.pnpm/js-yaml@4.1.0/node_modules/js-yaml/dist/js-yaml.mjs
 function isNothing(subject) {
@@ -6226,7 +5873,7 @@ var json = failsafe.extend({
     float
   ]
 });
-var core3 = json;
+var core2 = json;
 var YAML_DATE_REGEXP = new RegExp(
   "^([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$"
 );
@@ -6463,7 +6110,7 @@ var set = new type("tag:yaml.org,2002:set", {
   resolve: resolveYamlSet,
   construct: constructYamlSet
 });
-var _default = core3.extend({
+var _default = core2.extend({
   implicit: [
     timestamp,
     merge
@@ -8282,7 +7929,360 @@ var safeLoadAll = renamed("safeLoadAll", "loadAll");
 var safeDump = renamed("safeDump", "dump");
 
 // src/server/deployer.ts
-var import_exec = __toESM(require_exec());
+var import_exec = __toESM(require_exec(), 1);
+
+// src/server/controller.ts
+var import_node_child_process = require("node:child_process");
+
+// src/packets.ts
+var PacketTestStart = class {
+  constructor(date, scenario) {
+    this.date = date;
+    this.scenario = scenario;
+  }
+  genre = "test";
+  type = "start";
+};
+var PacketTestEnd = class {
+  constructor(date, scenario, state, cause, startedAt, finishedAt) {
+    this.date = date;
+    this.scenario = scenario;
+    this.state = state;
+    this.cause = cause;
+    this.startedAt = startedAt;
+    this.finishedAt = finishedAt;
+  }
+  genre = "test";
+  type = "end";
+};
+var PacketSessionStart = class {
+  constructor(date, tests, isAutoStart, startedAt) {
+    this.date = date;
+    this.tests = tests;
+    this.isAutoStart = isAutoStart;
+    this.startedAt = startedAt;
+  }
+  genre = "session";
+  type = "start";
+};
+var PacketSessionEnd = class {
+  constructor(date, tests, startedAt, finishedAt) {
+    this.date = date;
+    this.tests = tests;
+    this.startedAt = startedAt;
+    this.finishedAt = finishedAt;
+  }
+  genre = "session";
+  type = "end";
+};
+var parsePacket = (packet) => {
+  const json2 = JSON.parse(packet);
+  switch (json2.genre) {
+    case "session": {
+      switch (json2.type) {
+        case "start": {
+          return new PacketSessionStart(json2.date, json2.scenario, json2.isAutoStart, json2.startedAt);
+        }
+        case "end": {
+          return new PacketSessionEnd(json2.date, json2.tests, json2.isAutoStart, json2.startedAt);
+        }
+      }
+      break;
+    }
+    case "test": {
+      switch (json2.type) {
+        case "start": {
+          return new PacketTestStart(json2.date, json2.scenario);
+        }
+        case "end": {
+          return new PacketTestEnd(
+            json2.date,
+            json2.scenario,
+            json2.state,
+            json2.cause,
+            json2.startedAt,
+            json2.finishedAt
+          );
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// src/outputs.ts
+var core3 = __toESM(require_core(), 1);
+var printTestStart = (scenario) => {
+  info2(`Starting test: ${scenario.name} (${scenario.description})`);
+};
+var printTestEnd = (name, state, cause, startedAt, finishedAt) => {
+  const elapsed = `${finishedAt - startedAt} ms`;
+  const emoji = getEmojiForCause(cause);
+  switch (cause) {
+    case 7 /* CANCELLED */: {
+      info2(`${emoji} The test ${name} is cancelled with state ${state} in ${elapsed}.`);
+      break;
+    }
+    case 0 /* PASSED */: {
+      info2(`${emoji} The test ${name} is passed with state ${state} in ${elapsed}.`);
+      break;
+    }
+    case 8 /* SKIPPED */: {
+      info2(`${emoji} The test ${name} is skipped with state ${state} in ${elapsed}.`);
+      break;
+    }
+    default: {
+      warn(`${emoji} The test ${name} is failed with state ${state} in ${elapsed}.`);
+      break;
+    }
+  }
+};
+var getEmojiForCause = (cause) => {
+  switch (cause) {
+    case 0 /* PASSED */: {
+      return "\u2714";
+    }
+    case 8 /* SKIPPED */: {
+      return "\u2794";
+    }
+    case 7 /* CANCELLED */: {
+      return "\u26A0";
+    }
+    default: {
+      return "\u274C";
+    }
+  }
+};
+var printSessionStart = (startedAt, tests) => {
+  info2("--------------------------------------");
+  info2(" T E S T S");
+  info2("--------------------------------------");
+  info2(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`);
+};
+var printSessionEnd = (sessionEnd) => {
+  const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
+  const total = sessionEnd.tests.length;
+  const failures = sessionEnd.tests.filter(
+    (t) => !(t.cause === 0 /* PASSED */ || t.cause === 8 /* SKIPPED */ || t.cause === 7 /* CANCELLED */)
+  ).length;
+  const skipped = sessionEnd.tests.filter((t) => t.cause === 8 /* SKIPPED */).length;
+  info2(`
+Results:
+`);
+  info2(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}
+`);
+};
+var printSummary = async (sessionEnd) => {
+  const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
+  const total = sessionEnd.tests.length;
+  const passed = sessionEnd.tests.filter((t) => t.cause === 0 /* PASSED */).length;
+  const failures = sessionEnd.tests.filter(
+    (t) => !(t.cause === 0 /* PASSED */ || t.cause === 8 /* SKIPPED */ || t.cause === 7 /* CANCELLED */)
+  ).length;
+  const skipped = sessionEnd.tests.filter((t) => t.cause === 8 /* SKIPPED */).length;
+  let summaryText;
+  if (total === passed + skipped)
+    summaryText = "It's all green! \u{1F389}";
+  else if (failures === 0)
+    summaryText = "Only skipped tests! \u{1F914}";
+  else
+    summaryText = "Some tests are failed! \u{1F622}";
+  const { summary } = core3;
+  summary.addHeading("Scenamatica", 1);
+  summary.addHeading("Summary", 2);
+  summary.addRaw(summaryText);
+  summary.addBreak();
+  summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
+  summary.addHeading("Details", 2);
+  const table = [
+    [
+      {
+        data: "x",
+        header: true
+      },
+      {
+        data: "Test",
+        header: true
+      },
+      {
+        data: "Cause",
+        header: true
+      },
+      {
+        data: "State",
+        header: true
+      },
+      {
+        data: "Started at",
+        header: true
+      },
+      {
+        data: "Elapsed",
+        header: true
+      },
+      {
+        data: "Test Description",
+        header: true
+      }
+    ]
+  ];
+  for (const t of sessionEnd.tests) {
+    const testElapsed = `${Math.ceil((t.finishedAt - t.startedAt) / 1e3)} sec`;
+    const emoji = getEmojiForCause(t.cause);
+    const { name } = t.scenario;
+    const { description } = t.scenario;
+    table.push([
+      { data: emoji },
+      { data: name },
+      { data: t.cause.toString() },
+      { data: t.state.toString() },
+      { data: t.startedAt.toString() },
+      { data: testElapsed },
+      { data: description }
+    ]);
+  }
+  summary.addTable(table);
+  summary.addHeading("License", 2);
+  summary.addRaw("This test report is generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenaamtica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenaamtica/blob/main/LICENSE").addRaw(".");
+  summary.addBreak();
+  summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
+  await summary.write();
+};
+
+// src/server/client.ts
+var message;
+var onDataReceived = async (chunkMessage) => {
+  message = message ? message + chunkMessage : chunkMessage;
+  while (message && message.includes("\n")) {
+    const messages = message.split("\n");
+    await processPacket(messages[0]);
+    message = messages.slice(1).join("\n") || void 0;
+  }
+};
+var processPacket = async (msg) => {
+  let packet;
+  try {
+    packet = parsePacket(msg);
+  } catch {
+    console.warn(`Failed to parse packet: ${msg}`);
+    return;
+  }
+  if (!packet) {
+    return;
+  }
+  switch (packet.genre) {
+    case "session": {
+      await processSessionPackets(packet);
+      break;
+    }
+    case "test": {
+      processTestsPacket(packet);
+      break;
+    }
+  }
+};
+var processTestsPacket = (packet) => {
+  switch (packet.type) {
+    case "start": {
+      const test = packet;
+      printTestStart(test.scenario);
+      break;
+    }
+    case "end": {
+      const testEnd = packet;
+      printTestEnd(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt);
+    }
+  }
+};
+var sessionStartedAt;
+var processSessionPackets = async (packet) => {
+  switch (packet.type) {
+    case "start": {
+      sessionStartedAt = packet.startedAt;
+      printSessionStart(sessionStartedAt, packet.tests.length);
+      break;
+    }
+    case "end": {
+      const sessionEnd = packet;
+      printSessionEnd(sessionEnd);
+      await printSummary(sessionEnd);
+      const succeed = sessionEnd.tests.every(
+        (test) => test.cause === 0 /* PASSED */ || test.cause === 8 /* SKIPPED */ || test.cause === 7 /* CANCELLED */
+      );
+      endTests(succeed);
+      break;
+    }
+  }
+};
+
+// src/server/controller.ts
+var JAVA_COMMAND = "java {args} -jar {jar} nogui";
+var serverProcess;
+var attemptStop = false;
+var startServer = (workDir, executable, args = []) => {
+  if (serverProcess)
+    throw new Error("Server is already running");
+  info2(`Starting server with executable ${executable} and args ${args.join(" ")}`);
+  const command = JAVA_COMMAND.replace("{args}", args.join(" ")).replace("{jar}", executable);
+  const javaProcess = (0, import_node_child_process.spawn)(command, {
+    cwd: workDir,
+    shell: true,
+    stdio: "inherit"
+  });
+  attachProcessDebug(javaProcess);
+  serverProcess = javaProcess;
+  return javaProcess;
+};
+var stopServer = () => {
+  if (serverProcess === void 0 || attemptStop)
+    return;
+  attemptStop = true;
+  info2("Stopping server...");
+  serverProcess.stdin.write("stop\n");
+  setTimeout(() => {
+    if (serverProcess !== void 0 && !serverProcess.killed) {
+      info2("Server did not stop in time, killing...");
+      serverProcess.kill();
+    }
+    serverProcess = void 0;
+    attemptStop = false;
+  }, 1e3 * 10);
+};
+var startTests = async (serverDir, executable, pluginFile) => {
+  info2(`Starting tests of plugin ${pluginFile}.`);
+  await deployPlugin(serverDir, pluginFile);
+  const javaProcess = startServer(serverDir, executable);
+  attachProcessDebug(javaProcess);
+  javaProcess.stdout.on("data", onDataReceived);
+};
+var endTests = (succeed) => {
+  info2("Ending tests, shutting down server...");
+  stopServer();
+  if (succeed) {
+    info2("Tests succeeded");
+    process.exit(0);
+  } else {
+    info2("Tests failed");
+    fail("Some tests failed");
+  }
+};
+var attachProcessDebug = (childProcess) => {
+  childProcess.on("error", (error) => {
+    const errorMessage = error.message;
+    info2(`Server exited with error ${errorMessage}`);
+    fail(error);
+  });
+  childProcess.stdout.on("data", (data) => {
+    const dataString = data.toString();
+    debug2(dataString);
+  });
+  childProcess.stderr.on("data", (data) => {
+    const dataString = data.toString();
+    debug2(dataString);
+  });
+};
+
+// src/server/deployer.ts
 var PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/";
 var PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`;
 var SCENAMATICA_URL = "https://github.com/TeamKun/Scenamatica/releases/download/v{version}/Scenamatica-{version}.jar";

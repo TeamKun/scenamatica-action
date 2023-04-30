@@ -1,7 +1,7 @@
-import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart } from "../packets"
-import { parsePacket, TestResultCause } from "../packets"
-import { printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart } from "../outputs"
-import { endTests } from "./controller"
+import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart } from "../packets.js"
+import { parsePacket, TestResultCause } from "../packets.js"
+import { printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart } from "../outputs.js"
+import { endTests } from "./controller.js"
 
 let message: string | undefined
 

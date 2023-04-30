@@ -9,6 +9,7 @@
     "format:prettier": "prettier --write .",
     "format": "npm run format:eslint && npm run format:prettier"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TeamKUN/scenamatica-action.git"
