@@ -29,6 +29,7 @@ fabric.properties
 
 /node_modules
 /dist
+/lib
 
 .eslintcache
 .pnpm-debug.log
