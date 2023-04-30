@@ -9,9 +9,11 @@ import {fail, info} from "../utils.js";
 import {startServer} from "./controller.js";
 import fetch from "node-fetch"
 
+const PAPER_NAME = "paper.jar"
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
 const PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`
 const SCENAMATICA_URL = "https://github.com/TeamKun/Scenamatica/releases/download/v{version}/Scenamatica-{version}.jar"
+
 
 const JAVA_FETCH_URL =
     "https://api.azul.com/zulu/download/community/v1.0/bundles/?os={os}&arch={arch}&ext={ext}&java_version={version}&type=jdk"
@@ -69,10 +71,7 @@ const downloadLatestPaper = async (destDir: string, mcVersion: string) => {
 
     info(`Downloaded Paper ${mcVersion} build ${build} to ${dest}`)
 
-    return {
-        build,
-        paperPath: dest,
-    }
+    return build
 }
 
 const writeEula = async (dir: string) => {
@@ -158,7 +157,7 @@ export const deployServer = async (
 
     if (cached)
         return new Promise<string>((resolve) => {
-            resolve(path.join(dir, "paper.jar"))
+            resolve(PAPER_NAME)
         })
     // キャッシュがないので Paper をビルドする。
 
@@ -168,14 +167,14 @@ export const deployServer = async (
     if (!(await isJavaInstalled())) await downloadJava(dir, javaVersion)
 
     // Paper のダウンロード
-    const { build, paperPath } = await downloadLatestPaper(dir, mcVersion)
+    const build = await downloadLatestPaper(dir, mcVersion)
 
     // Paper にビルドさせる(初回実行）
     return new Promise<string>((resolve, reject) => {
-        startServer(dir, paperPath).on("exit", async (code: number) => {
+        startServer(dir, PAPER_NAME).on("exit", async (code: number) => {
             if (code === 0) {
                 await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
-                resolve(paperPath)
+                resolve(PAPER_NAME)
             } else {
                 fail(`Server exited with error code ${code}`)
                 reject(code)
