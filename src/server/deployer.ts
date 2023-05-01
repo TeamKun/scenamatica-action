@@ -76,7 +76,6 @@ const writeEula = async (dir: string) => {
     const eulaPath = path.join(dir, "eula.txt")
     const eulaContent = "eula=true\n"
 
-    await io.rmRF(eulaPath) // 以前の eula.txt を削除
     await fs.promises.writeFile(eulaPath, eulaContent)
     info(`Wrote eula.txt to ${eulaPath}`)
 }
@@ -150,6 +149,7 @@ export const deployServer = async (
     mcVersion: string,
     scenamaticaVersion: string,
 ): Promise<string> => {
+    const pluginDir = path.join(dir, "plugins")
     // キャッシュの復元
     const cached = await restoreCache(dir, javaVersion, mcVersion, scenamaticaVersion)
 
@@ -165,15 +165,16 @@ export const deployServer = async (
     if (!(await isJavaInstalled())) await downloadJava(dir, javaVersion)
 
     // Paper のダウンロード
-    const build = await downloadLatestPaper(dir, mcVersion)
+    await io.mkdirP(pluginDir)
+    await downloadLatestPaper(dir, mcVersion)
+    await downloadScenamatica(pluginDir, scenamaticaVersion)
 
+    await writeEula(dir) // eula.txt を書き込まないと Paper が起動Vしない
     await startServerOnly(dir, PAPER_NAME)
-        .then(async () => {
-            await initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion)
-        })
-        .catch((error) => {
-            throw error  // リスロー
-        })
+
+    await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
+
+    await cache.saveCache([dir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion))
 
     return PAPER_NAME
 }
@@ -184,27 +185,6 @@ export const deployPlugin = async (serverDir: string, pluginFile: string) => {
     await io.mkdirP(pluginDir)
 
     await io.cp(pluginFile, pluginDir)
-}
-
-const initServer = async (
-    serverDir: string,
-    javaVersion: string,
-    mcVersion: string,
-    paperBuild: string,
-    scenamaticaVersion: string,
-) => {
-    const pluginDir = path.join(serverDir, "plugins")
-
-    await io.mkdirP(pluginDir)
-
-    await writeEula(serverDir) // eula.txt を書き込まないと Paper が起動Vしない
-
-    // Scenamatica をインスコする
-    await downloadScenamatica(pluginDir, scenamaticaVersion)
-    await startServerOnly(serverDir, PAPER_NAME)  // Scenaamtica の config を生成する
-    await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
-
-    await cache.saveCache([serverDir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion))
 }
 
 const initScenamaticaConfig = async (configDir: string) => {

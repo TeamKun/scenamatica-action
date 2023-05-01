@@ -2342,7 +2342,7 @@ var require_utils2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
     var core = __importStar3(require_core());
-    var DEFAULT_SCENAMATICA_VERSION = "0.5.3";
+    var DEFAULT_SCENAMATICA_VERSION = "0.5.6";
     var fail = /* @__PURE__ */ __name((message) => {
       core.setFailed(message);
     }, "fail");
@@ -69536,7 +69536,6 @@ var require_deployer = __commonJS({
     var writeEula = /* @__PURE__ */ __name((dir) => __awaiter3(void 0, void 0, void 0, function* () {
       const eulaPath = node_path_1.default.join(dir, "eula.txt");
       const eulaContent = "eula=true\n";
-      yield io.rmRF(eulaPath);
       yield fs3.promises.writeFile(eulaPath, eulaContent);
       (0, utils_js_12.info)(`Wrote eula.txt to ${eulaPath}`);
     }), "writeEula");
@@ -69581,6 +69580,7 @@ var require_deployer = __commonJS({
       }
     }), "isJavaInstalled");
     var deployServer = /* @__PURE__ */ __name((dir, javaVersion, mcVersion, scenamaticaVersion) => __awaiter3(void 0, void 0, void 0, function* () {
+      const pluginDir = node_path_1.default.join(dir, "plugins");
       const cached = yield restoreCache(dir, javaVersion, mcVersion, scenamaticaVersion);
       if (cached)
         return new Promise((resolve) => {
@@ -69589,12 +69589,13 @@ var require_deployer = __commonJS({
       (0, utils_js_12.info)("Building server...");
       if (!(yield isJavaInstalled()))
         yield downloadJava(dir, javaVersion);
-      const build = yield downloadLatestPaper(dir, mcVersion);
-      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME).then(() => __awaiter3(void 0, void 0, void 0, function* () {
-        yield initServer(dir, javaVersion, mcVersion, build, scenamaticaVersion);
-      })).catch((error) => {
-        throw error;
-      });
+      yield io.mkdirP(pluginDir);
+      yield downloadLatestPaper(dir, mcVersion);
+      yield downloadScenamatica(pluginDir, scenamaticaVersion);
+      yield writeEula(dir);
+      yield (0, controller_1.startServerOnly)(dir, PAPER_NAME);
+      yield initScenamaticaConfig(node_path_1.default.join(pluginDir, "Scenamatica"));
+      yield cache.saveCache([dir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion));
       return PAPER_NAME;
     }), "deployServer");
     exports2.deployServer = deployServer;
@@ -69604,15 +69605,6 @@ var require_deployer = __commonJS({
       yield io.cp(pluginFile, pluginDir);
     }), "deployPlugin");
     exports2.deployPlugin = deployPlugin;
-    var initServer = /* @__PURE__ */ __name((serverDir, javaVersion, mcVersion, paperBuild, scenamaticaVersion) => __awaiter3(void 0, void 0, void 0, function* () {
-      const pluginDir = node_path_1.default.join(serverDir, "plugins");
-      yield io.mkdirP(pluginDir);
-      yield writeEula(serverDir);
-      yield downloadScenamatica(pluginDir, scenamaticaVersion);
-      yield (0, controller_1.startServerOnly)(serverDir, PAPER_NAME);
-      yield initScenamaticaConfig(node_path_1.default.join(pluginDir, "Scenamatica"));
-      yield cache.saveCache([serverDir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion));
-    }), "initServer");
     var initScenamaticaConfig = /* @__PURE__ */ __name((configDir) => __awaiter3(void 0, void 0, void 0, function* () {
       const configPath = node_path_1.default.join(configDir, "config.yml");
       const configData = yaml.load(yield fs3.promises.readFile(configPath, "utf8"));
