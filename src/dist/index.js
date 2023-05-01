@@ -2342,6 +2342,7 @@ var require_utils2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
     var core = __importStar3(require_core());
+    var DEFAULT_SCENAMATICA_VERSION = "0.5.3";
     var fail = /* @__PURE__ */ __name((message) => {
       core.setFailed(message);
     }, "fail");
@@ -2361,7 +2362,7 @@ var require_utils2 = __commonJS({
     var getArguments = /* @__PURE__ */ __name(() => {
       return {
         mcVersion: core.getInput("minecraft") || "1.16.5",
-        scenamaticaVersion: core.getInput("scenamatica", { required: true }),
+        scenamaticaVersion: core.getInput("scenamatica") || DEFAULT_SCENAMATICA_VERSION,
         serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17"
@@ -69146,7 +69147,6 @@ Results:
       core_1.summary.addHeading("Scenamatica", 1);
       core_1.summary.addHeading("Summary", 2);
       core_1.summary.addHeading(":no_entry: ERROR!!", 4);
-      core_1.summary.addBreak();
       core_1.summary.addRaw("An unexpected error occurred while running the server and Scenamatica daemon.");
       core_1.summary.addHeading("Details", 2);
       const errorTexts = [
@@ -69168,7 +69168,7 @@ Results:
         `  - OS: ${process.platform}`,
         `  - Arch: ${process.arch}`
       ];
-      core_1.summary.addDetails("Environment Information", envInfo.join("\n"));
+      core_1.summary.addDetails("Environment Information", `<code>${envInfo.join("\n")}</code>`);
       printLicense();
       yield core_1.summary.write();
     }), "printErrorSummary");
@@ -69255,6 +69255,7 @@ var require_client = __commonJS({
         }
         case "general": {
           yield processErrorPacket(packet);
+          break;
         }
       }
       return true;
@@ -69293,6 +69294,7 @@ var require_client = __commonJS({
     }), "processSessionPackets");
     var processErrorPacket = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
       const { exception, message, stackTrace } = packet;
+      (0, utils_1.warn)(`An error occurred in Scenamatica: ${exception}: ${message}`);
       yield (0, outputs_js_1.printErrorSummary)(exception, message, stackTrace);
       (0, controller_js_12.endTests)(false);
     }), "processErrorPacket");
@@ -69408,10 +69410,8 @@ var require_controller = __commonJS({
       if (succeed) {
         (0, utils_js_12.info)("Tests succeeded");
         process.exit(0);
-      } else {
-        (0, utils_js_12.info)("Tests failed");
-        (0, utils_js_12.fail)("Some tests failed");
-      }
+      } else
+        (0, utils_js_12.fail)("Tests failed");
     }, "endTests");
     exports2.endTests = endTests;
   }

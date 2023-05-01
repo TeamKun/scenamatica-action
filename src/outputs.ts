@@ -231,7 +231,6 @@ const printErrorSummary = async (errorType: string, errorMessage: string, errorS
     summary.addHeading("Scenamatica", 1)
     summary.addHeading("Summary", 2)
     summary.addHeading(":no_entry: ERROR!!", 4)
-    summary.addBreak()
     summary.addRaw("An unexpected error occurred while running the server and Scenamatica daemon.")
 
     summary.addHeading("Details", 2)
@@ -263,7 +262,7 @@ const printErrorSummary = async (errorType: string, errorMessage: string, errorS
         `  - Arch: ${process.arch}`,
     ]
 
-    summary.addDetails("Environment Information", envInfo.join("\n"))
+    summary.addDetails("Environment Information", `<code>${envInfo.join("\n")}</code>`)
 
 
     printLicense()

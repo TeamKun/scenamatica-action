@@ -9,7 +9,7 @@ import {
     printTestStart
 } from "../outputs.js"
 import { endTests } from "./controller.js"
-import {info} from "../utils";
+import {info, warn} from "../utils";
 
 let incomingBuffer: string | undefined
 
@@ -53,6 +53,8 @@ const processPacket = async (msg: string) => {
 
         case "general": {
             await processErrorPacket(packet as PacketScenamaticaError)  // general ジャンルは、エラーのみしかない
+
+            break
         }
     }
 
@@ -114,6 +116,9 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
 const processErrorPacket = async (packet: PacketScenamaticaError) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const {exception, message, stackTrace} = packet
+
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    warn(`An error occurred in Scenamatica: ${exception}: ${message}`)
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await printErrorSummary(exception, message, stackTrace)

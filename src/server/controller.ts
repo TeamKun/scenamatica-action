@@ -96,9 +96,6 @@ export const endTests = (succeed: boolean) => {
         info("Tests succeeded")
 
         process.exit(0)
-    } else {
-        info("Tests failed")
-
-        fail("Some tests failed")
-    }
+    } else
+        fail("Tests failed")
 }
