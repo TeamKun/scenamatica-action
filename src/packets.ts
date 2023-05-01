@@ -82,6 +82,13 @@ export class PacketSessionEnd implements Packet<PacketSessionEnd> {
     ) {}
 }
 
+export class PacketScenamaticaError implements Packet<PacketScenamaticaError> {
+    public genre = "general"
+
+    public type = "error"
+    public constructor(public date: number, public exception: string, public message: string, public stackTrace: string[]) {}
+}
+
 export const parsePacket = (
     packet: string,
 ): Packet<PacketSessionEnd | PacketSessionStart | PacketTestEnd | PacketTestStart> | null => {
@@ -101,7 +108,6 @@ export const parsePacket = (
 
             break
         }
-
         case "test": {
             switch (json.type) {
                 case "start": {
@@ -119,6 +125,18 @@ export const parsePacket = (
                     )
                 }
             }
+
+            break
+        }
+
+        case "general": {
+            switch (json.type) {
+                case "error": {
+                    return new PacketScenamaticaError(json.date, json.exception, json.message, json.stackTrace)
+                }
+            }
+
+            break
         }
     }
 

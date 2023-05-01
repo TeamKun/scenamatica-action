@@ -1,20 +1,27 @@
-import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart } from "../packets.js"
-import { parsePacket, TestResultCause } from "../packets.js"
-import { printSessionEnd, printSessionStart, printSummary, printTestEnd, printTestStart } from "../outputs.js"
+import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart ,PacketScenamaticaError} from "../packets.js"
+import { parsePacket, TestResultCause} from "../packets.js"
+import {
+    printErrorSummary,
+    printSessionEnd,
+    printSessionStart,
+    printSummary,
+    printTestEnd,
+    printTestStart
+} from "../outputs.js"
 import { endTests } from "./controller.js"
 import {info} from "../utils";
 
-let message: string | undefined
+let incomingBuffer: string | undefined
 
 export const onDataReceived = async (chunkMessage: string) => {
-    message = message ? message + chunkMessage : chunkMessage
+    incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage
 
-    while (message && message.includes("\n")) {
-        const messages: string[] = message.split("\n")
+    while (incomingBuffer && incomingBuffer.includes("\n")) {
+        const messages: string[] = incomingBuffer.split("\n")
 
         if (!await processPacket(messages[0]))
             info(messages[0])
-        message = messages.slice(1).join("\n") || undefined
+        incomingBuffer = messages.slice(1).join("\n") || undefined
     }
 }
 
@@ -42,6 +49,10 @@ const processPacket = async (msg: string) => {
             processTestsPacket(packet as PacketTestEnd | PacketTestStart)
 
             break
+        }
+
+        case "general": {
+            await processErrorPacket(packet as PacketScenamaticaError)  // general ジャンルは、エラーのみしかない
         }
     }
 
@@ -86,7 +97,7 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
             printSessionEnd(sessionEnd)
             await printSummary(sessionEnd)
 
-            const succeed = (sessionEnd.results as PacketTestEnd[]).every(
+            const succeed = (sessionEnd.results ).every(
                 (test) =>
                     test.cause === TestResultCause.PASSED ||
                     test.cause === TestResultCause.SKIPPED ||
@@ -98,4 +109,14 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
             break
         }
     }
+}
+
+const processErrorPacket = async (packet: PacketScenamaticaError) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const {exception, message, stackTrace} = packet
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    await printErrorSummary(exception, message, stackTrace)
+
+    endTests(false)
 }

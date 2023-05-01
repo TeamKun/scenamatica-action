@@ -68790,7 +68790,7 @@ var require_packets = __commonJS({
           __createBinding3(exports3, m2, p);
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.parsePacket = exports2.PacketSessionEnd = exports2.PacketSessionStart = exports2.PacketTestEnd = exports2.TestResultCause = exports2.TestState = exports2.PacketTestStart = exports2.Packet = void 0;
+    exports2.parsePacket = exports2.PacketScenamaticaError = exports2.PacketSessionEnd = exports2.PacketSessionStart = exports2.PacketTestEnd = exports2.TestResultCause = exports2.TestState = exports2.PacketTestStart = exports2.Packet = void 0;
     var Packet = class {
       constructor(genre, type, date) {
         this.genre = genre;
@@ -68870,6 +68870,18 @@ var require_packets = __commonJS({
     };
     __name(PacketSessionEnd, "PacketSessionEnd");
     exports2.PacketSessionEnd = PacketSessionEnd;
+    var PacketScenamaticaError = class {
+      constructor(date, exception, message, stackTrace) {
+        this.date = date;
+        this.exception = exception;
+        this.message = message;
+        this.stackTrace = stackTrace;
+        this.genre = "general";
+        this.type = "error";
+      }
+    };
+    __name(PacketScenamaticaError, "PacketScenamaticaError");
+    exports2.PacketScenamaticaError = PacketScenamaticaError;
     var parsePacket = /* @__PURE__ */ __name((packet) => {
       const json = JSON.parse(packet);
       switch (json.genre) {
@@ -68893,6 +68905,15 @@ var require_packets = __commonJS({
               return new PacketTestEnd(json.date, json.scenario, json.state, json.cause, json.startedAt, json.finishedAt);
             }
           }
+          break;
+        }
+        case "general": {
+          switch (json.type) {
+            case "error": {
+              return new PacketScenamaticaError(json.date, json.exception, json.message, json.stackTrace);
+            }
+          }
+          break;
         }
       }
       return null;
@@ -68938,7 +68959,7 @@ var require_outputs = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
+    exports2.printErrorSummary = exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
     var packets_js_1 = require_packets();
     var utils_js_12 = require_utils2();
     var core_1 = require_core();
@@ -69030,7 +69051,7 @@ var require_outputs = __commonJS({
     exports2.printSessionStart = printSessionStart;
     var printSessionEnd = /* @__PURE__ */ __name((sessionEnd) => {
       const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const results = sessionEnd.results;
+      const { results } = sessionEnd;
       const total = results.length;
       const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
       const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
@@ -69042,8 +69063,8 @@ Results:
     }, "printSessionEnd");
     exports2.printSessionEnd = printSessionEnd;
     var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter3(void 0, void 0, void 0, function* () {
-      const results = sessionEnd.results;
-      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
+      const { results, finishedAt, startedAt } = sessionEnd;
+      const elapsed = `${Math.ceil((finishedAt - startedAt) / 1e3)} sec`;
       const total = results.length;
       const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
       const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
@@ -69058,7 +69079,7 @@ Results:
       const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)];
       core_1.summary.addHeading("Scenamatica", 1);
       core_1.summary.addHeading("Summary", 2);
-      core_1.summary.addRaw(`${summaryText}`);
+      core_1.summary.addHeading(`${summaryText}`, 4);
       core_1.summary.addBreak();
       core_1.summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
       core_1.summary.addHeading("Details", 2);
@@ -69117,13 +69138,47 @@ Results:
         ]);
       }
       core_1.summary.addTable(table);
+      printLicense();
+      yield core_1.summary.write();
+    }), "printSummary");
+    exports2.printSummary = printSummary;
+    var printErrorSummary = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => __awaiter3(void 0, void 0, void 0, function* () {
+      core_1.summary.addHeading("Scenamatica", 1);
+      core_1.summary.addHeading("Summary", 2);
+      core_1.summary.addHeading(":no_entry: ERROR!!", 4);
+      core_1.summary.addBreak();
+      core_1.summary.addRaw("An unexpected error occurred while running the server and Scenamatica daemon.");
+      core_1.summary.addHeading("Details", 2);
+      const errorTexts = [
+        "An unexpected exception has occurred while running Scenamatica daemon:",
+        `${errorType}: ${errorMessage}`,
+        ...errorStackTrace.map((s2) => `    at ${s2}`)
+      ];
+      core_1.summary.addCodeBlock(errorTexts.join("\n"), "text");
+      core_1.summary.addHeading("Reporting bugs", 2);
+      core_1.summary.addRaw("If you think this is a bug, please report it to ").addLink("Scenamatica", "https://github.com/TeamKun/Scenamatica/issues").addRaw(" with contents of this error message, above stack trace and below environment information.").addBreak();
+      const runArgs = (0, utils_js_12.getArguments)();
+      const envInfo = [
+        "+ Versions:",
+        `  - Scenamatica: ${runArgs.scenamaticaVersion}`,
+        `  - Minecraft: ${runArgs.mcVersion}`,
+        `  - Java: ${runArgs.javaVersion}`,
+        `  - Node.js: ${process.version}`,
+        "+ Runner:",
+        `  - OS: ${process.platform}`,
+        `  - Arch: ${process.arch}`
+      ];
+      core_1.summary.addDetails("Environment Information", envInfo.join("\n"));
+      printLicense();
+      yield core_1.summary.write();
+    }), "printErrorSummary");
+    exports2.printErrorSummary = printErrorSummary;
+    var printLicense = /* @__PURE__ */ __name(() => {
       core_1.summary.addHeading("License", 2);
       core_1.summary.addRaw("This test report has been generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenamatica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE").addRaw(".");
       core_1.summary.addBreak();
       core_1.summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
-      yield core_1.summary.write();
-    }), "printSummary");
-    exports2.printSummary = printSummary;
+    }, "printLicense");
   }
 });
 
@@ -69168,14 +69223,14 @@ var require_client = __commonJS({
     var outputs_js_1 = require_outputs();
     var controller_js_12 = require_controller();
     var utils_1 = require_utils2();
-    var message;
+    var incomingBuffer;
     var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter3(void 0, void 0, void 0, function* () {
-      message = message ? message + chunkMessage : chunkMessage;
-      while (message && message.includes("\n")) {
-        const messages = message.split("\n");
+      incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage;
+      while (incomingBuffer && incomingBuffer.includes("\n")) {
+        const messages = incomingBuffer.split("\n");
         if (!(yield processPacket(messages[0])))
           (0, utils_1.info)(messages[0]);
-        message = messages.slice(1).join("\n") || void 0;
+        incomingBuffer = messages.slice(1).join("\n") || void 0;
       }
     }), "onDataReceived");
     exports2.onDataReceived = onDataReceived;
@@ -69197,6 +69252,9 @@ var require_client = __commonJS({
         case "test": {
           processTestsPacket(packet);
           break;
+        }
+        case "general": {
+          yield processErrorPacket(packet);
         }
       }
       return true;
@@ -69233,6 +69291,11 @@ var require_client = __commonJS({
         }
       }
     }), "processSessionPackets");
+    var processErrorPacket = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
+      const { exception, message, stackTrace } = packet;
+      yield (0, outputs_js_1.printErrorSummary)(exception, message, stackTrace);
+      (0, controller_js_12.endTests)(false);
+    }), "processErrorPacket");
   }
 });
 
