@@ -244,9 +244,9 @@ const printErrorSummary = async (errorType: string, errorMessage: string, errorS
     summary.addCodeBlock(errorTexts.join("\n"), "text")
 
     summary.addHeading("Reporting bugs", 2)
-    summary.addRaw("If you think this is a bug, please report it to ")
+    summary.addRaw("If you believe this is a bug, please report it to ")
         .addLink("Scenamatica", "https://github.com/TeamKun/Scenamatica/issues")
-        .addRaw(" with contents of this error message, above stack trace and below environment information.")
+        .addRaw(" along with the contents of this error message, the above stack trace, and the environment information listed below.")
         .addBreak()
 
     const runArgs = getArguments()

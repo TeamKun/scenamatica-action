@@ -69156,7 +69156,7 @@ Results:
       ];
       core_1.summary.addCodeBlock(errorTexts.join("\n"), "text");
       core_1.summary.addHeading("Reporting bugs", 2);
-      core_1.summary.addRaw("If you think this is a bug, please report it to ").addLink("Scenamatica", "https://github.com/TeamKun/Scenamatica/issues").addRaw(" with contents of this error message, above stack trace and below environment information.").addBreak();
+      core_1.summary.addRaw("If you believe this is a bug, please report it to ").addLink("Scenamatica", "https://github.com/TeamKun/Scenamatica/issues").addRaw(" along with the contents of this error message, the above stack trace, and the environment information listed below.").addBreak();
       const runArgs = (0, utils_js_12.getArguments)();
       const envInfo = [
         "+ Versions:",
@@ -69168,7 +69168,7 @@ Results:
         `  - OS: ${process.platform}`,
         `  - Arch: ${process.arch}`
       ];
-      core_1.summary.addDetails("Environment Information", `<code>${envInfo.join("\n")}</code>`);
+      core_1.summary.addDetails("Environment Information", `<pre><code>${envInfo.join("\n")}</code></pre>`);
       printLicense();
       yield core_1.summary.write();
     }), "printErrorSummary");
