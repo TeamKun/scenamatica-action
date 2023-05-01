@@ -262,7 +262,7 @@ const printErrorSummary = async (errorType: string, errorMessage: string, errorS
         `  - Arch: ${process.arch}`,
     ]
 
-    summary.addDetails("Environment Information", `<code>${envInfo.join("\n")}</code>`)
+    summary.addDetails("Environment Information", `<pre><code>${envInfo.join("\n")}</code></pre>`)
 
 
     printLicense()
