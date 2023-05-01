@@ -1,6 +1,6 @@
 import * as core from "@actions/core"
 
-const DEFAULT_SCENAMATICA_VERSION = "0.5.3"
+const DEFAULT_SCENAMATICA_VERSION = "0.5.5"
 
 const fail = (message: Error | string) => {
     core.setFailed(message)
