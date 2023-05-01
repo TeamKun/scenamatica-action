@@ -1,5 +1,7 @@
 import * as core from "@actions/core"
 
+const DEFAULT_SCENAMATICA_VERSION = "0.5.3"
+
 const fail = (message: Error | string) => {
     core.setFailed(message)
 }
@@ -27,7 +29,7 @@ interface Args {
 const getArguments = (): Args => {
     return {
         mcVersion: core.getInput("minecraft") || "1.16.5",
-        scenamaticaVersion: core.getInput("scenamatica", { required: true }),
+        scenamaticaVersion: core.getInput("scenamatica", ) || DEFAULT_SCENAMATICA_VERSION,
         serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
