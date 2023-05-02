@@ -12,6 +12,7 @@ import { endTests } from "./controller.js"
 import {info, warn} from "../utils";
 
 let incomingBuffer: string | undefined
+let alive = true
 
 export const onDataReceived = async (chunkMessage: string) => {
     incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage
@@ -25,7 +26,15 @@ export const onDataReceived = async (chunkMessage: string) => {
     }
 }
 
+export const kill = () => {
+    alive = false
+}
+
 const processPacket = async (msg: string) => {
+    if (!alive) {
+        return false
+    }
+
     let packet
 
     try {

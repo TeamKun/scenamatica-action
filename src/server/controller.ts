@@ -1,6 +1,6 @@
 import {fail, info, warn} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
-import {onDataReceived} from "./client";
+import {kill, onDataReceived} from "./client";
 import {spawn} from "node:child_process";
 import type {Writable} from "node:stream";
 import type {ChildProcess} from "node:child_process";
@@ -90,6 +90,8 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
 
 export const endTests = (succeed: boolean) => {
     info("Ending tests, shutting down server...")
+
+    kill()
     stopServer()
 
     if (succeed) {
