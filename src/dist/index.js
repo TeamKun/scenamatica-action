@@ -69460,7 +69460,7 @@ var require_controller = __commonJS({
       (0, utils_js_12.info)("Removing Scenamatica from server...");
       const files = yield fs3.promises.readdir(node_path_1.default.join(serverDir, "plugins"));
       for (const file of files) {
-        if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
+        if (file.includes("Scenamatica") && file.endsWith(".jar")) {
           (0, utils_js_12.info)(`Removing ${file}...`);
           yield fs3.promises.rm(file);
         }

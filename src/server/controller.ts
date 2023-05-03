@@ -100,7 +100,7 @@ const removeScenamatica = async (serverDir: string) => {
     const files = await fs.promises.readdir(path.join(serverDir, "plugins"))
 
     for (const file of files) {
-        if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
+        if (file.includes("Scenamatica") && file.endsWith(".jar")) {
             info(`Removing ${file}...`)
             await fs.promises.rm(file)
         }
