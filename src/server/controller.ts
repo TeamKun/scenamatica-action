@@ -97,12 +97,13 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
 const removeScenamatica = async (serverDir: string) => {
     info("Removing Scenamatica from server...")
 
-    const files = await fs.promises.readdir(path.join(serverDir, "plugins"))
+    const pluginDir = path.join(serverDir, "plugins")
+    const files = await fs.promises.readdir(pluginDir)
 
     for (const file of files) {
         if (file.includes("Scenamatica") && file.endsWith(".jar")) {
             info(`Removing ${file}...`)
-            await fs.promises.rm(file)
+            await fs.promises.rm(path.join(pluginDir, file))
         }
     }
 }

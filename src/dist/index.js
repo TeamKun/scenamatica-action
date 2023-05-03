@@ -69458,11 +69458,12 @@ var require_controller = __commonJS({
     exports2.startTests = startTests;
     var removeScenamatica = /* @__PURE__ */ __name((serverDir) => __awaiter3(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)("Removing Scenamatica from server...");
-      const files = yield fs3.promises.readdir(node_path_1.default.join(serverDir, "plugins"));
+      const pluginDir = node_path_1.default.join(serverDir, "plugins");
+      const files = yield fs3.promises.readdir(pluginDir);
       for (const file of files) {
         if (file.includes("Scenamatica") && file.endsWith(".jar")) {
           (0, utils_js_12.info)(`Removing ${file}...`);
-          yield fs3.promises.rm(file);
+          yield fs3.promises.rm(node_path_1.default.join(pluginDir, file));
         }
       }
     }), "removeScenamatica");
