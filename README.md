@@ -18,3 +18,7 @@ See [action.yaml](./action.yaml)
     # The server directory to run the tests.
     server-dir: "server"
 ```
+
+## More Information
+
+Please see the [Scenamatica documentation](https://scenamatica.kunlab.org/) for more information\(ONLY IN JAPANESE).
