@@ -72,8 +72,8 @@ export const stopServer = () => {
             return
 
         warn("Server didn't stop in time, killing it...")
-        serverProcess?.kill()
-    }, 5000)
+        serverProcess?.kill("SIGKILL")
+    }, 1000 * 20)
 }
 
 export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
