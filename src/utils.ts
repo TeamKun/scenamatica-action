@@ -1,6 +1,7 @@
 import * as core from "@actions/core"
 
 const DEFAULT_SCENAMATICA_VERSION = "0.5.7"
+const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
 
 const fail = (message: Error | string) => {
     core.setFailed(message)
@@ -36,4 +37,8 @@ const getArguments = (): Args => {
     }
 }
 
-export { fail, warn, info, debug, getArguments, Args }
+const isNoScenamatica = (): boolean => {
+    return process.env[ENV_NO_SCENAMATICA] === "true"
+}
+
+export { fail, warn, info, debug, getArguments, Args, isNoScenamatica }

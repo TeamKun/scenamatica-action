@@ -2340,9 +2340,10 @@ var require_utils2 = __commonJS({
       return result;
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
+    exports2.isNoScenamatica = exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
     var core = __importStar3(require_core());
     var DEFAULT_SCENAMATICA_VERSION = "0.5.7";
+    var ENV_NO_SCENAMATICA = "NO_SCENAMATICA";
     var fail = /* @__PURE__ */ __name((message) => {
       core.setFailed(message);
     }, "fail");
@@ -2369,6 +2370,10 @@ var require_utils2 = __commonJS({
       };
     }, "getArguments");
     exports2.getArguments = getArguments;
+    var isNoScenamatica = /* @__PURE__ */ __name(() => {
+      return process.env[ENV_NO_SCENAMATICA] === "true";
+    }, "isNoScenamatica");
+    exports2.isNoScenamatica = isNoScenamatica;
   }
 });
 
@@ -69313,6 +69318,38 @@ var require_client = __commonJS({
 var require_controller = __commonJS({
   "lib/server/controller.js"(exports2) {
     "use strict";
+    var __createBinding3 = exports2 && exports2.__createBinding || (Object.create ? function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      var desc = Object.getOwnPropertyDescriptor(m2, k);
+      if (!desc || ("get" in desc ? !m2.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() {
+          return m2[k];
+        } };
+      }
+      Object.defineProperty(o, k2, desc);
+    } : function(o, m2, k, k2) {
+      if (k2 === void 0)
+        k2 = k;
+      o[k2] = m2[k];
+    });
+    var __setModuleDefault3 = exports2 && exports2.__setModuleDefault || (Object.create ? function(o, v) {
+      Object.defineProperty(o, "default", { enumerable: true, value: v });
+    } : function(o, v) {
+      o["default"] = v;
+    });
+    var __importStar3 = exports2 && exports2.__importStar || function(mod) {
+      if (mod && mod.__esModule)
+        return mod;
+      var result = {};
+      if (mod != null) {
+        for (var k in mod)
+          if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k))
+            __createBinding3(result, mod, k);
+      }
+      __setModuleDefault3(result, mod);
+      return result;
+    };
     var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
         return value instanceof P ? value : new P(function(resolve) {
@@ -69350,6 +69387,7 @@ var require_controller = __commonJS({
     var deployer_js_12 = require_deployer();
     var client_1 = require_client();
     var node_child_process_1 = require("node:child_process");
+    var fs3 = __importStar3(require("node:fs"));
     var serverProcess;
     var serverStdin;
     var genArgs = /* @__PURE__ */ __name((executable, args) => {
@@ -69399,12 +69437,14 @@ var require_controller = __commonJS({
         if (serverProcess.killed)
           return;
         (0, utils_js_12.warn)("Server didn't stop in time, killing it...");
-        serverProcess === null || serverProcess === void 0 ? void 0 : serverProcess.kill();
-      }, 5e3);
+        serverProcess === null || serverProcess === void 0 ? void 0 : serverProcess.kill("SIGKILL");
+      }, 1e3 * 20);
     }, "stopServer");
     exports2.stopServer = stopServer;
     var startTests = /* @__PURE__ */ __name((serverDir, executable, pluginFile) => __awaiter3(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)(`Starting tests of plugin ${pluginFile}.`);
+      if ((0, utils_js_12.isNoScenamatica)())
+        yield removeScenamatica(serverDir);
       yield (0, deployer_js_12.deployPlugin)(serverDir, pluginFile);
       const cp = createServerProcess(serverDir, executable);
       cp.stdout.on("data", (data) => __awaiter3(void 0, void 0, void 0, function* () {
@@ -69412,6 +69452,16 @@ var require_controller = __commonJS({
       }));
     }), "startTests");
     exports2.startTests = startTests;
+    var removeScenamatica = /* @__PURE__ */ __name((serverDir) => __awaiter3(void 0, void 0, void 0, function* () {
+      (0, utils_js_12.info)("Removing Scenamatica from server...");
+      const files = yield fs3.promises.readdir(serverDir);
+      for (const file of files) {
+        if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
+          (0, utils_js_12.info)(`Removing ${file}...`);
+          yield fs3.promises.rm(file);
+        }
+      }
+    }), "removeScenamatica");
     var endTests = /* @__PURE__ */ __name((succeed) => {
       (0, utils_js_12.info)("Ending tests, shutting down server...");
       (0, client_1.kill)();

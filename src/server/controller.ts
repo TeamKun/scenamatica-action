@@ -1,9 +1,10 @@
-import {fail, info, warn} from "../utils.js"
+import {fail, info, isNoScenamatica, warn} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
 import {kill, onDataReceived} from "./client";
 import {spawn} from "node:child_process";
 import type {Writable} from "node:stream";
 import type {ChildProcess} from "node:child_process";
+import * as fs from "node:fs";
 
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
@@ -79,6 +80,10 @@ export const stopServer = () => {
 export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
     info(`Starting tests of plugin ${pluginFile}.`)
 
+    if (isNoScenamatica())
+        await removeScenamatica(serverDir)
+
+
     await deployPlugin(serverDir, pluginFile)
 
     const cp = createServerProcess(serverDir, executable)
@@ -86,6 +91,19 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
     cp.stdout.on("data", async (data: Buffer) => {
         await onDataReceived(data.toString("utf8"))
     })
+}
+
+const removeScenamatica = async (serverDir: string) => {
+    info("Removing Scenamatica from server...")
+
+    const files = await fs.promises.readdir(serverDir)
+
+    for (const file of files) {
+        if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
+            info(`Removing ${file}...`)
+            await fs.promises.rm(file)
+        }
+    }
 }
 
 export const endTests = (succeed: boolean) => {
