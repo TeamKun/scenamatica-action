@@ -1,6 +1,7 @@
-# Scenamatica Scenario Test
+# [Scenamatica](https://github.com/TeamKun/Scenamatica) Action
 
-Scenamatica is a tool for automatically scenario testing your PaperMC plugins.
+[Scenamatica](https://github.com/TeamKun/Scenamatica) is a tool for automatically scenario testing your PaperMC plugins.  
+Scenamatica Action is a GitHub Action for running Scenamatica automatically.
 
 ## Usage
 
