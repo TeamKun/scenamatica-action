@@ -69381,6 +69381,9 @@ var require_controller = __commonJS({
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
     };
+    var __importDefault2 = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.endTests = exports2.startTests = exports2.stopServer = exports2.startServerOnly = void 0;
     var utils_js_12 = require_utils2();
@@ -69388,6 +69391,7 @@ var require_controller = __commonJS({
     var client_1 = require_client();
     var node_child_process_1 = require("node:child_process");
     var fs3 = __importStar3(require("node:fs"));
+    var node_path_1 = __importDefault2(require("node:path"));
     var serverProcess;
     var serverStdin;
     var genArgs = /* @__PURE__ */ __name((executable, args) => {
@@ -69454,7 +69458,7 @@ var require_controller = __commonJS({
     exports2.startTests = startTests;
     var removeScenamatica = /* @__PURE__ */ __name((serverDir) => __awaiter3(void 0, void 0, void 0, function* () {
       (0, utils_js_12.info)("Removing Scenamatica from server...");
-      const files = yield fs3.promises.readdir(serverDir);
+      const files = yield fs3.promises.readdir(node_path_1.default.join(serverDir, "plugins"));
       for (const file of files) {
         if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
           (0, utils_js_12.info)(`Removing ${file}...`);

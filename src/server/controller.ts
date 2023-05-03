@@ -5,6 +5,7 @@ import {spawn} from "node:child_process";
 import type {Writable} from "node:stream";
 import type {ChildProcess} from "node:child_process";
 import * as fs from "node:fs";
+import path from "node:path";
 
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
@@ -96,7 +97,7 @@ export const startTests = async (serverDir: string, executable: string, pluginFi
 const removeScenamatica = async (serverDir: string) => {
     info("Removing Scenamatica from server...")
 
-    const files = await fs.promises.readdir(serverDir)
+    const files = await fs.promises.readdir(path.join(serverDir, "plugins"))
 
     for (const file of files) {
         if (file.startsWith("Scenamatica") && file.endsWith(".jar")) {
