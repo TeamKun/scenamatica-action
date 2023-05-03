@@ -2342,7 +2342,7 @@ var require_utils2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
     var core = __importStar3(require_core());
-    var DEFAULT_SCENAMATICA_VERSION = "0.5.6";
+    var DEFAULT_SCENAMATICA_VERSION = "0.5.7";
     var fail = /* @__PURE__ */ __name((message) => {
       core.setFailed(message);
     }, "fail");
@@ -69218,12 +69218,13 @@ var require_client = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.onDataReceived = void 0;
+    exports2.kill = exports2.onDataReceived = void 0;
     var packets_js_1 = require_packets();
     var outputs_js_1 = require_outputs();
     var controller_js_12 = require_controller();
     var utils_1 = require_utils2();
     var incomingBuffer;
+    var alive = true;
     var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter3(void 0, void 0, void 0, function* () {
       incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage;
       while (incomingBuffer && incomingBuffer.includes("\n")) {
@@ -69234,7 +69235,14 @@ var require_client = __commonJS({
       }
     }), "onDataReceived");
     exports2.onDataReceived = onDataReceived;
+    var kill = /* @__PURE__ */ __name(() => {
+      alive = false;
+    }, "kill");
+    exports2.kill = kill;
     var processPacket = /* @__PURE__ */ __name((msg) => __awaiter3(void 0, void 0, void 0, function* () {
+      if (!alive) {
+        return false;
+      }
       let packet;
       try {
         packet = (0, packets_js_1.parsePacket)(msg);
@@ -69406,6 +69414,7 @@ var require_controller = __commonJS({
     exports2.startTests = startTests;
     var endTests = /* @__PURE__ */ __name((succeed) => {
       (0, utils_js_12.info)("Ending tests, shutting down server...");
+      (0, client_1.kill)();
       (0, exports2.stopServer)();
       if (succeed) {
         (0, utils_js_12.info)("Tests succeeded");
