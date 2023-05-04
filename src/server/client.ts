@@ -20,9 +20,9 @@ export const onDataReceived = async (chunkMessage: string) => {
     while (incomingBuffer && incomingBuffer.includes("\n")) {
         const messages: string[] = incomingBuffer.split("\n")
 
+        incomingBuffer = messages.slice(1).join("\n") || undefined
         if (!await processPacket(messages[0]))
             info(messages[0])
-        incomingBuffer = messages.slice(1).join("\n") || undefined
     }
 }
 
@@ -115,7 +115,7 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
                     test.cause === TestResultCause.CANCELLED
             )
 
-            endTests(succeed)
+            await endTests(succeed)
 
             break
         }
@@ -123,14 +123,13 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
 }
 
 const processErrorPacket = async (packet: PacketScenamaticaError) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+     
     const {exception, message, stackTrace} = packet
 
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+     
     warn(`An error occurred in Scenamatica: ${exception}: ${message}`)
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+     
     await printErrorSummary(exception, message, stackTrace)
-
-    endTests(false)
+    await endTests(false)
 }

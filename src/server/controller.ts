@@ -6,6 +6,7 @@ import type {Writable} from "node:stream";
 import type {ChildProcess} from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
+import {printFooter} from "../outputs";
 
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
@@ -108,11 +109,13 @@ const removeScenamatica = async (serverDir: string) => {
     }
 }
 
-export const endTests = (succeed: boolean) => {
+export const endTests = async (succeed: boolean) => {
     info("Ending tests, shutting down server...")
 
     kill()
     stopServer()
+
+    await printFooter()
 
     if (succeed) {
         info("Tests succeeded")
