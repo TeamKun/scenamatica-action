@@ -13,7 +13,7 @@ const MESSAGES_PASSED = [
     ":metal: Rock on! All tests passed flawlessly! :guitar::metal:",
     ":partying_face: Celebrate good times! All tests passed with flying colors! :tada::confetti_ball::balloon:",
     ":muscle: You crushed it! All tests passed with ease! :fire::muscle:",
-    ":1st_place_medal: Gold medal performance! All tests passed with flying colors! :medal::star2:",
+    ":1st_place_medal: Gold medal performance! All tests passed with flying colors! :1st_place_medal::star2:",
     ":champagne: Pop the champagne! All tests passed, time to celebrate! :champagne::tada:"
 ];
 
