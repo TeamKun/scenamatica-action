@@ -68965,7 +68965,7 @@ var require_outputs = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
+    exports2.doOutput = exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
     var packets_js_1 = require_packets();
     var utils_js_12 = require_utils2();
     var core_1 = require_core();
@@ -69188,6 +69188,28 @@ Results:
       yield core_1.summary.write();
     }), "printFooter");
     exports2.printFooter = printFooter;
+    var doOutput = /* @__PURE__ */ __name((packet) => {
+      if (packet instanceof packets_js_1.PacketScenamaticaError) {
+        const { exception, message } = packet;
+        (0, core_1.setOutput)("success", false);
+        (0, core_1.setOutput)("runner-error-type", exception);
+        (0, core_1.setOutput)("runner-error-message", message);
+      } else {
+        const { results } = packet;
+        const all = results.length;
+        const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
+        const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
+        const cancelled = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.CANCELLED).length;
+        const failed = all - passed - skipped - cancelled;
+        (0, core_1.setOutput)("success", failed === 0);
+        (0, core_1.setOutput)("tests", all);
+        (0, core_1.setOutput)("tests-passes", passed);
+        (0, core_1.setOutput)("tests-failures", failed);
+        (0, core_1.setOutput)("tests-skips", skipped);
+        (0, core_1.setOutput)("tests-cancels", cancelled);
+      }
+    }, "doOutput");
+    exports2.doOutput = doOutput;
   }
 });
 
@@ -69304,6 +69326,7 @@ var require_client = __commonJS({
           (0, outputs_js_1.printSessionEnd)(sessionEnd);
           yield (0, outputs_js_1.printSummary)(sessionEnd);
           const succeed = sessionEnd.results.every((test) => test.cause === packets_js_1.TestResultCause.PASSED || test.cause === packets_js_1.TestResultCause.SKIPPED || test.cause === packets_js_1.TestResultCause.CANCELLED);
+          (0, outputs_js_1.doOutput)(sessionEnd);
           yield (0, controller_js_12.endTests)(succeed);
           break;
         }
@@ -69313,6 +69336,7 @@ var require_client = __commonJS({
       const { exception, message, stackTrace } = packet;
       (0, utils_1.warn)(`An error occurred in Scenamatica: ${exception}: ${message}`);
       yield (0, outputs_js_1.printErrorSummary)(exception, message, stackTrace);
+      (0, outputs_js_1.doOutput)(packet);
       yield (0, controller_js_12.endTests)(false);
     }), "processErrorPacket");
   }

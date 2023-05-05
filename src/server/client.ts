@@ -1,6 +1,7 @@
 import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart ,PacketScenamaticaError} from "../packets.js"
 import { parsePacket, TestResultCause} from "../packets.js"
 import {
+    doOutput,
     printErrorSummary,
     printSessionEnd,
     printSessionStart,
@@ -115,6 +116,7 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
                     test.cause === TestResultCause.CANCELLED
             )
 
+            doOutput(sessionEnd)
             await endTests(succeed)
 
             break
@@ -126,10 +128,9 @@ const processErrorPacket = async (packet: PacketScenamaticaError) => {
      
     const {exception, message, stackTrace} = packet
 
-     
     warn(`An error occurred in Scenamatica: ${exception}: ${message}`)
 
-     
     await printErrorSummary(exception, message, stackTrace)
+    doOutput(packet)
     await endTests(false)
 }

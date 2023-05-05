@@ -17,6 +17,27 @@ inputs:
   scenamatica:
     description: "Target Scenamatica version."
     required: true
+outputs:
+  # Runner outputs
+  success:
+    description: "A boolean value indicating whether the runner successfully processed the tests."
+  runner-error-type:
+    description: "The error type (like java exception) reported by the runner."
+  runner-error-message:
+    description: "The error message reported by the runner."
+
+  # Tests outputs (only available when success is true)
+  tests:
+    description: "The number of tests that were run."
+  test-passes:
+    description: "The number of tests that passed."
+  test-failures:
+    description: "The number of tests that failed."
+  test-skips:
+    description: "The number of tests that were skipped."
+  test-cancels:
+    description: "The number of tests that were cancelled."
+
 runs:
   using: node16
   main: "src/dist/index.js"

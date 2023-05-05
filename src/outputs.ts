@@ -1,8 +1,8 @@
 import type { PacketSessionEnd, Scenario, TestState } from "./packets.js"
-import { TestResultCause} from "./packets.js"
+import { TestResultCause,PacketScenamaticaError} from "./packets.js"
 import {getArguments, info, warn} from "./utils.js"
 import type {SummaryTableRow} from "@actions/core/lib/summary.js"
-import {summary} from "@actions/core";
+import {setOutput, summary} from "@actions/core";
 
 const MESSAGES_PASSED = [
     ":tada: Congrats! All tests passed! :star2:",
@@ -286,4 +286,31 @@ const printFooter = async () => {
     await summary.write()
 }
 
-export { printTestStart, printTestEnd, printSessionStart, printSessionEnd, printSummary, printErrorSummary, printFooter }
+const doOutput = (packet: PacketScenamaticaError | PacketSessionEnd) => {
+
+    if (packet instanceof PacketScenamaticaError) {
+        const {exception, message} = packet
+
+        setOutput("success", false)
+        setOutput("runner-error-type", exception)
+        setOutput("runner-error-message", message)
+    } else  {
+        const {results} = packet
+        const all = results.length
+        const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length
+        const skipped = results.filter((t) => t.cause === TestResultCause.SKIPPED).length
+        const cancelled = results.filter((t) => t.cause === TestResultCause.CANCELLED).length
+        const failed = all - passed - skipped - cancelled
+
+        setOutput("success", failed === 0)
+        setOutput("tests", all)
+        setOutput("tests-passes", passed)
+        setOutput("tests-failures", failed)
+        setOutput("tests-skips", skipped)
+        setOutput("tests-cancels", cancelled)
+    }
+}
+
+export { printTestStart, printTestEnd, printSessionStart, printSessionEnd, printSummary, printErrorSummary, printFooter,
+    doOutput
+}
