@@ -1,6 +1,6 @@
 import * as core from "@actions/core"
 
-const DEFAULT_SCENAMATICA_VERSION = "0.5.7"
+const DEFAULT_SCENAMATICA_VERSION = "0.5.8"
 const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
 
 const fail = (message: Error | string) => {

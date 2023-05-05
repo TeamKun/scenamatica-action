@@ -2342,7 +2342,7 @@ var require_utils2 = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.isNoScenamatica = exports2.getArguments = exports2.debug = exports2.info = exports2.warn = exports2.fail = void 0;
     var core = __importStar3(require_core());
-    var DEFAULT_SCENAMATICA_VERSION = "0.5.7";
+    var DEFAULT_SCENAMATICA_VERSION = "0.5.8";
     var ENV_NO_SCENAMATICA = "NO_SCENAMATICA";
     var fail = /* @__PURE__ */ __name((message) => {
       core.setFailed(message);
