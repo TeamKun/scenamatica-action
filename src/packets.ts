@@ -6,7 +6,7 @@ export class Packet<T extends Packet<T>> {
 
 export interface Scenario {
     name: string
-    description: string
+    description?: string
 }
 
 export class PacketTestStart implements Packet<PacketTestStart> {

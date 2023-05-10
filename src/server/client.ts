@@ -1,16 +1,13 @@
 import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart ,PacketScenamaticaError} from "../packets.js"
 import { parsePacket, TestResultCause} from "../packets.js"
 import {
-    doOutput,
     printErrorSummary,
-    printSessionEnd,
-    printSessionStart,
-    printSummary,
-    printTestEnd,
-    printTestStart
-} from "../outputs.js"
-import { endTests } from "./controller.js"
-import {info, warn} from "../utils";
+    printSummary
+} from "../outputs/summary"
+import { endTests } from "./controller"
+import {printSessionEnd, printSessionStart, printTestEnd, printTestStart} from "../outputs/logging";
+import {error, info} from "@actions/core";
+import {publishOutput} from "../outputs/output";
 
 let incomingBuffer: string | undefined
 let alive = true
@@ -116,7 +113,7 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
                     test.cause === TestResultCause.CANCELLED
             )
 
-            doOutput(sessionEnd)
+            publishOutput(sessionEnd)
             await endTests(succeed)
 
             break
@@ -128,9 +125,9 @@ const processErrorPacket = async (packet: PacketScenamaticaError) => {
      
     const {exception, message, stackTrace} = packet
 
-    warn(`An error occurred in Scenamatica: ${exception}: ${message}`)
+    error(`An error occurred in Scenamatica: ${exception}: ${message}`)
 
     await printErrorSummary(exception, message, stackTrace)
-    doOutput(packet)
+    publishOutput(packet)
     await endTests(false)
 }

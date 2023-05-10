@@ -1,12 +1,13 @@
-import {fail, info, isNoScenamatica, warn} from "../utils.js"
+import {isNoScenamatica} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
 import {kill, onDataReceived} from "./client";
+import type {ChildProcess} from "node:child_process";
 import {spawn} from "node:child_process";
 import type {Writable} from "node:stream";
-import type {ChildProcess} from "node:child_process";
 import * as fs from "node:fs";
 import path from "node:path";
-import {printFooter} from "../outputs";
+import {info, setFailed, warning} from "@actions/core";
+import {printFooter} from "../outputs/summary";
 
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
@@ -74,7 +75,7 @@ export const stopServer = () => {
         if (serverProcess!.killed)
             return
 
-        warn("Server didn't stop in time, killing it...")
+        warning("Server didn't stop in time, killing it...")
         serverProcess?.kill("SIGKILL")
     }, 1000 * 20)
 }
@@ -122,5 +123,5 @@ export const endTests = async (succeed: boolean) => {
 
         process.exit(0)
     } else
-        fail("Tests failed")
+        setFailed("Tests failed")
 }

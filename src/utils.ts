@@ -1,22 +1,33 @@
 import * as core from "@actions/core"
+import type {PacketTestEnd} from "./packets";
+import {TestResultCause} from "./packets";
 
 const DEFAULT_SCENAMATICA_VERSION = "0.5.8"
 const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
 
-const fail = (message: Error | string) => {
-    core.setFailed(message)
-}
+const extractTestResults = (results: PacketTestEnd[]) => {
+    const total = results.length
+    const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length
+    const skipped = results.filter((t) => t.cause === TestResultCause.SKIPPED).length
+    const cancelled = results.filter((t) => t.cause === TestResultCause.CANCELLED).length
 
-const warn = (message: string) => {
-    core.warning(message)
-}
+    const failures = results.filter(
+        (t) =>
+            !(
+                t.cause === TestResultCause.PASSED ||
+                t.cause === TestResultCause.SKIPPED ||
+                t.cause === TestResultCause.CANCELLED
+            ),
+    ).length
 
-const info = (message: string) => {
-    core.info(message)
-}
 
-const debug = (message: string) => {
-    core.debug(message)
+    return {
+        total,
+        passed,
+        failures,
+        skipped,
+        cancelled,
+    }
 }
 
 interface Args {
@@ -41,4 +52,4 @@ const isNoScenamatica = (): boolean => {
     return process.env[ENV_NO_SCENAMATICA] === "true"
 }
 
-export { fail, warn, info, debug, getArguments, Args, isNoScenamatica }
+export { extractTestResults, getArguments, Args, isNoScenamatica }

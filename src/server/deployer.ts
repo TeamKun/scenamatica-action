@@ -6,9 +6,9 @@ import path from "node:path"
 import * as fs from "node:fs"
 import * as yaml from "js-yaml"
 import { exec } from "@actions/exec"
-import { info} from "../utils.js";
 import fetch from "node-fetch"
 import {startServerOnly} from "./controller";
+import {info} from "@actions/core";
 
 const PAPER_NAME = "paper.jar"
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"

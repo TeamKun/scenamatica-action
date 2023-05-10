@@ -1,9 +1,9 @@
 import * as fs from "node:fs"
-import {fail, info} from "./utils.js"
 import { deployServer } from "./server/deployer.js"
 import { startTests } from "./server/controller.js"
 import type { Args } from "./utils.js"
 import { getArguments } from "./utils.js"
+import {info, setFailed} from "@actions/core";
 
 const main = async (): Promise<void> => {
     const args: Args = getArguments()
@@ -14,7 +14,7 @@ const main = async (): Promise<void> => {
     const { javaVersion } = args
 
     if (!fs.existsSync(pluginFile)) {
-        fail(`Plugin file ${pluginFile} does not exist`)
+        setFailed(`Plugin file ${pluginFile} does not exist`)
 
         return
     }
@@ -27,10 +27,11 @@ const main = async (): Promise<void> => {
 }
 
 main().catch((error) => {
-    if (error instanceof Error) fail(error)
+    if (error instanceof Error)
+        setFailed(error)
     else {
         const message = error as string
 
-        fail(message)
+        setFailed(message)
     }
 })
