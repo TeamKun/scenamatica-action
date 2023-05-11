@@ -17,6 +17,9 @@ inputs:
   scenamatica:
     description: "Target Scenamatica version."
     required: true
+  github-token:
+    description: "GitHub token for writing pull request comments."
+    default: "${{ github.token }}"
 outputs:
   # Runner outputs
   success:
