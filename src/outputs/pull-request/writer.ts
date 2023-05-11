@@ -1,11 +1,11 @@
 import type {IssueComment, Maybe, Repository} from "@octokit/graphql-schema";
-import type {Octokit} from "octokit";
+import type {GitHub} from "@actions/github/lib/utils";
 
 const COMMENT_IDENTIFIER = "<!-- ### Scenamatica plugin analysis report ### -->";
 const COMMENT_AUTHOR_LOGIN = "github-actions"
 
 export const findFirstReportComment = async (
-    octokit: InstanceType<typeof Octokit>,
+    octokit: InstanceType<typeof GitHub>,
     owner: string,
     repo: string,
     number: number
@@ -48,7 +48,7 @@ export const findFirstReportComment = async (
 }
 
 export const upsertReport = async (
-    octokit: InstanceType<typeof Octokit>,
+    octokit: InstanceType<typeof GitHub>,
     owner: string,
     repo: string,
     number: number,
@@ -59,7 +59,7 @@ export const upsertReport = async (
     await (comment ? updateOldComment(octokit, owner, repo, comment.id, report) : postNewComment(octokit, owner, repo, number, report));
 }
 
-const postNewComment = async (octokit: InstanceType<typeof Octokit>,
+const postNewComment = async (octokit: InstanceType<typeof GitHub>,
                               owner: string,
                               repo: string,
                               number: number,
@@ -67,7 +67,7 @@ const postNewComment = async (octokit: InstanceType<typeof Octokit>,
 ) => {
     const fullBody = `${COMMENT_IDENTIFIER} \n${body}`
 
-    await octokit.rest.issues.createComment({
+    await octokit.issues.createComment({
         owner,
         repo,
         issue_number: number,
@@ -75,7 +75,7 @@ const postNewComment = async (octokit: InstanceType<typeof Octokit>,
     })
 }
 
-const updateOldComment = async (octokit: InstanceType<typeof Octokit>,
+const updateOldComment = async (octokit: InstanceType<typeof GitHub>,
                                 owner: string,
                                 repo: string,
                                 commentId: string,

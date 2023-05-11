@@ -1,13 +1,13 @@
-import type {PacketSessionEnd, Scenario, TestState} from "../packets";
-import { TestResultCause} from "../packets";
+import type {PacketSessionEnd, Scenario, TestState} from "./packets";
+import { TestResultCause} from "./packets";
 import {endGroup, info, startGroup, warning} from "@actions/core";
 
-export const printTestStart = (scenario: Scenario): void => {
+export const logTestStart = (scenario: Scenario): void => {
     startGroup(`Test: ${scenario.name}`)
-    info(`Starting test: ${scenario.name} (${scenario.description})`)
+    info(`Starting test: ${scenario.name} (${scenario.description ?? "(No description provided)"})`)
 }
 
-export const printTestEnd = (
+export const logTestEnd = (
     name: string,
     state: TestState,
     cause: TestResultCause,
@@ -66,14 +66,14 @@ export const getEmojiForCause = (cause: TestResultCause): string => {
     }
 }
 
-export const printSessionStart = (startedAt: number, tests: number): void => {
+export const logSessionStart = (startedAt: number, tests: number): void => {
     info("--------------------------------------")
     info(" T E S T S")
     info("--------------------------------------")
     info(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`)
 }
 
-export const printSessionEnd = (sessionEnd: PacketSessionEnd): void => {
+export const logSessionEnd = (sessionEnd: PacketSessionEnd): void => {
     const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1000)} sec`
     const {results} = sessionEnd
     const total = results.length

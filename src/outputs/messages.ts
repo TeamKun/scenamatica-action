@@ -1,6 +1,6 @@
 import {extractTestResults, getArguments} from "../utils";
 import type {PacketTestEnd} from "../packets";
-import {getEmojiForCause} from "./logging";
+import {getEmojiForCause} from "../logging";
 
 const MESSAGES_PASSED = [
     ":tada: Congrats! All tests passed! :star2:",
@@ -55,6 +55,15 @@ export const getHeader = (isError: boolean) => {
     }
 
     return joinLine(...result)
+}
+
+export const getRunningMessage = () => {
+    const messages = [
+        wrap("h4", ":hourglass_flowing_sand: Hey there! :wave: We're currently testing your plugin."),
+        wrap("p", "The testing process may take some time, but we'll update this message once it's complete.")
+    ]
+
+    return joinLine(...messages)
 }
 
 export const getTestSummary = (results: PacketTestEnd[], startedAt: number, finishedAt: number) => {

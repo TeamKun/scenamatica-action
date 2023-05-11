@@ -2,16 +2,15 @@ import type { PacketSessionEnd} from "../packets";
 import {PacketScenamaticaError, TestResultCause} from "../packets";
 import {setOutput} from "@actions/core";
 
-
-export const publishOutput = (packet: PacketScenamaticaError | PacketSessionEnd) => {
+export const publishActionOutput = (packet: PacketScenamaticaError | PacketSessionEnd) => {
     if (packet instanceof PacketScenamaticaError) {
-        publishError(packet)
+        publishActionError(packet)
     } else {
-        publishEnd(packet);
+        publishActionEnd(packet);
     }
 }
 
-const publishError = (packet: PacketScenamaticaError) => {
+const publishActionError = (packet: PacketScenamaticaError) => {
     const {exception, message} = packet
 
     setOutput("success", false)
@@ -19,7 +18,7 @@ const publishError = (packet: PacketScenamaticaError) => {
     setOutput("runner-error-message", message)
 }
 
-const publishEnd = (packet: PacketSessionEnd) => {
+const publishActionEnd = (packet: PacketSessionEnd) => {
     const {results} = packet
     const all = results.length
     const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length

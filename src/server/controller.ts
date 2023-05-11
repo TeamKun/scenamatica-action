@@ -118,10 +118,18 @@ export const endTests = async (succeed: boolean) => {
 
     await printFooter()
 
+    let code: number
+
     if (succeed) {
         info("Tests succeeded")
 
-        process.exit(0)
-    } else
+        code = 0
+    } else {
         setFailed("Tests failed")
+
+        code = 1
+    }
+
+
+    process.exit(code)
 }

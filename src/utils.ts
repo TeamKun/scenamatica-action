@@ -30,13 +30,22 @@ const extractTestResults = (results: PacketTestEnd[]) => {
     }
 }
 
+export const isTestSucceed = (results: PacketTestEnd[]) => {
+    return results.every(
+        (test) =>
+            test.cause === TestResultCause.PASSED ||
+            test.cause === TestResultCause.SKIPPED ||
+            test.cause === TestResultCause.CANCELLED
+    )
+}
+
 interface Args {
     mcVersion: string
     scenamaticaVersion: string
     serverDir: string
     pluginFile: string
     javaVersion: string
-    githubToken?: string
+    githubToken: string
 }
 
 const getArguments = (): Args => {
@@ -46,7 +55,7 @@ const getArguments = (): Args => {
         serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
-        githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN,
+        githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
     }
 }
 

@@ -1,16 +1,32 @@
-import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart ,PacketScenamaticaError} from "../packets.js"
-import { parsePacket, TestResultCause} from "../packets.js"
-import {
-    printErrorSummary,
-    printSummary
-} from "../outputs/summary"
-import { endTests } from "./controller"
-import {printSessionEnd, printSessionStart, printTestEnd, printTestStart} from "../outputs/logging";
+import type {
+    PacketScenamaticaError,
+    PacketSessionEnd,
+    PacketSessionStart,
+    PacketTestEnd,
+    PacketTestStart
+} from "../packets.js"
+import {parsePacket} from "../packets.js"
 import {error, info} from "@actions/core";
-import {publishOutput} from "../outputs/output";
+import {
+    publishRunning,
+    publishScenamaticaError,
+    publishSessionEnd
+} from "../outputs";
+import {logSessionEnd, logSessionStart, logTestEnd, logTestStart} from "../logging";
+import type {PullRequestInfo} from "../outputs/pull-request";
+import {endTests} from "./controller";
+import {isTestSucceed} from "../utils";
+import {publishPRComment} from "../outputs/pull-request";
 
 let incomingBuffer: string | undefined
 let alive = true
+let prInfo: PullRequestInfo | undefined
+
+export const initPullRequest = (pi: PullRequestInfo) => {
+    prInfo = pi
+
+    publishRunning(pi)
+}
 
 export const onDataReceived = async (chunkMessage: string) => {
     incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage
@@ -59,7 +75,18 @@ const processPacket = async (msg: string) => {
         }
 
         case "general": {
-            await processErrorPacket(packet as PacketScenamaticaError)  // general ジャンルは、エラーのみしかない
+            if (packet.type !== "error") {
+                return false // general ジャンルは、エラーのみしかない
+            }
+
+            const errorPacket = packet as PacketScenamaticaError
+
+            error(`An error occurred in Scenamatica: ${errorPacket.exception}: ${errorPacket.message}`)
+            await publishScenamaticaError(errorPacket)
+            if (prInfo)
+                await publishPRComment(prInfo)
+
+            await endTests(false)
 
             break
         }
@@ -71,31 +98,33 @@ const processPacket = async (msg: string) => {
 const processTestsPacket = (packet: PacketTestEnd | PacketTestStart) => {
     switch (packet.type) {
         case "start": {
-            const test = packet as PacketTestStart
-
-            printTestStart(test.scenario)
+            logTestStart(packet.scenario)
 
             break
         }
 
         case "end": {
-            const testEnd = packet as PacketTestEnd
+            const endPacket = packet as PacketTestEnd
 
-            printTestEnd(testEnd.scenario.name, testEnd.state, testEnd.cause, testEnd.startedAt, testEnd.finishedAt)
+            logTestEnd(
+                packet.scenario.name,
+                endPacket.state,
+                endPacket.cause,
+                endPacket.startedAt,
+                endPacket.finishedAt
+            )
+
+            break
         }
     }
 }
-
-let sessionStartedAt: number | undefined
 
 const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionStart) => {
     switch (packet.type) {
         case "start": {
             const sessionStart = packet as PacketSessionStart
 
-            sessionStartedAt = packet.startedAt
-
-            printSessionStart(sessionStartedAt, sessionStart.tests.length)
+            logSessionStart(packet.startedAt, sessionStart.tests.length)
 
             break
         }
@@ -103,31 +132,15 @@ const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionSta
         case "end": {
             const sessionEnd = packet as PacketSessionEnd
 
-            printSessionEnd(sessionEnd)
-            await printSummary(sessionEnd)
+            logSessionEnd(sessionEnd)
+            await publishSessionEnd(sessionEnd)
+            if (prInfo)
+                await publishPRComment(prInfo)
 
-            const succeed = (sessionEnd.results ).every(
-                (test) =>
-                    test.cause === TestResultCause.PASSED ||
-                    test.cause === TestResultCause.SKIPPED ||
-                    test.cause === TestResultCause.CANCELLED
-            )
-
-            publishOutput(sessionEnd)
-            await endTests(succeed)
+            await endTests(isTestSucceed(sessionEnd.results))
 
             break
         }
     }
 }
 
-const processErrorPacket = async (packet: PacketScenamaticaError) => {
-     
-    const {exception, message, stackTrace} = packet
-
-    error(`An error occurred in Scenamatica: ${exception}: ${message}`)
-
-    await printErrorSummary(exception, message, stackTrace)
-    publishOutput(packet)
-    await endTests(false)
-}
