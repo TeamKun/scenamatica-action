@@ -69358,6 +69358,7 @@ ${body}`;
                     body
                 }
             }
+        }
     `;
       yield octokit.graphql(query, {
         input: {
@@ -69412,7 +69413,7 @@ var require_appender = __commonJS({
       });
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.publishPRComment = exports2.reportSessionEnd = exports2.reportTestStart = exports2.reportRunning = exports2.reportError = void 0;
+    exports2.publishPRComment = exports2.reportSessionEnd = exports2.reportRunning = exports2.reportError = void 0;
     var messages_1 = require_messages();
     var writer_1 = require_writer();
     var headerPrinted = false;
@@ -69430,14 +69431,6 @@ var require_appender = __commonJS({
       outMessage += (0, messages_1.getRunningMessage)();
     }, "reportRunning");
     exports2.reportRunning = reportRunning;
-    var reportTestStart = /* @__PURE__ */ __name((runData) => __awaiter3(void 0, void 0, void 0, function* () {
-      if (yield (0, writer_1.findFirstReportComment)(runData.octokit, runData.owner, runData.repository, runData.number)) {
-        return;
-      }
-      appendHeaderIfNotPrinted();
-      outMessage += (0, messages_1.getRunningMessage)();
-    }), "reportTestStart");
-    exports2.reportTestStart = reportTestStart;
     var reportSessionEnd = /* @__PURE__ */ __name((packet) => {
       const { results, finishedAt, startedAt } = packet;
       appendHeaderIfNotPrinted();

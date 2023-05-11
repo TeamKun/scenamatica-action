@@ -91,6 +91,7 @@ const updateOldComment = async (octokit: InstanceType<typeof GitHub>,
                     body
                 }
             }
+        }
     `
 
     await octokit.graphql(

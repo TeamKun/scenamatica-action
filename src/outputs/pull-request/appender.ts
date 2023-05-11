@@ -7,7 +7,7 @@ import {
     getTestResultTable,
     getTestSummary
 } from "../messages";
-import {findFirstReportComment, upsertReport} from "./writer";
+import { upsertReport} from "./writer";
 import type {PacketScenamaticaError} from "../../packets";
 import type {GitHub} from "@actions/github/lib/utils";
 
@@ -34,17 +34,6 @@ export const reportError = (packet: PacketScenamaticaError) => {
 
 export const reportRunning = () => {
     appendHeaderIfNotPrinted()
-
-    outMessage += getRunningMessage()
-}
-
-export const reportTestStart = async (runData: PullRequestInfo) => {
-    if (await findFirstReportComment(runData.octokit, runData.owner, runData.repository, runData.number)) {
-        return
-    }
-
-    appendHeaderIfNotPrinted()
-
     outMessage += getRunningMessage()
 }
 
