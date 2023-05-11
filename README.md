@@ -8,6 +8,16 @@ Scenamatica Action is a GitHub Action for running Scenamatica automatically.
 See [action.yaml](./action.yaml)
 
 ```yaml
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  pull-requests: write  # For writing pull request comments(optional)
+
+# ...
+steps:
 - uses: TeamKUN/
   with:
     # The path to the plugin jar file.
@@ -21,6 +31,8 @@ See [action.yaml](./action.yaml)
     # The token to use for the GitHub API(Writing pull request comments). (default: ${{ github.token }})
     github-token: ${{ github.token }}
 ```
+
+If you want to run tests on pull requests, you need to set the `pull-requests` permission to `write` in the `permissions` section.
 
 ## More Information
 
