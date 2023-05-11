@@ -36,6 +36,7 @@ interface Args {
     serverDir: string
     pluginFile: string
     javaVersion: string
+    githubToken?: string
 }
 
 const getArguments = (): Args => {
@@ -45,6 +46,7 @@ const getArguments = (): Args => {
         serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
+        githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN,
     }
 }
 

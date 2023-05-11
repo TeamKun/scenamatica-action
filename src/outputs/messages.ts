@@ -76,7 +76,7 @@ export const getTestSummary = (results: PacketTestEnd[], startedAt: number, fini
     )
 }
 
-export const getTestResultTable = (results: PacketTestEnd[]) => {
+export const getTestResultTable = (results: PacketTestEnd[], minimize = false) => {
     const header = wrap("thead", joinLine(
             wrap("tr", joinLine(
                 wrap("th", " "),
@@ -120,7 +120,15 @@ export const getTestResultTable = (results: PacketTestEnd[]) => {
         }))
     )
 
-    return wrap("table", joinLine(header, body))
+    const table = wrap("table", joinLine(header, body))
+
+    if (minimize)
+        return wrap("details", joinLine(
+            wrap("summary", "Full test results"),
+            table
+        ))
+
+    return table
 }
 
 const getSummaryHeader = (total: number, elapsed: number, passed: number, failures: number, skipped: number, cancelled: number) => {

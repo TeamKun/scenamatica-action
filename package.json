@@ -25,9 +25,11 @@
     "@actions/io": "^1.1.0",
     "@actions/tool-cache": "^2.0.1",
     "js-yaml": "^4.1.0",
-    "node-fetch": "^3.3.1"
+    "node-fetch": "^3.3.1",
+    "octokit": "^2.0.14"
   },
   "devDependencies": {
+    "@octokit/graphql-schema": "^14.4.0",
     "@types/eslint": "^8.4.2",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.12.1",
