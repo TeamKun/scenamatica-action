@@ -68934,290 +68934,6 @@ var require_utils5 = __commonJS({
   }
 });
 
-// lib/outputs.js
-var require_outputs = __commonJS({
-  "lib/outputs.js"(exports2) {
-    "use strict";
-    var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
-      function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-          resolve(value);
-        });
-      }
-      __name(adopt, "adopt");
-      return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-          try {
-            step(generator.next(value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(fulfilled, "fulfilled");
-        function rejected(value) {
-          try {
-            step(generator["throw"](value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(rejected, "rejected");
-        function step(result) {
-          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        __name(step, "step");
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.doOutput = exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = exports2.printSessionEnd = exports2.printSessionStart = exports2.printTestEnd = exports2.printTestStart = void 0;
-    var packets_js_1 = require_packets();
-    var utils_js_12 = require_utils5();
-    var core_12 = require_core();
-    var MESSAGES_PASSED = [
-      ":tada: Congrats! All tests passed! :star2:",
-      ":raised_hands: High-five! You nailed all the tests! :tada::tada:",
-      ":confetti_ball: Hooray! Everything's working perfectly! :tada::confetti_ball:",
-      ":100: Perfect score! All tests passed with flying colors! :rainbow::clap:",
-      ":thumbsup: Great job! All tests passed without a hitch! :rocket::star2:",
-      ":metal: Rock on! All tests passed flawlessly! :guitar::metal:",
-      ":partying_face: Celebrate good times! All tests passed with flying colors! :tada::confetti_ball::balloon:",
-      ":muscle: You crushed it! All tests passed with ease! :fire::muscle:",
-      ":1st_place_medal: Gold medal performance! All tests passed with flying colors! :1st_place_medal::star2:",
-      ":champagne: Pop the champagne! All tests passed, time to celebrate! :champagne::tada:"
-    ];
-    var MESSAGES_NO_TESTS = [
-      "Alright, who forgot to write tests? :face_with_raised_eyebrow:",
-      "No tests? Time to break out the crystal ball. :crystal_ball:",
-      "Tests? Who writes tests? :person_shrugging:",
-      "No tests found. Did they run away? :man_running: :woman_running:",
-      "No tests, no glory. :trophy:",
-      "Tests? We don't need no stinkin' tests! :shushing_face:",
-      "No tests? I guess we'll just have to wing it. :eagle:",
-      "You get a test, and you get a test! Everybody gets a test! :gift: :tada:",
-      "No tests? That's unpossible! :dizzy_face:",
-      "Tests make the code go round. :carousel_horse:"
-    ];
-    var MESSAGES_FAILED = [
-      "Oops! Something went wrong! :scream_cat:",
-      "Oh no! The tests have betrayed us! :scream:",
-      "Houston, we have a problem. :rocket:",
-      "Looks like we have some debugging to do. :beetle:",
-      "Failures? More like opportunities to improve! :muscle:",
-      "This is not the result we were looking for. :confused:",
-      "Looks like we need to rethink our strategy. :thinking:",
-      "Don't worry, we'll get 'em next time! :sunglasses:",
-      "Keep calm and debug on. :female_detective:",
-      "The only way is up from here! :rocket:"
-    ];
-    var printTestStart = /* @__PURE__ */ __name((scenario) => {
-      (0, utils_js_12.info)(`Starting test: ${scenario.name} (${scenario.description})`);
-    }, "printTestStart");
-    exports2.printTestStart = printTestStart;
-    var printTestEnd = /* @__PURE__ */ __name((name, state, cause, startedAt, finishedAt) => {
-      const elapsed = `${finishedAt - startedAt} ms`;
-      const emoji = getEmojiForCause(cause);
-      switch (cause) {
-        case packets_js_1.TestResultCause.CANCELLED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is cancelled with state ${state} in ${elapsed}.`);
-          break;
-        }
-        case packets_js_1.TestResultCause.PASSED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is passed with state ${state} in ${elapsed}.`);
-          break;
-        }
-        case packets_js_1.TestResultCause.SKIPPED: {
-          (0, utils_js_12.info)(`${emoji} The test ${name} is skipped with state ${state} in ${elapsed}.`);
-          break;
-        }
-        default: {
-          (0, utils_js_12.warn)(`${emoji} The test ${name} is failed with state ${state} in ${elapsed}.`);
-          break;
-        }
-      }
-    }, "printTestEnd");
-    exports2.printTestEnd = printTestEnd;
-    var getEmojiForCause = /* @__PURE__ */ __name((cause) => {
-      switch (cause) {
-        case packets_js_1.TestResultCause.PASSED: {
-          return "\u2714";
-        }
-        case packets_js_1.TestResultCause.SKIPPED: {
-          return "\u2794";
-        }
-        case packets_js_1.TestResultCause.CANCELLED: {
-          return ":no_entry:";
-        }
-        default: {
-          return "\u274C";
-        }
-      }
-    }, "getEmojiForCause");
-    var printSessionStart = /* @__PURE__ */ __name((startedAt, tests) => {
-      (0, utils_js_12.info)("--------------------------------------");
-      (0, utils_js_12.info)(" T E S T S");
-      (0, utils_js_12.info)("--------------------------------------");
-      (0, utils_js_12.info)(`The session is started at ${startedAt}, ${tests} tests are marked to be run.`);
-    }, "printSessionStart");
-    exports2.printSessionStart = printSessionStart;
-    var printSessionEnd = /* @__PURE__ */ __name((sessionEnd) => {
-      const elapsed = `${Math.ceil((sessionEnd.finishedAt - sessionEnd.startedAt) / 1e3)} sec`;
-      const { results } = sessionEnd;
-      const total = results.length;
-      const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-      (0, utils_js_12.info)(`
-Results:
-`);
-      (0, utils_js_12.info)(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}
-`);
-    }, "printSessionEnd");
-    exports2.printSessionEnd = printSessionEnd;
-    var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter3(void 0, void 0, void 0, function* () {
-      const { results, finishedAt, startedAt } = sessionEnd;
-      const elapsed = `${Math.ceil((finishedAt - startedAt) / 1e3)} sec`;
-      const total = results.length;
-      const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
-      const failures = results.filter((t2) => !(t2.cause === packets_js_1.TestResultCause.PASSED || t2.cause === packets_js_1.TestResultCause.SKIPPED || t2.cause === packets_js_1.TestResultCause.CANCELLED)).length;
-      const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-      let messageSource;
-      if (total === passed + skipped)
-        messageSource = MESSAGES_PASSED;
-      else if (failures === 0)
-        messageSource = MESSAGES_NO_TESTS;
-      else
-        messageSource = MESSAGES_FAILED;
-      const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)];
-      core_12.summary.addHeading("Scenamatica", 1);
-      core_12.summary.addHeading("Summary", 2);
-      core_12.summary.addHeading(`${summaryText}`, 4);
-      core_12.summary.addBreak();
-      core_12.summary.addRaw(`Tests run: ${total}, Failures: ${failures}, Skipped: ${skipped}, Time elapsed: ${elapsed}`);
-      core_12.summary.addHeading("Details", 2);
-      const table = [
-        [
-          {
-            data: " ",
-            header: true
-          },
-          {
-            data: "Test",
-            header: true
-          },
-          {
-            data: "Cause",
-            header: true
-          },
-          {
-            data: "State",
-            header: true
-          },
-          {
-            data: "Started at",
-            header: true
-          },
-          {
-            data: "Finished at",
-            header: true
-          },
-          {
-            data: "Elapsed",
-            header: true
-          },
-          {
-            data: "Test Description",
-            header: true
-          }
-        ]
-      ];
-      for (const t2 of results) {
-        const testElapsed = `${Math.ceil((t2.finishedAt - t2.startedAt) / 1e3)} sec`;
-        const emoji = getEmojiForCause(t2.cause);
-        const { name } = t2.scenario;
-        const { description } = t2.scenario;
-        const startedAtStr = new Date(t2.startedAt).toLocaleString();
-        const finishedAtStr = new Date(t2.finishedAt).toLocaleString();
-        table.push([
-          { data: emoji },
-          { data: name },
-          { data: t2.cause.toString() },
-          { data: t2.state.toString() },
-          { data: startedAtStr },
-          { data: finishedAtStr },
-          { data: testElapsed },
-          { data: description }
-        ]);
-      }
-      core_12.summary.addTable(table);
-      yield core_12.summary.write();
-    }), "printSummary");
-    exports2.printSummary = printSummary;
-    var errorHeaderPrinted = false;
-    var printErrorSummary = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => __awaiter3(void 0, void 0, void 0, function* () {
-      if (!errorHeaderPrinted) {
-        core_12.summary.addHeading("Scenamatica", 1);
-        core_12.summary.addHeading("Summary", 2);
-        core_12.summary.addHeading(":no_entry: ERROR!!", 4);
-        core_12.summary.addRaw("An unexpected error occurred while running the server and Scenamatica daemon.");
-        core_12.summary.addHeading("Details", 2);
-        errorHeaderPrinted = true;
-      }
-      const errorTexts = [
-        "An unexpected exception has occurred while running Scenamatica daemon:",
-        `${errorType}: ${errorMessage}`,
-        ...errorStackTrace.map((s2) => `    at ${s2}`)
-      ];
-      core_12.summary.addCodeBlock(errorTexts.join("\n"), "text");
-      core_12.summary.addHeading("Reporting bugs", 2);
-      core_12.summary.addRaw("If you believe this is a bug, please report it to ").addLink("Scenamatica", "https://github.com/TeamKun/Scenamatica/issues").addRaw(" along with the contents of this error message, the above stack trace, and the environment information listed below.").addBreak();
-      const runArgs = (0, utils_js_12.getArguments)();
-      const envInfo = [
-        "+ Versions:",
-        `  - Scenamatica: ${runArgs.scenamaticaVersion}`,
-        `  - Minecraft: ${runArgs.mcVersion}`,
-        `  - Java: ${runArgs.javaVersion}`,
-        `  - Node.js: ${process.version}`,
-        "+ Runner:",
-        `  - OS: ${process.platform}`,
-        `  - Arch: ${process.arch}`
-      ];
-      core_12.summary.addDetails("Environment Information", `<pre><code>${envInfo.join("\n")}</code></pre>`);
-      yield core_12.summary.write();
-    }), "printErrorSummary");
-    exports2.printErrorSummary = printErrorSummary;
-    var printFooter = /* @__PURE__ */ __name(() => __awaiter3(void 0, void 0, void 0, function* () {
-      core_12.summary.addHeading("License", 2);
-      core_12.summary.addRaw("This test report has been generated by ").addLink("Scenamatica", "https://github.com/TeamKUN/Scenamatica").addRaw(" and licensed under ").addLink("MIT License", "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE").addRaw(".");
-      core_12.summary.addBreak();
-      core_12.summary.addRaw("You can redistribute it and/or modify it under the terms of the MIT License.");
-      yield core_12.summary.write();
-    }), "printFooter");
-    exports2.printFooter = printFooter;
-    var doOutput = /* @__PURE__ */ __name((packet) => {
-      if (packet instanceof packets_js_1.PacketScenamaticaError) {
-        const { exception, message } = packet;
-        (0, core_12.setOutput)("success", false);
-        (0, core_12.setOutput)("runner-error-type", exception);
-        (0, core_12.setOutput)("runner-error-message", message);
-      } else {
-        const { results } = packet;
-        const all = results.length;
-        const passed = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.PASSED).length;
-        const skipped = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.SKIPPED).length;
-        const cancelled = results.filter((t2) => t2.cause === packets_js_1.TestResultCause.CANCELLED).length;
-        const failed = all - passed - skipped - cancelled;
-        (0, core_12.setOutput)("success", failed === 0);
-        (0, core_12.setOutput)("tests", all);
-        (0, core_12.setOutput)("tests-passes", passed);
-        (0, core_12.setOutput)("tests-failures", failed);
-        (0, core_12.setOutput)("tests-skips", skipped);
-        (0, core_12.setOutput)("tests-cancels", cancelled);
-      }
-    }, "doOutput");
-    exports2.doOutput = doOutput;
-  }
-});
-
 // lib/logging.js
 var require_logging = __commonJS({
   "lib/logging.js"(exports2) {
@@ -69437,6 +69153,115 @@ var require_messages = __commonJS({
   }
 });
 
+// lib/outputs/summary.js
+var require_summary2 = __commonJS({
+  "lib/outputs/summary.js"(exports2) {
+    "use strict";
+    var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
+      function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+          resolve(value);
+        });
+      }
+      __name(adopt, "adopt");
+      return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+          try {
+            step(generator.next(value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(fulfilled, "fulfilled");
+        function rejected(value) {
+          try {
+            step(generator["throw"](value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(rejected, "rejected");
+        function step(result) {
+          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        __name(step, "step");
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = void 0;
+    var core_12 = require_core();
+    var messages_1 = require_messages();
+    var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter3(void 0, void 0, void 0, function* () {
+      const { results, finishedAt, startedAt } = sessionEnd;
+      core_12.summary.addRaw((0, messages_1.getHeader)(false));
+      core_12.summary.addRaw((0, messages_1.getTestSummary)(results, startedAt, finishedAt));
+      core_12.summary.addRaw((0, messages_1.getTestResultTable)(results));
+      yield core_12.summary.write();
+    }), "printSummary");
+    exports2.printSummary = printSummary;
+    var errorHeaderPrinted = false;
+    var errorReportingMessagePrinted = false;
+    var printErrorSummary = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => __awaiter3(void 0, void 0, void 0, function* () {
+      if (!errorHeaderPrinted) {
+        core_12.summary.addRaw((0, messages_1.getHeader)(true));
+        errorHeaderPrinted = true;
+      }
+      core_12.summary.addRaw((0, messages_1.getExceptionString)(errorType, errorMessage, errorStackTrace));
+      if (!errorReportingMessagePrinted) {
+        core_12.summary.addRaw((0, messages_1.getReportingMessage)());
+        errorReportingMessagePrinted = true;
+      }
+      yield core_12.summary.write();
+    }), "printErrorSummary");
+    exports2.printErrorSummary = printErrorSummary;
+    var printFooter = /* @__PURE__ */ __name(() => __awaiter3(void 0, void 0, void 0, function* () {
+      core_12.summary.addRaw((0, messages_1.getFooter)());
+      yield core_12.summary.write();
+    }), "printFooter");
+    exports2.printFooter = printFooter;
+  }
+});
+
+// lib/outputs/action-output.js
+var require_action_output = __commonJS({
+  "lib/outputs/action-output.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.publishActionOutput = void 0;
+    var packets_1 = require_packets();
+    var core_12 = require_core();
+    var publishActionOutput = /* @__PURE__ */ __name((packet) => {
+      if (packet instanceof packets_1.PacketScenamaticaError) {
+        publishActionError(packet);
+      } else {
+        publishActionEnd(packet);
+      }
+    }, "publishActionOutput");
+    exports2.publishActionOutput = publishActionOutput;
+    var publishActionError = /* @__PURE__ */ __name((packet) => {
+      const { exception, message } = packet;
+      (0, core_12.setOutput)("success", false);
+      (0, core_12.setOutput)("runner-error-type", exception);
+      (0, core_12.setOutput)("runner-error-message", message);
+    }, "publishActionError");
+    var publishActionEnd = /* @__PURE__ */ __name((packet) => {
+      const { results } = packet;
+      const all = results.length;
+      const passed = results.filter((t2) => t2.cause === packets_1.TestResultCause.PASSED).length;
+      const skipped = results.filter((t2) => t2.cause === packets_1.TestResultCause.SKIPPED).length;
+      const cancelled = results.filter((t2) => t2.cause === packets_1.TestResultCause.CANCELLED).length;
+      const failed = all - passed - skipped - cancelled;
+      (0, core_12.setOutput)("success", failed === 0);
+      (0, core_12.setOutput)("tests", all);
+      (0, core_12.setOutput)("tests-passes", passed);
+      (0, core_12.setOutput)("tests-failures", failed);
+      (0, core_12.setOutput)("tests-skips", skipped);
+      (0, core_12.setOutput)("tests-cancels", cancelled);
+    }, "publishActionEnd");
+  }
+});
+
 // lib/outputs/pull-request/writer.js
 var require_writer = __commonJS({
   "lib/outputs/pull-request/writer.js"(exports2) {
@@ -69551,9 +69376,9 @@ ${body}`;
   }
 });
 
-// lib/outputs/pull-request/index.js
-var require_pull_request = __commonJS({
-  "lib/outputs/pull-request/index.js"(exports2) {
+// lib/outputs/pull-request/appender.js
+var require_appender = __commonJS({
+  "lib/outputs/pull-request/appender.js"(exports2) {
     "use strict";
     var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
@@ -69640,6 +69465,67 @@ var require_pull_request = __commonJS({
   }
 });
 
+// lib/outputs/publisher.js
+var require_publisher = __commonJS({
+  "lib/outputs/publisher.js"(exports2) {
+    "use strict";
+    var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
+      function adopt(value) {
+        return value instanceof P ? value : new P(function(resolve) {
+          resolve(value);
+        });
+      }
+      __name(adopt, "adopt");
+      return new (P || (P = Promise))(function(resolve, reject) {
+        function fulfilled(value) {
+          try {
+            step(generator.next(value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(fulfilled, "fulfilled");
+        function rejected(value) {
+          try {
+            step(generator["throw"](value));
+          } catch (e2) {
+            reject(e2);
+          }
+        }
+        __name(rejected, "rejected");
+        function step(result) {
+          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+        }
+        __name(step, "step");
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.publishRunning = exports2.publishScenamaticaError = exports2.publishSessionEnd = void 0;
+    var summary_1 = require_summary2();
+    var action_output_1 = require_action_output();
+    var appender_1 = require_appender();
+    var publishSessionEnd = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
+      yield (0, summary_1.printSummary)(packet);
+      (0, action_output_1.publishActionOutput)(packet);
+      (0, appender_1.reportSessionEnd)(packet);
+    }), "publishSessionEnd");
+    exports2.publishSessionEnd = publishSessionEnd;
+    var publishScenamaticaError = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
+      const { exception, message, stackTrace } = packet;
+      yield (0, summary_1.printErrorSummary)(exception, message, stackTrace);
+      (0, action_output_1.publishActionOutput)(packet);
+      (0, appender_1.reportError)(packet);
+    }), "publishScenamaticaError");
+    exports2.publishScenamaticaError = publishScenamaticaError;
+    var publishRunning = /* @__PURE__ */ __name((info) => {
+      (0, appender_1.reportRunning)();
+      (0, appender_1.publishPRComment)(info).catch(console.error);
+    }, "publishRunning");
+    exports2.publishRunning = publishRunning;
+  }
+});
+
 // lib/server/client.js
 var require_client = __commonJS({
   "lib/server/client.js"(exports2) {
@@ -69679,17 +69565,17 @@ var require_client = __commonJS({
     exports2.kill = exports2.onDataReceived = exports2.initPullRequest = void 0;
     var packets_js_1 = require_packets();
     var core_12 = require_core();
-    var outputs_1 = require_outputs();
+    var publisher_1 = require_publisher();
     var logging_1 = require_logging();
     var controller_1 = require_controller();
     var utils_1 = require_utils5();
-    var pull_request_1 = require_pull_request();
+    var appender_1 = require_appender();
     var incomingBuffer;
     var alive = true;
     var prInfo;
     var initPullRequest = /* @__PURE__ */ __name((pi) => {
       prInfo = pi;
-      (0, outputs_1.publishRunning)(pi);
+      (0, publisher_1.publishRunning)(pi);
     }, "initPullRequest");
     exports2.initPullRequest = initPullRequest;
     var onDataReceived = /* @__PURE__ */ __name((chunkMessage) => __awaiter3(void 0, void 0, void 0, function* () {
@@ -69734,9 +69620,9 @@ var require_client = __commonJS({
           }
           const errorPacket = packet;
           (0, core_12.error)(`An error occurred in Scenamatica: ${errorPacket.exception}: ${errorPacket.message}`);
-          yield (0, outputs_1.publishScenamaticaError)(errorPacket);
+          yield (0, publisher_1.publishScenamaticaError)(errorPacket);
           if (prInfo)
-            yield (0, pull_request_1.publishPRComment)(prInfo);
+            yield (0, appender_1.publishPRComment)(prInfo);
           yield (0, controller_1.endTests)(false);
           break;
         }
@@ -69766,84 +69652,14 @@ var require_client = __commonJS({
         case "end": {
           const sessionEnd = packet;
           (0, logging_1.logSessionEnd)(sessionEnd);
-          yield (0, outputs_1.publishSessionEnd)(sessionEnd);
+          yield (0, publisher_1.publishSessionEnd)(sessionEnd);
           if (prInfo)
-            yield (0, pull_request_1.publishPRComment)(prInfo);
+            yield (0, appender_1.publishPRComment)(prInfo);
           yield (0, controller_1.endTests)((0, utils_1.isTestSucceed)(sessionEnd.results));
           break;
         }
       }
     }), "processSessionPackets");
-  }
-});
-
-// lib/outputs/summary.js
-var require_summary2 = __commonJS({
-  "lib/outputs/summary.js"(exports2) {
-    "use strict";
-    var __awaiter3 = exports2 && exports2.__awaiter || function(thisArg, _arguments, P, generator) {
-      function adopt(value) {
-        return value instanceof P ? value : new P(function(resolve) {
-          resolve(value);
-        });
-      }
-      __name(adopt, "adopt");
-      return new (P || (P = Promise))(function(resolve, reject) {
-        function fulfilled(value) {
-          try {
-            step(generator.next(value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(fulfilled, "fulfilled");
-        function rejected(value) {
-          try {
-            step(generator["throw"](value));
-          } catch (e2) {
-            reject(e2);
-          }
-        }
-        __name(rejected, "rejected");
-        function step(result) {
-          result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-        }
-        __name(step, "step");
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-      });
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = void 0;
-    var core_12 = require_core();
-    var messages_1 = require_messages();
-    var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter3(void 0, void 0, void 0, function* () {
-      const { results, finishedAt, startedAt } = sessionEnd;
-      core_12.summary.addRaw((0, messages_1.getHeader)(false));
-      core_12.summary.addRaw((0, messages_1.getTestSummary)(results, startedAt, finishedAt));
-      core_12.summary.addRaw((0, messages_1.getTestResultTable)(results));
-      yield core_12.summary.write();
-    }), "printSummary");
-    exports2.printSummary = printSummary;
-    var errorHeaderPrinted = false;
-    var errorReportingMessagePrinted = false;
-    var printErrorSummary = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => __awaiter3(void 0, void 0, void 0, function* () {
-      if (!errorHeaderPrinted) {
-        core_12.summary.addRaw((0, messages_1.getHeader)(true));
-        errorHeaderPrinted = true;
-      }
-      core_12.summary.addRaw((0, messages_1.getExceptionString)(errorType, errorMessage, errorStackTrace));
-      if (!errorReportingMessagePrinted) {
-        core_12.summary.addRaw((0, messages_1.getReportingMessage)());
-        errorReportingMessagePrinted = true;
-      }
-      yield core_12.summary.write();
-    }), "printErrorSummary");
-    exports2.printErrorSummary = printErrorSummary;
-    var printFooter = /* @__PURE__ */ __name(() => __awaiter3(void 0, void 0, void 0, function* () {
-      core_12.summary.addRaw((0, messages_1.getFooter)());
-      yield core_12.summary.write();
-    }), "printFooter");
-    exports2.printFooter = printFooter;
   }
 });
 

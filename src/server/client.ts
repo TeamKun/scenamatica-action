@@ -11,12 +11,12 @@ import {
     publishRunning,
     publishScenamaticaError,
     publishSessionEnd
-} from "../outputs";
+} from "../outputs/publisher";
 import {logSessionEnd, logSessionStart, logTestEnd, logTestStart} from "../logging";
-import type {PullRequestInfo} from "../outputs/pull-request";
+import type {PullRequestInfo} from "../outputs/pull-request/appender";
 import {endTests} from "./controller";
 import {isTestSucceed} from "../utils";
-import {publishPRComment} from "../outputs/pull-request";
+import {publishPRComment} from "../outputs/pull-request/appender";
 
 let incomingBuffer: string | undefined
 let alive = true

@@ -1,8 +1,8 @@
 import type { PacketSessionEnd,PacketScenamaticaError} from "../packets";
 import {printErrorSummary, printSummary} from "./summary";
 import {publishActionOutput} from "./action-output";
-import type { PullRequestInfo} from "./pull-request";
-import {publishPRComment, reportRunning, reportError, reportSessionEnd} from "./pull-request";
+import type { PullRequestInfo} from "./pull-request/appender";
+import {publishPRComment, reportRunning, reportError, reportSessionEnd} from "./pull-request/appender";
 
 export const publishSessionEnd = async (packet: PacketSessionEnd) => {
     await printSummary(packet)

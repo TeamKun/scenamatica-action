@@ -5,7 +5,7 @@ import type { Args } from "./utils.js"
 import { getArguments } from "./utils.js"
 import {info, setFailed} from "@actions/core";
 import {context, getOctokit} from "@actions/github";
-import type {PullRequestInfo} from "./outputs/pull-request";
+import type {PullRequestInfo} from "./outputs/pull-request/appender";
 import {initPullRequest} from "./server/client";
 
 const main = async (): Promise<void> => {
