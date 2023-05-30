@@ -24,7 +24,7 @@ const MESSAGES_NO_TESTS = [
     "Tests? We don't need no stinkin' tests! :shushing_face:",
     "No tests? I guess we'll just have to wing it. :eagle:",
     "You get a test, and you get a test! Everybody gets a test! :gift: :tada:",
-    "No tests? That's unpossible! :dizzy_face:",
+    "No tests? That's impossible! :dizzy_face:",
     "Tests make the code go round. :carousel_horse:"
 ];
 
@@ -39,6 +39,19 @@ const MESSAGES_FAILED = [
     "Don't worry, we'll get 'em next time! :sunglasses:",
     "Keep calm and debug on. :female_detective:",
     "The only way is up from here! :rocket:"
+];
+
+const MESSAGES_PASSED_WITH_THRESHOLD = [
+    "Tests passed, but some are being rebellious. Debug mode: ON! :microscope:",
+    "Almost there! Some tests failed, but hey, progress is progress! :turtle:",
+    "Good news: most tests passed. Bad news: a few had different plans. Let's fix 'em! :hammer:",
+    "We're on the right track, but some tests are playing hard to get. Challenge accepted! :muscle:",
+    "Tests went well overall, but we have a few stubborn failures. Time for some gentle persuasion! :wrench:",
+    "Success with a side of failures. It's like a bittersweet symphony. Let's sweeten it up! :musical_note:",
+    "We're soaring high, but some tests got left behind. Time to reel them back in! :fishing_pole_and_fish:",
+    "Great progress, but we've got some test gremlins causing trouble. Let's send them packing! :imp:",
+    "Victory is ours, with a sprinkle of defeat. Let's conquer those pesky failures! :crossed_swords:",
+    "We're almost there, but a few tests are being rebellious. Let's bring them back to the flock! :sheep:"
 ];
 
 const REPORT_URL = "https://github.com/TeamKun/Scenamatica/issues/new?assignees=PeyaPeyaPeyang&labels=Type%3A+Bug&projects=&template=bug_report.yml&title=%E3%80%90%E3%83%90%E3%82%B0%E3%80%91"
@@ -141,10 +154,13 @@ export const getTestResultTable = (results: PacketTestEnd[], minimize = false) =
 }
 
 const getSummaryHeader = (total: number, elapsed: number, passed: number, failures: number, skipped: number, cancelled: number) => {
+    const threshold = getArguments().failThreshold
+
     let messageSource: string[]
 
     if (total === passed + skipped) messageSource = MESSAGES_PASSED
     else if (failures === 0) messageSource = MESSAGES_NO_TESTS
+    else if (failures <= threshold) messageSource = MESSAGES_PASSED_WITH_THRESHOLD
     else messageSource = MESSAGES_FAILED
 
     const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)]

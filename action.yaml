@@ -17,6 +17,9 @@ inputs:
   scenamatica:
     description: "Target Scenamatica version."
     required: true
+  fail-threshold:
+    description: "The number of failed tests that will cause the action to fail. Negative values will cause the action to always pass."
+    default: "0"
   github-token:
     description: "GitHub token for writing pull request comments."
     default: "${{ github.token }}"

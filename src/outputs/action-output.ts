@@ -1,16 +1,17 @@
 import type { PacketSessionEnd} from "../packets";
 import {PacketScenamaticaError, TestResultCause} from "../packets";
 import {setOutput} from "@actions/core";
+import {isTestSucceed} from "../utils";
 
-export const publishActionOutput = (packet: PacketScenamaticaError | PacketSessionEnd) => {
+export const publishOutput = (packet: PacketScenamaticaError | PacketSessionEnd) => {
     if (packet instanceof PacketScenamaticaError) {
-        publishActionError(packet)
+        publishError(packet)
     } else {
-        publishActionEnd(packet);
+        publishSessionEnd(packet);
     }
 }
 
-const publishActionError = (packet: PacketScenamaticaError) => {
+const publishError = (packet: PacketScenamaticaError) => {
     const {exception, message} = packet
 
     setOutput("success", false)
@@ -18,7 +19,7 @@ const publishActionError = (packet: PacketScenamaticaError) => {
     setOutput("runner-error-message", message)
 }
 
-const publishActionEnd = (packet: PacketSessionEnd) => {
+const publishSessionEnd = (packet: PacketSessionEnd) => {
     const {results} = packet
     const all = results.length
     const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length
@@ -26,7 +27,7 @@ const publishActionEnd = (packet: PacketSessionEnd) => {
     const cancelled = results.filter((t) => t.cause === TestResultCause.CANCELLED).length
     const failed = all - passed - skipped - cancelled
 
-    setOutput("success", failed === 0)
+    setOutput("success", isTestSucceed(results))
     setOutput("tests", all)
     setOutput("tests-passes", passed)
     setOutput("tests-failures", failed)

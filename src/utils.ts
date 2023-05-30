@@ -31,12 +31,10 @@ const extractTestResults = (results: PacketTestEnd[]) => {
 }
 
 export const isTestSucceed = (results: PacketTestEnd[]) => {
-    return results.every(
-        (test) =>
-            test.cause === TestResultCause.PASSED ||
-            test.cause === TestResultCause.SKIPPED ||
-            test.cause === TestResultCause.CANCELLED
-    )
+    const {failures} = extractTestResults(results)
+    const threshold = getArguments().failThreshold
+
+    return failures <= threshold
 }
 
 interface Args {
@@ -46,6 +44,7 @@ interface Args {
     pluginFile: string
     javaVersion: string
     githubToken: string
+    failThreshold: number
 }
 
 const getArguments = (): Args => {
@@ -56,6 +55,7 @@ const getArguments = (): Args => {
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
+        failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0,
     }
 }
 
