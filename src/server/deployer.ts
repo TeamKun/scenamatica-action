@@ -9,6 +9,7 @@ import { exec } from "@actions/exec"
 import fetch from "node-fetch"
 import {startServerOnly} from "./controller";
 import {info} from "@actions/core";
+import {compare} from "compare-versions";
 
 const PAPER_NAME = "paper.jar"
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
@@ -172,7 +173,7 @@ export const deployServer = async (
     await writeEula(dir) // eula.txt を書き込まないと Paper が起動Vしない
     await startServerOnly(dir, PAPER_NAME)
 
-    await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"))
+    await initScenamaticaConfig(path.join(pluginDir, "Scenamatica"), scenamaticaVersion)
 
     await cache.saveCache([dir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion))
 
@@ -187,16 +188,24 @@ export const deployPlugin = async (serverDir: string, pluginFile: string) => {
     await io.cp(pluginFile, pluginDir)
 }
 
-const initScenamaticaConfig = async (configDir: string) => {
+const initScenamaticaConfig = async (configDir: string, scenamaticaVersion: string) => {
     const configPath = path.join(configDir, "config.yml")
 
     const configData = yaml.load(await fs.promises.readFile(configPath, "utf8")) as {
-        interfaces: {
+        interfaces?: {
+            raw: boolean
+        },
+        reporting?: {  // v0.6.1 から。
             raw: boolean
         }
     }
 
-    configData["interfaces"]["raw"] = true
+    if (compare(scenamaticaVersion, "0.7.0", ">=")) {
+        configData["reporting"]!["raw"] = true
+    } else {
+        configData["interfaces"]!["raw"] = true
+    }
+
 
     await fs.promises.writeFile(configPath, yaml.dump(configData))
 }

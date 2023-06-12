@@ -19,6 +19,9 @@ dependencies:
   '@actions/tool-cache':
     specifier: ^2.0.1
     version: 2.0.1
+  compare-versions:
+    specifier: ^6.0.0-rc.1
+    version: 6.0.0-rc.1
   js-yaml:
     specifier: ^4.1.0
     version: 4.1.0
@@ -1061,6 +1064,10 @@ packages:
     resolution: {integrity: sha512-B52sN2VNghyq5ofvUsqZjmk6YkihBX5vMSChmSK9v4ShjKf3Vk5Xcmgpw4o+iIgtrnM/u5FiMpz9VKb8lpBveA==}
     engines: {node: '>= 12.0.0'}
     dev: true
+
+  /compare-versions@6.0.0-rc.1:
+    resolution: {integrity: sha512-cFhkjbGY1jLFWIV7KegECbfuyYPxSGvgGkdkfM+ibboQDoPwg2FRHm5BSNTOApiauRBzJIQH7qvOJs2sW5ueKQ==}
+    dev: false
 
   /concat-map@0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}

@@ -68895,7 +68895,7 @@ var require_utils5 = __commonJS({
     exports2.isNoScenamatica = exports2.getArguments = exports2.extractTestResults = exports2.isTestSucceed = void 0;
     var core = __importStar3(require_core());
     var packets_1 = require_packets();
-    var DEFAULT_SCENAMATICA_VERSION = "0.5.8";
+    var DEFAULT_SCENAMATICA_VERSION = "0.7.0";
     var ENV_NO_SCENAMATICA = "NO_SCENAMATICA";
     var extractTestResults = /* @__PURE__ */ __name((results) => {
       const total = results.length;
@@ -68913,7 +68913,9 @@ var require_utils5 = __commonJS({
     }, "extractTestResults");
     exports2.extractTestResults = extractTestResults;
     var isTestSucceed = /* @__PURE__ */ __name((results) => {
-      return results.every((test) => test.cause === packets_1.TestResultCause.PASSED || test.cause === packets_1.TestResultCause.SKIPPED || test.cause === packets_1.TestResultCause.CANCELLED);
+      const { failures } = extractTestResults(results);
+      const threshold = getArguments().failThreshold;
+      return failures <= threshold;
     }, "isTestSucceed");
     exports2.isTestSucceed = isTestSucceed;
     var getArguments = /* @__PURE__ */ __name(() => {
@@ -68923,7 +68925,8 @@ var require_utils5 = __commonJS({
         serverDir: core.getInput("server-dir") || "server",
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
-        githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN
+        githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN,
+        failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0
       };
     }, "getArguments");
     exports2.getArguments = getArguments;
@@ -69041,7 +69044,7 @@ var require_messages = __commonJS({
       "Tests? We don't need no stinkin' tests! :shushing_face:",
       "No tests? I guess we'll just have to wing it. :eagle:",
       "You get a test, and you get a test! Everybody gets a test! :gift: :tada:",
-      "No tests? That's unpossible! :dizzy_face:",
+      "No tests? That's impossible! :dizzy_face:",
       "Tests make the code go round. :carousel_horse:"
     ];
     var MESSAGES_FAILED = [
@@ -69055,6 +69058,18 @@ var require_messages = __commonJS({
       "Don't worry, we'll get 'em next time! :sunglasses:",
       "Keep calm and debug on. :female_detective:",
       "The only way is up from here! :rocket:"
+    ];
+    var MESSAGES_PASSED_WITH_THRESHOLD = [
+      "Tests passed, but some are being rebellious. Debug mode: ON! :microscope:",
+      "Almost there! Some tests failed, but hey, progress is progress! :turtle:",
+      "Good news: most tests passed. Bad news: a few had different plans. Let's fix 'em! :hammer:",
+      "We're on the right track, but some tests are playing hard to get. Challenge accepted! :muscle:",
+      "Tests went well overall, but we have a few stubborn failures. Time for some gentle persuasion! :wrench:",
+      "Success with a side of failures. It's like a bittersweet symphony. Let's sweeten it up! :musical_note:",
+      "We're soaring high, but some tests got left behind. Time to reel them back in! :fishing_pole_and_fish:",
+      "Great progress, but we've got some test gremlins causing trouble. Let's send them packing! :imp:",
+      "Victory is ours, with a sprinkle of defeat. Let's conquer those pesky failures! :crossed_swords:",
+      "We're almost there, but a few tests are being rebellious. Let's bring them back to the flock! :sheep:"
     ];
     var REPORT_URL = "https://github.com/TeamKun/Scenamatica/issues/new?assignees=PeyaPeyaPeyang&labels=Type%3A+Bug&projects=&template=bug_report.yml&title=%E3%80%90%E3%83%90%E3%82%B0%E3%80%91";
     var getHeader = /* @__PURE__ */ __name((isError) => {
@@ -69098,11 +69113,14 @@ var require_messages = __commonJS({
     }, "getTestResultTable");
     exports2.getTestResultTable = getTestResultTable;
     var getSummaryHeader = /* @__PURE__ */ __name((total, elapsed, passed, failures, skipped, cancelled) => {
+      const threshold = (0, utils_1.getArguments)().failThreshold;
       let messageSource;
       if (total === passed + skipped)
         messageSource = MESSAGES_PASSED;
       else if (failures === 0)
         messageSource = MESSAGES_NO_TESTS;
+      else if (failures <= threshold)
+        messageSource = MESSAGES_PASSED_WITH_THRESHOLD;
       else
         messageSource = MESSAGES_FAILED;
       const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)];
@@ -69228,37 +69246,38 @@ var require_action_output = __commonJS({
   "lib/outputs/action-output.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.publishActionOutput = void 0;
+    exports2.publishOutput = void 0;
     var packets_1 = require_packets();
     var core_12 = require_core();
-    var publishActionOutput = /* @__PURE__ */ __name((packet) => {
+    var utils_1 = require_utils5();
+    var publishOutput = /* @__PURE__ */ __name((packet) => {
       if (packet instanceof packets_1.PacketScenamaticaError) {
-        publishActionError(packet);
+        publishError(packet);
       } else {
-        publishActionEnd(packet);
+        publishSessionEnd(packet);
       }
-    }, "publishActionOutput");
-    exports2.publishActionOutput = publishActionOutput;
-    var publishActionError = /* @__PURE__ */ __name((packet) => {
+    }, "publishOutput");
+    exports2.publishOutput = publishOutput;
+    var publishError = /* @__PURE__ */ __name((packet) => {
       const { exception, message } = packet;
       (0, core_12.setOutput)("success", false);
       (0, core_12.setOutput)("runner-error-type", exception);
       (0, core_12.setOutput)("runner-error-message", message);
-    }, "publishActionError");
-    var publishActionEnd = /* @__PURE__ */ __name((packet) => {
+    }, "publishError");
+    var publishSessionEnd = /* @__PURE__ */ __name((packet) => {
       const { results } = packet;
       const all = results.length;
       const passed = results.filter((t2) => t2.cause === packets_1.TestResultCause.PASSED).length;
       const skipped = results.filter((t2) => t2.cause === packets_1.TestResultCause.SKIPPED).length;
       const cancelled = results.filter((t2) => t2.cause === packets_1.TestResultCause.CANCELLED).length;
       const failed = all - passed - skipped - cancelled;
-      (0, core_12.setOutput)("success", failed === 0);
+      (0, core_12.setOutput)("success", (0, utils_1.isTestSucceed)(results));
       (0, core_12.setOutput)("tests", all);
       (0, core_12.setOutput)("tests-passes", passed);
       (0, core_12.setOutput)("tests-failures", failed);
       (0, core_12.setOutput)("tests-skips", skipped);
       (0, core_12.setOutput)("tests-cancels", cancelled);
-    }, "publishActionEnd");
+    }, "publishSessionEnd");
   }
 });
 
@@ -69500,14 +69519,14 @@ var require_publisher = __commonJS({
     var appender_1 = require_appender();
     var publishSessionEnd = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
       yield (0, summary_1.printSummary)(packet);
-      (0, action_output_1.publishActionOutput)(packet);
+      (0, action_output_1.publishOutput)(packet);
       (0, appender_1.reportSessionEnd)(packet);
     }), "publishSessionEnd");
     exports2.publishSessionEnd = publishSessionEnd;
     var publishScenamaticaError = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
       const { exception, message, stackTrace } = packet;
       yield (0, summary_1.printErrorSummary)(exception, message, stackTrace);
-      (0, action_output_1.publishActionOutput)(packet);
+      (0, action_output_1.publishOutput)(packet);
       (0, appender_1.reportError)(packet);
     }), "publishScenamaticaError");
     exports2.publishScenamaticaError = publishScenamaticaError;
@@ -69830,6 +69849,124 @@ var require_controller = __commonJS({
   }
 });
 
+// node_modules/.pnpm/compare-versions@6.0.0-rc.1/node_modules/compare-versions/lib/umd/index.js
+var require_umd = __commonJS({
+  "node_modules/.pnpm/compare-versions@6.0.0-rc.1/node_modules/compare-versions/lib/umd/index.js"(exports2, module2) {
+    (function(global2, factory) {
+      typeof exports2 === "object" && typeof module2 !== "undefined" ? factory(exports2) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global2 = typeof globalThis !== "undefined" ? globalThis : global2 || self, factory(global2.compareVersions = {}));
+    })(exports2, function(exports3) {
+      "use strict";
+      const compareVersions = /* @__PURE__ */ __name((v12, v2) => {
+        const n1 = validateAndParse(v12);
+        const n2 = validateAndParse(v2);
+        const p1 = n1.pop();
+        const p2 = n2.pop();
+        const r2 = compareSegments(n1, n2);
+        if (r2 !== 0)
+          return r2;
+        if (p1 && p2) {
+          return compareSegments(p1.split("."), p2.split("."));
+        } else if (p1 || p2) {
+          return p1 ? -1 : 1;
+        }
+        return 0;
+      }, "compareVersions");
+      const validate2 = /* @__PURE__ */ __name((version2) => typeof version2 === "string" && /^[v\d]/.test(version2) && semver.test(version2), "validate");
+      const compare = /* @__PURE__ */ __name((v12, v2, operator) => {
+        assertValidOperator(operator);
+        const res = compareVersions(v12, v2);
+        return operatorResMap[operator].includes(res);
+      }, "compare");
+      const satisfies = /* @__PURE__ */ __name((version2, range) => {
+        if (range.includes("||")) {
+          return range.split("||").some((r5) => satisfies(version2, r5));
+        } else if (range.includes(" ")) {
+          return range.trim().replace(/\s{2,}/g, " ").split(" ").every((r5) => satisfies(version2, r5));
+        }
+        const m2 = range.match(/^([<>=~^]+)/);
+        const op = m2 ? m2[1] : "=";
+        if (op !== "^" && op !== "~")
+          return compare(version2, range, op);
+        const [v12, v2, v32, , vp] = validateAndParse(version2);
+        const [r1, r2, r3, , rp] = validateAndParse(range);
+        const v = [v12, v2, v32];
+        const r4 = [r1, r2 !== null && r2 !== void 0 ? r2 : "x", r3 !== null && r3 !== void 0 ? r3 : "x"];
+        if (rp) {
+          if (!vp)
+            return false;
+          if (compareSegments(v, r4) !== 0)
+            return false;
+          if (compareSegments(vp.split("."), rp.split(".")) === -1)
+            return false;
+        }
+        const nonZero = r4.findIndex((v6) => v6 !== "0") + 1;
+        const i2 = op === "~" ? 2 : nonZero > 1 ? nonZero : 1;
+        if (compareSegments(v.slice(0, i2), r4.slice(0, i2)) !== 0)
+          return false;
+        if (compareSegments(v.slice(i2), r4.slice(i2)) === -1)
+          return false;
+        return true;
+      }, "satisfies");
+      const semver = /^[v^~<>=]*?(\d+)(?:\.([x*]|\d+)(?:\.([x*]|\d+)(?:\.([x*]|\d+))?(?:-([\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?)?)?$/i;
+      const validateAndParse = /* @__PURE__ */ __name((version2) => {
+        if (typeof version2 !== "string") {
+          throw new TypeError("Invalid argument expected string");
+        }
+        const match = version2.match(semver);
+        if (!match) {
+          throw new Error(`Invalid argument not valid semver ('${version2}' received)`);
+        }
+        match.shift();
+        return match;
+      }, "validateAndParse");
+      const isWildcard = /* @__PURE__ */ __name((s2) => s2 === "*" || s2 === "x" || s2 === "X", "isWildcard");
+      const tryParse = /* @__PURE__ */ __name((v) => {
+        const n = parseInt(v, 10);
+        return isNaN(n) ? v : n;
+      }, "tryParse");
+      const forceType = /* @__PURE__ */ __name((a, b) => typeof a !== typeof b ? [String(a), String(b)] : [a, b], "forceType");
+      const compareStrings = /* @__PURE__ */ __name((a, b) => {
+        if (isWildcard(a) || isWildcard(b))
+          return 0;
+        const [ap, bp] = forceType(tryParse(a), tryParse(b));
+        if (ap > bp)
+          return 1;
+        if (ap < bp)
+          return -1;
+        return 0;
+      }, "compareStrings");
+      const compareSegments = /* @__PURE__ */ __name((a, b) => {
+        for (let i2 = 0; i2 < Math.max(a.length, b.length); i2++) {
+          const r2 = compareStrings(a[i2] || "0", b[i2] || "0");
+          if (r2 !== 0)
+            return r2;
+        }
+        return 0;
+      }, "compareSegments");
+      const operatorResMap = {
+        ">": [1],
+        ">=": [0, 1],
+        "=": [0],
+        "<=": [-1, 0],
+        "<": [-1]
+      };
+      const allowedOperators = Object.keys(operatorResMap);
+      const assertValidOperator = /* @__PURE__ */ __name((op) => {
+        if (typeof op !== "string") {
+          throw new TypeError(`Invalid operator type, expected string but got ${typeof op}`);
+        }
+        if (allowedOperators.indexOf(op) === -1) {
+          throw new Error(`Invalid operator, expected one of ${allowedOperators.join("|")}`);
+        }
+      }, "assertValidOperator");
+      exports3.compare = compare;
+      exports3.compareVersions = compareVersions;
+      exports3.satisfies = satisfies;
+      exports3.validate = validate2;
+    });
+  }
+});
+
 // lib/server/deployer.js
 var require_deployer = __commonJS({
   "lib/server/deployer.js"(exports2) {
@@ -69913,6 +70050,7 @@ var require_deployer = __commonJS({
     var node_fetch_1 = __importDefault2((init_src(), __toCommonJS(src_exports)));
     var controller_1 = require_controller();
     var core_12 = require_core();
+    var compare_versions_1 = require_umd();
     var PAPER_NAME = "paper.jar";
     var PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/";
     var PAPER_DOWNLOAD_URL = `${PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`;
@@ -70007,7 +70145,7 @@ var require_deployer = __commonJS({
       yield downloadScenamatica(pluginDir, scenamaticaVersion);
       yield writeEula(dir);
       yield (0, controller_1.startServerOnly)(dir, PAPER_NAME);
-      yield initScenamaticaConfig(node_path_1.default.join(pluginDir, "Scenamatica"));
+      yield initScenamaticaConfig(node_path_1.default.join(pluginDir, "Scenamatica"), scenamaticaVersion);
       yield cache.saveCache([dir], genCacheKey(javaVersion, mcVersion, scenamaticaVersion));
       return PAPER_NAME;
     }), "deployServer");
@@ -70018,10 +70156,14 @@ var require_deployer = __commonJS({
       yield io.cp(pluginFile, pluginDir);
     }), "deployPlugin");
     exports2.deployPlugin = deployPlugin;
-    var initScenamaticaConfig = /* @__PURE__ */ __name((configDir) => __awaiter3(void 0, void 0, void 0, function* () {
+    var initScenamaticaConfig = /* @__PURE__ */ __name((configDir, scenamaticaVersion) => __awaiter3(void 0, void 0, void 0, function* () {
       const configPath = node_path_1.default.join(configDir, "config.yml");
       const configData = yaml.load(yield fs3.promises.readFile(configPath, "utf8"));
-      configData["interfaces"]["raw"] = true;
+      if ((0, compare_versions_1.compare)(scenamaticaVersion, "0.7.0", ">=")) {
+        configData["reporting"]["raw"] = true;
+      } else {
+        configData["interfaces"]["raw"] = true;
+      }
       yield fs3.promises.writeFile(configPath, yaml.dump(configData));
     }), "initScenamaticaConfig");
   }
