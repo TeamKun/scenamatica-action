@@ -8,6 +8,7 @@ import {
     getTestResultTable,
     getTestSummary
 } from "./messages";
+import type {PacketScenamaticaError} from "../packets";
 
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
     const {results, finishedAt, startedAt} = sessionEnd
@@ -23,13 +24,13 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
 let errorHeaderPrinted = false
 let errorReportingMessagePrinted = false
 
-const printErrorSummary = async (errorType: string, errorMessage: string, errorStackTrace: string[]) => {
+const printErrorSummary = async (packet: PacketScenamaticaError) => {
     if (!errorHeaderPrinted) {
         summary.addRaw(getHeader(true))
         errorHeaderPrinted = true
     }
 
-    summary.addRaw(getExceptionString(errorType, errorMessage, errorStackTrace))
+    summary.addRaw(getExceptionString(packet))
 
     if (!errorReportingMessagePrinted) {
         summary.addRaw(getReportingMessage())

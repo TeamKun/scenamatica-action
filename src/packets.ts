@@ -86,7 +86,7 @@ export class PacketScenamaticaError implements Packet<PacketScenamaticaError> {
     public genre = "general"
 
     public type = "error"
-    public constructor(public date: number, public exception: string, public message: string, public stackTrace: string[]) {}
+    public constructor(public date: number, public exception: string, public message: string, public stackTrace: string[], public causedBy?: PacketScenamaticaError = null) {}
 }
 
 export const parsePacket = (

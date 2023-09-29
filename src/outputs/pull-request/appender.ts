@@ -24,11 +24,10 @@ export interface PullRequestInfo {
 }
 
 export const reportError = (packet: PacketScenamaticaError) => {
-    const {exception, message, stackTrace} = packet
 
     appendHeaderIfNotPrinted()
 
-    outMessage += getExceptionString(exception, message, stackTrace)
+    outMessage += getExceptionString(packet)
     containsError = true
 }
 

@@ -1,6 +1,7 @@
 import {extractTestResults, getArguments} from "../utils";
 import type {PacketTestEnd} from "../packets";
 import {getEmojiForCause} from "../logging";
+import type {PacketScenamaticaError} from "../packets";
 
 const MESSAGES_PASSED = [
     ":tada: Congrats! All tests passed! :star2:",
@@ -178,13 +179,28 @@ const getSummaryHeader = (total: number, elapsed: number, passed: number, failur
     )
 }
 
-export const getExceptionString = (errorType: string, errorMessage: string, errorStackTrace: string[]) => {
+export const getExceptionString = (packet: PacketScenamaticaError) => {
     return wrap("pre", wrap("code", joinLine(
                 "An unexpected error has occurred while running Scenamatica daemon:",
-                `${errorType}: ${errorMessage}`,
-                ...errorStackTrace.map((s) => `    at ${s}`)
-            )
-    ))
+                getErrorAndStacktrace(packet)
+    )))
+}
+
+const getErrorAndStacktrace = (packet: PacketScenamaticaError) => {
+    const {exception, message, stackTrace, causedBy } = packet
+
+    let causedByString;
+
+    if (causedBy) {
+        causedByString = joinLine(`Caused by: ${getErrorAndStacktrace(causedBy as PacketScenamaticaError)}`)
+    }
+
+    return joinLine(
+        `${exception}: ${message}`,
+        ...stackTrace.map((s) => `    at ${s}`),
+        causedByString || ""
+    )
+
 }
 
 export const getReportingMessage = () => {

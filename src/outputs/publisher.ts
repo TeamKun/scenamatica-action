@@ -12,9 +12,7 @@ export const publishSessionEnd = async (packet: PacketSessionEnd) => {
 }
 
 export const publishScenamaticaError = async (packet: PacketScenamaticaError) => {
-    const {exception, message, stackTrace} = packet
-
-    await printErrorSummary(exception, message, stackTrace)
+    await printErrorSummary(packet)
     publishOutput(packet)
 
     reportError(packet)
