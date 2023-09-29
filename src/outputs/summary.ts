@@ -16,7 +16,7 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
     summary.addRaw(getHeader(false))
     summary.addRaw(getTestSummary(results, startedAt, finishedAt))
 
-    summary.addRaw(getTestResultTable(results))
+    summary.addRaw(getTestResultTable(results, true))
 
     await summary.write()
 }
