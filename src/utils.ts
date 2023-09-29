@@ -2,7 +2,7 @@ import * as core from "@actions/core"
 import type {PacketTestEnd} from "./packets";
 import {TestResultCause} from "./packets";
 
-const DEFAULT_SCENAMATICA_VERSION = "0.7.0"
+const DEFAULT_SCENAMATICA_VERSION = "0.8.0"
 const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
 
 const extractTestResults = (results: PacketTestEnd[]) => {
