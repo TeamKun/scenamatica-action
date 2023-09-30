@@ -56,7 +56,7 @@ const getArguments = (): Args => {
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
-        graphicalSummary: core.getInput("graphical-summary").toLowerCase() !== "false",
+        graphicalSummary: core.getBooleanInput("graphical-summary"),
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0,
     }
 }
