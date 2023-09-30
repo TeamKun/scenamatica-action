@@ -23,6 +23,9 @@ inputs:
   github-token:
     description: "GitHub token for writing pull request comments."
     default: "${{ github.token }}"
+  graphical-summary:
+    description: "Whether to generate a summary of the test results in the form of a graph."
+    default: "true"
 outputs:
   # Runner outputs
   success:

@@ -9,6 +9,8 @@ import {
     getTestSummary
 } from "./messages";
 import type {PacketScenamaticaError} from "../packets";
+import {generateGraphicalSummary} from "./graphical-summary";
+import {getArguments} from "../utils";
 
 const printSummary = async (sessionEnd: PacketSessionEnd) => {
     const {results, finishedAt, startedAt} = sessionEnd
@@ -16,6 +18,8 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
     summary.addRaw(getHeader(false))
     summary.addRaw(getTestSummary(results, startedAt, finishedAt))
 
+    if (getArguments().graphicalSummary)
+        summary.addRaw(generateGraphicalSummary(sessionEnd))
     summary.addRaw(getTestResultTable(results, true))
 
     await summary.write()

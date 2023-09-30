@@ -255,17 +255,17 @@ const getLicenseMessage = () => {
     )
 }
 
-const wrap = (tag: string, text: string, props: { [key: string]: string } = {}) => {
+export const wrap = (tag: string, text: string, props: { [key: string]: string } = {}) => {
     const attributes = Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(" ")
 
     return `<${tag} ${attributes}>${text}</${tag}>`
 }
 
-const joinLine = (...texts: string[]) => {
+export const joinLine = (...texts: string[]) => {
     return texts.join("\n")
 }
 
-const join = (delimiter: string, ...texts: string[]) => {
+export const join = (delimiter: string, ...texts: string[]) => {
     return texts.join(delimiter)
 }
 

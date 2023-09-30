@@ -44,6 +44,7 @@ interface Args {
     pluginFile: string
     javaVersion: string
     githubToken: string
+    graphicalSummary: boolean
     failThreshold: number
 }
 
@@ -55,6 +56,7 @@ const getArguments = (): Args => {
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
+        graphicalSummary: core.getInput("graphical-summary").toLowerCase() !== "false",
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0,
     }
 }
