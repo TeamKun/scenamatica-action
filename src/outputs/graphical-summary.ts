@@ -32,12 +32,11 @@ const generateGanttChart = (result: PacketSessionEnd) => {
     const results = result.results
         .sort((a, b) => a.startedAt - b.startedAt)
         .map((test) => {
-        const startedAt = toMermaidTime(test.startedAt)
-        const duration = test.finishedAt - test.startedAt
-        const durationString = toMermaidTime(duration)
-        const cause = causeToMermaidStatus(test.cause)
+            const startedAt = toMermaidTime(test.startedAt)
+            const finishedAt = toMermaidTime(test.finishedAt)
+            const cause = causeToMermaidStatus(test.cause)
 
-        return `${test.scenario.name}: ${cause} ${startedAt}, ${durationString}`
+            return `${test.scenario.name}: ${cause} ${startedAt}, ${finishedAt}`
     })
 
     return `
