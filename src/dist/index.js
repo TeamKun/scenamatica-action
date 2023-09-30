@@ -69214,10 +69214,11 @@ ${pieChart}
       const dateFormat = "HH:mm:ss.SSS";
       const axisFormat = "%M:%S";
       const results = result.results.sort((a, b) => a.startedAt - b.startedAt).map((test) => {
+        const startedAt = toMermaidTime(test.startedAt);
         const duration = test.finishedAt - test.startedAt;
         const durationString = toMermaidTime(duration);
         const cause = causeToMermaidStatus(test.cause);
-        return `${test.scenario.name}: ${cause} ${durationString}`;
+        return `${test.scenario.name}: ${cause} ${startedAt}, ${durationString}`;
       });
       return `
 gantt title ${title}
@@ -69231,10 +69232,10 @@ gantt title ${title}
     var generatePieChart = /* @__PURE__ */ __name((result) => {
       const title = "Scenamatica Test Results";
       const totalDuration = result.finishedAt - result.startedAt;
-      const results = result.results.sort((a, b) => b.finishedAt - b.startedAt - (a.finishedAt - a.startedAt)).map((test) => {
+      const results = result.results.sort((a, b) => b.finishedAt - b.startedAt - (a.finishedAt - a.startedAt)).map((test, idx) => {
         const duration = test.finishedAt - test.startedAt;
         const ratio = duration / totalDuration;
-        return `"${test.scenario.name}": ${ratio}`;
+        return `"${idx + 1}. ${test.scenario.name}": ${ratio}`;
       });
       return `
 pie title ${title}

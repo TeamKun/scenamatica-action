@@ -32,11 +32,12 @@ const generateGanttChart = (result: PacketSessionEnd) => {
     const results = result.results
         .sort((a, b) => a.startedAt - b.startedAt)
         .map((test) => {
+        const startedAt = toMermaidTime(test.startedAt)
         const duration = test.finishedAt - test.startedAt
         const durationString = toMermaidTime(duration)
         const cause = causeToMermaidStatus(test.cause)
 
-        return `${test.scenario.name}: ${cause} ${durationString}`
+        return `${test.scenario.name}: ${cause} ${startedAt}, ${durationString}`
     })
 
     return `
@@ -55,11 +56,11 @@ const generatePieChart = (result: PacketSessionEnd) => {
 
     const results = result.results
         .sort((a, b) => (b.finishedAt - b.startedAt) - (a.finishedAt - a.startedAt))
-        .map((test) => {
+        .map((test, idx) => {
         const duration = test.finishedAt - test.startedAt
         const ratio = duration / totalDuration
 
-        return `"${test.scenario.name}": ${ratio}`
+        return `"${idx + 1}. ${test.scenario.name}": ${ratio}`
     })
 
     return `
