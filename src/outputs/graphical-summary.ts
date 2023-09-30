@@ -29,18 +29,14 @@ const generateGanttChart = (result: PacketSessionEnd) => {
     const dateFormat = "HH:mm:ss.SSS"
     const axisFormat = "%M:%S"
 
-    let lastFinishedAt = 0
-
     const results = result.results
         .sort((a, b) => a.startedAt - b.startedAt)
         .map((test) => {
-            const startedAt = toMermaidTime(lastFinishedAt)
+            const startedAt = toMermaidTime(test.startedAt)
             const duration = test.finishedAt - test.startedAt
             const finishedAt = toMermaidTime(duration)
             const cause = causeToMermaidStatus(test.cause)
 
-            lastFinishedAt = duration
-            
             return `${test.scenario.name}: ${cause} ${startedAt}, ${finishedAt}`
     })
 
