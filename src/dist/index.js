@@ -68803,11 +68803,12 @@ var require_packets = __commonJS({
     __name(PacketSessionEnd, "PacketSessionEnd");
     exports2.PacketSessionEnd = PacketSessionEnd;
     var PacketScenamaticaError = class {
-      constructor(date, exception, message, stackTrace) {
+      constructor(date, exception, message, stackTrace, causedBy = null) {
         this.date = date;
         this.exception = exception;
         this.message = message;
         this.stackTrace = stackTrace;
+        this.causedBy = causedBy;
         this.genre = "general";
         this.type = "error";
       }
@@ -68895,7 +68896,7 @@ var require_utils5 = __commonJS({
     exports2.isNoScenamatica = exports2.getArguments = exports2.extractTestResults = exports2.isTestSucceed = void 0;
     var core = __importStar3(require_core());
     var packets_1 = require_packets();
-    var DEFAULT_SCENAMATICA_VERSION = "0.7.0";
+    var DEFAULT_SCENAMATICA_VERSION = "0.8.0";
     var ENV_NO_SCENAMATICA = "NO_SCENAMATICA";
     var extractTestResults = /* @__PURE__ */ __name((results) => {
       const total = results.length;
@@ -68926,6 +68927,7 @@ var require_utils5 = __commonJS({
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN,
+        graphicalSummary: core.getBooleanInput("graphical-summary"),
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0
       };
     }, "getArguments");
@@ -69020,7 +69022,7 @@ var require_messages = __commonJS({
   "lib/outputs/messages.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.getFooter = exports2.getReportingMessage = exports2.getExceptionString = exports2.getTestResultTable = exports2.getTestSummary = exports2.getRunningMessage = exports2.getHeader = void 0;
+    exports2.join = exports2.joinLine = exports2.wrap = exports2.getFooter = exports2.getReportingMessage = exports2.getExceptionString = exports2.getTestResultTable = exports2.getTestSummary = exports2.getRunningMessage = exports2.getHeader = void 0;
     var utils_1 = require_utils5();
     var logging_1 = require_logging();
     var MESSAGES_PASSED = [
@@ -69073,30 +69075,30 @@ var require_messages = __commonJS({
     ];
     var REPORT_URL = "https://github.com/TeamKun/Scenamatica/issues/new?assignees=PeyaPeyaPeyang&labels=Type%3A+Bug&projects=&template=bug_report.yml&title=%E3%80%90%E3%83%90%E3%82%B0%E3%80%91";
     var getHeader = /* @__PURE__ */ __name((isError) => {
-      const result = [wrap("h1", "Scenamatica"), wrap("h2", "Summary"), "<hr />"];
+      const result = [(0, exports2.wrap)("h1", "Scenamatica"), (0, exports2.wrap)("h2", "Summary"), "<hr />"];
       if (isError) {
-        result.push(wrap("h4", ":no_entry: ERROR!!"), wrap("p", "An unexpected error occurred while running the server and Scenamatica daemon."), wrap("h2", "Error details"));
+        result.push((0, exports2.wrap)("h4", ":no_entry: ERROR!!"), (0, exports2.wrap)("p", "An unexpected error occurred while running the server and Scenamatica daemon."), (0, exports2.wrap)("h2", "Error details"));
       }
-      return joinLine(...result);
+      return (0, exports2.joinLine)(...result);
     }, "getHeader");
     exports2.getHeader = getHeader;
     var getRunningMessage = /* @__PURE__ */ __name(() => {
       const messages = [
-        wrap("h4", ":hourglass_flowing_sand: Hey there! :wave: We're currently testing your plugin."),
-        wrap("p", "The testing process may take some time, but we'll update this message once it's complete.")
+        (0, exports2.wrap)("h4", ":hourglass_flowing_sand: Hey there! :wave: We're currently testing your plugin."),
+        (0, exports2.wrap)("p", "The testing process may take some time, but we'll update this message once it's complete.")
       ];
-      return joinLine(...messages);
+      return (0, exports2.joinLine)(...messages);
     }, "getRunningMessage");
     exports2.getRunningMessage = getRunningMessage;
     var getTestSummary = /* @__PURE__ */ __name((results, startedAt, finishedAt) => {
       const elapsed = (finishedAt - startedAt) / 1e3;
       const { total, passed, failures, skipped, cancelled } = (0, utils_1.extractTestResults)(results);
-      return joinLine(getSummaryHeader(total, elapsed, passed, failures, skipped, cancelled), "<hr />", wrap("h2", "Details"));
+      return (0, exports2.joinLine)(getSummaryHeader(total, elapsed, passed, failures, skipped, cancelled), "<hr />", (0, exports2.wrap)("h2", "Details"));
     }, "getTestSummary");
     exports2.getTestSummary = getTestSummary;
     var getTestResultTable = /* @__PURE__ */ __name((results, minimize = false) => {
-      const header = wrap("thead", joinLine(wrap("tr", joinLine(wrap("th", " "), wrap("th", "Test"), wrap("th", "Cause"), wrap("th", "State"), wrap("th", "Started at"), wrap("th", "Finished at"), wrap("th", "Elapsed"), wrap("th", "Test description")))));
-      const body = wrap("tbody", joinLine(...results.map((result) => {
+      const header = (0, exports2.wrap)("thead", (0, exports2.joinLine)((0, exports2.wrap)("tr", (0, exports2.joinLine)((0, exports2.wrap)("th", " "), (0, exports2.wrap)("th", "Test"), (0, exports2.wrap)("th", "Cause"), (0, exports2.wrap)("th", "State"), (0, exports2.wrap)("th", "Started at"), (0, exports2.wrap)("th", "Finished at"), (0, exports2.wrap)("th", "Elapsed"), (0, exports2.wrap)("th", "Test description")))));
+      const body = (0, exports2.wrap)("tbody", (0, exports2.joinLine)(...results.map((result) => {
         const { cause, state, scenario, startedAt, finishedAt } = result;
         const emoji = (0, logging_1.getEmojiForCause)(cause);
         const { name } = scenario;
@@ -69104,11 +69106,11 @@ var require_messages = __commonJS({
         const finishedAtStr = new Date(finishedAt).toLocaleString();
         const testElapsed = `${Math.ceil((finishedAt - startedAt) / 1e3)} sec`;
         const description = scenario.description || "No description";
-        return wrap("tr", joinLine(wrap("td", emoji), wrap("td", name), wrap("td", cause), wrap("td", state), wrap("td", startedAtStr), wrap("td", finishedAtStr), wrap("td", testElapsed), wrap("td", description)));
+        return (0, exports2.wrap)("tr", (0, exports2.joinLine)((0, exports2.wrap)("td", emoji), (0, exports2.wrap)("td", name), (0, exports2.wrap)("td", cause), (0, exports2.wrap)("td", state), (0, exports2.wrap)("td", startedAtStr), (0, exports2.wrap)("td", finishedAtStr), (0, exports2.wrap)("td", testElapsed), (0, exports2.wrap)("td", description)));
       })));
-      const table = wrap("table", joinLine(header, body));
+      const table = (0, exports2.wrap)("table", (0, exports2.joinLine)(header, body));
       if (minimize)
-        return wrap("details", joinLine(wrap("summary", "Full test results"), table));
+        return (0, exports2.wrap)("details", (0, exports2.joinLine)((0, exports2.wrap)("summary", "Full test results"), table));
       return table;
     }, "getTestResultTable");
     exports2.getTestResultTable = getTestResultTable;
@@ -69124,18 +69126,26 @@ var require_messages = __commonJS({
       else
         messageSource = MESSAGES_FAILED;
       const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)];
-      return joinLine(wrap("h4", summaryText), "<br />", wrap("p", join(", ", `Tests run: ${total}`, `Failures: ${failures}`, `Skipped: ${skipped}`, `Cancelled: ${cancelled}`, `Time elapsed: ${elapsed} sec`)));
+      return (0, exports2.joinLine)((0, exports2.wrap)("h4", summaryText), "<br />", (0, exports2.wrap)("p", (0, exports2.join)(", ", `Tests run: ${total}`, `Failures: ${failures}`, `Skipped: ${skipped}`, `Cancelled: ${cancelled}`, `Time elapsed: ${elapsed} sec`)));
     }, "getSummaryHeader");
-    var getExceptionString = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => {
-      return wrap("pre", wrap("code", joinLine("An unexpected error has occurred while running Scenamatica daemon:", `${errorType}: ${errorMessage}`, ...errorStackTrace.map((s2) => `    at ${s2}`))));
+    var getExceptionString = /* @__PURE__ */ __name((packet) => {
+      return (0, exports2.wrap)("pre", (0, exports2.wrap)("code", (0, exports2.joinLine)("An unexpected error has occurred while running Scenamatica daemon:", getErrorAndStacktrace(packet))));
     }, "getExceptionString");
     exports2.getExceptionString = getExceptionString;
+    var getErrorAndStacktrace = /* @__PURE__ */ __name((packet) => {
+      const { exception, message, stackTrace, causedBy } = packet;
+      let causedByString;
+      if (causedBy) {
+        causedByString = (0, exports2.joinLine)(`Caused by: ${getErrorAndStacktrace(causedBy)}`);
+      }
+      return (0, exports2.joinLine)(`${exception}: ${message}`, ...stackTrace.map((s2) => `    at ${s2}`), causedByString || "");
+    }, "getErrorAndStacktrace");
     var getReportingMessage = /* @__PURE__ */ __name(() => {
-      return joinLine(wrap("h2", "Reporting bugs"), wrap("p", combine("If you believe this is a bug, please report it to ", wrap("a", "Scenamatica", { href: REPORT_URL }), " along with the contents of this error message, the above stack trace, and the environment information listed below.")), getEnvInfoMessage());
+      return (0, exports2.joinLine)((0, exports2.wrap)("h2", "Reporting bugs"), (0, exports2.wrap)("p", combine("If you believe this is a bug, please report it to ", (0, exports2.wrap)("a", "Scenamatica", { href: REPORT_URL }), " along with the contents of this error message, the above stack trace, and the environment information listed below.")), getEnvInfoMessage());
     }, "getReportingMessage");
     exports2.getReportingMessage = getReportingMessage;
     var getFooter = /* @__PURE__ */ __name(() => {
-      return joinLine("<hr />", getLicenseMessage());
+      return (0, exports2.joinLine)("<hr />", getLicenseMessage());
     }, "getFooter");
     exports2.getFooter = getFooter;
     var getEnvInfoMessage = /* @__PURE__ */ __name(() => {
@@ -69150,24 +69160,114 @@ var require_messages = __commonJS({
         `  - OS: ${process.platform}`,
         `  - Arch: ${process.arch}`
       ];
-      return wrap("details", joinLine(wrap("summary", "Environment Information"), wrap("pre", wrap("code", envInfo.join("\n")))));
+      return (0, exports2.wrap)("details", (0, exports2.joinLine)((0, exports2.wrap)("summary", "Environment Information"), (0, exports2.wrap)("pre", (0, exports2.wrap)("code", envInfo.join("\n")))));
     }, "getEnvInfoMessage");
     var getLicenseMessage = /* @__PURE__ */ __name(() => {
-      return joinLine(wrap("h2", "License"), wrap("small", `This test report has been generated by ${wrap("a", "Scenamatica", { href: "https://github.com/TeamKUN/Scenamatica" })} and licensed under ${wrap("a", "MIT License", { href: "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE" })}.`), "<br />", wrap("small", "You can redistribute it and/or modify it under the terms of the MIT License."));
+      return (0, exports2.joinLine)((0, exports2.wrap)("h2", "License"), (0, exports2.wrap)("small", `This test report has been generated by ${(0, exports2.wrap)("a", "Scenamatica", { href: "https://github.com/TeamKUN/Scenamatica" })} and licensed under ${(0, exports2.wrap)("a", "MIT License", { href: "https://github.com/TeamKUN/Scenamatica/blob/main/LICENSE" })}.`), "<br />", (0, exports2.wrap)("small", "You can redistribute it and/or modify it under the terms of the MIT License."));
     }, "getLicenseMessage");
     var wrap = /* @__PURE__ */ __name((tag, text, props = {}) => {
       const attributes = Object.entries(props).map(([key, value]) => `${key}="${value}"`).join(" ");
       return `<${tag} ${attributes}>${text}</${tag}>`;
     }, "wrap");
+    exports2.wrap = wrap;
     var joinLine = /* @__PURE__ */ __name((...texts) => {
       return texts.join("\n");
     }, "joinLine");
+    exports2.joinLine = joinLine;
     var join = /* @__PURE__ */ __name((delimiter, ...texts) => {
       return texts.join(delimiter);
     }, "join");
+    exports2.join = join;
     var combine = /* @__PURE__ */ __name((...texts) => {
       return texts.join("");
     }, "combine");
+  }
+});
+
+// lib/outputs/graphical-summary.js
+var require_graphical_summary = __commonJS({
+  "lib/outputs/graphical-summary.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.generateGraphicalSummary = void 0;
+    var packets_1 = require_packets();
+    var generateGraphicalSummary = /* @__PURE__ */ __name((result) => {
+      const ganttChart = generateGanttChart(result);
+      const pieChart = generatePieChart(result);
+      return `
+
+## Graphical Summary
+
+\`\`\`mermaid
+${ganttChart}
+\`\`\`
+
+\`\`\`mermaid
+${pieChart}
+\`\`\`
+
+`;
+    }, "generateGraphicalSummary");
+    exports2.generateGraphicalSummary = generateGraphicalSummary;
+    var generateGanttChart = /* @__PURE__ */ __name((result) => {
+      const title = "Scenamatica Test Timeline";
+      const dateFormat = "HH:mm:ss.SSS";
+      const axisFormat = "%M:%S";
+      const results = result.results.map((test) => {
+        const duration = test.finishedAt - test.startedAt;
+        const durationString = toMermaidTime(duration);
+        const cause = causeToMermaidStatus(test.cause);
+        return `${test.scenario.name}: ${cause} ${durationString}`;
+      });
+      return `
+gantt title ${title}
+    dateFormat ${dateFormat}
+    axisFormat ${axisFormat}
+    Session Start: milestone, 00:00:00.000, 0
+    ${results.join("\n")}
+    Session End: milestone, ${toMermaidTime(result.finishedAt - result.startedAt)}, 0
+`;
+    }, "generateGanttChart");
+    var generatePieChart = /* @__PURE__ */ __name((result) => {
+      const title = "Scenamatica Test Results";
+      const totalDuration = result.finishedAt - result.startedAt;
+      const results = result.results.map((test) => {
+        const duration = test.finishedAt - test.startedAt;
+        const ratio = duration / totalDuration;
+        return `"${test.scenario.name}": ${ratio}`;
+      });
+      return `
+pie title ${title}
+    ${results.join("\n")}
+`;
+    }, "generatePieChart");
+    var causeToMermaidStatus = /* @__PURE__ */ __name((cause) => {
+      switch (cause) {
+        case packets_1.TestResultCause.PASSED:
+          return "active, ";
+        case packets_1.TestResultCause.SKIPPED:
+          return "";
+        case packets_1.TestResultCause.CANCELLED:
+          return "done, ";
+        default:
+          return "crit, ";
+      }
+    }, "causeToMermaidStatus");
+    var toMermaidTime = /* @__PURE__ */ __name((timeMillis) => {
+      const tzOffset = (/* @__PURE__ */ new Date()).getTimezoneOffset() * 60 * 1e3;
+      const date = new Date(timeMillis - tzOffset);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const seconds = date.getSeconds();
+      const milliseconds = date.getMilliseconds();
+      const pad = /* @__PURE__ */ __name((num, size) => {
+        let s2 = `${num}`;
+        while (s2.length < size)
+          s2 = `0${s2}`;
+        return s2;
+      }, "pad");
+      return `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds, 3)}`;
+    }, "toMermaidTime");
   }
 });
 
@@ -69210,22 +69310,28 @@ var require_summary2 = __commonJS({
     exports2.printFooter = exports2.printErrorSummary = exports2.printSummary = void 0;
     var core_12 = require_core();
     var messages_1 = require_messages();
+    var graphical_summary_1 = require_graphical_summary();
+    var utils_1 = require_utils5();
     var printSummary = /* @__PURE__ */ __name((sessionEnd) => __awaiter3(void 0, void 0, void 0, function* () {
       const { results, finishedAt, startedAt } = sessionEnd;
       core_12.summary.addRaw((0, messages_1.getHeader)(false));
       core_12.summary.addRaw((0, messages_1.getTestSummary)(results, startedAt, finishedAt));
-      core_12.summary.addRaw((0, messages_1.getTestResultTable)(results));
+      if ((0, utils_1.getArguments)().graphicalSummary) {
+        console.log("Generating graphical summary...");
+        core_12.summary.addRaw((0, graphical_summary_1.generateGraphicalSummary)(sessionEnd));
+      }
+      core_12.summary.addRaw((0, messages_1.getTestResultTable)(results, true));
       yield core_12.summary.write();
     }), "printSummary");
     exports2.printSummary = printSummary;
     var errorHeaderPrinted = false;
     var errorReportingMessagePrinted = false;
-    var printErrorSummary = /* @__PURE__ */ __name((errorType, errorMessage, errorStackTrace) => __awaiter3(void 0, void 0, void 0, function* () {
+    var printErrorSummary = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
       if (!errorHeaderPrinted) {
         core_12.summary.addRaw((0, messages_1.getHeader)(true));
         errorHeaderPrinted = true;
       }
-      core_12.summary.addRaw((0, messages_1.getExceptionString)(errorType, errorMessage, errorStackTrace));
+      core_12.summary.addRaw((0, messages_1.getExceptionString)(packet));
       if (!errorReportingMessagePrinted) {
         core_12.summary.addRaw((0, messages_1.getReportingMessage)());
         errorReportingMessagePrinted = true;
@@ -69439,9 +69545,8 @@ var require_appender = __commonJS({
     var containsError = false;
     var outMessage = "";
     var reportError = /* @__PURE__ */ __name((packet) => {
-      const { exception, message, stackTrace } = packet;
       appendHeaderIfNotPrinted();
-      outMessage += (0, messages_1.getExceptionString)(exception, message, stackTrace);
+      outMessage += (0, messages_1.getExceptionString)(packet);
       containsError = true;
     }, "reportError");
     exports2.reportError = reportError;
@@ -69524,8 +69629,7 @@ var require_publisher = __commonJS({
     }), "publishSessionEnd");
     exports2.publishSessionEnd = publishSessionEnd;
     var publishScenamaticaError = /* @__PURE__ */ __name((packet) => __awaiter3(void 0, void 0, void 0, function* () {
-      const { exception, message, stackTrace } = packet;
-      yield (0, summary_1.printErrorSummary)(exception, message, stackTrace);
+      yield (0, summary_1.printErrorSummary)(packet);
       (0, action_output_1.publishOutput)(packet);
       (0, appender_1.reportError)(packet);
     }), "publishScenamaticaError");
