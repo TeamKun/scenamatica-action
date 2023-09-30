@@ -69216,7 +69216,9 @@ ${pieChart}
       const results = result.results.sort((a, b) => a.startedAt - b.startedAt).map((test) => {
         const duration = test.finishedAt - test.startedAt;
         const cause = causeToMermaidStatus(test.cause);
-        return `${test.scenario.name}: ${cause} ${toMermaidTime(test.startedAt)}, ${toMermaidTime(duration)}`;
+        const start = test.startedAt - result.startedAt;
+        const end = start + duration;
+        return `${test.scenario.name}: ${cause} ${toMermaidTime(start)}, ${toMermaidTime(end)}`;
       });
       return `
 gantt title ${title}

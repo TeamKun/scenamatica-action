@@ -34,8 +34,10 @@ const generateGanttChart = (result: PacketSessionEnd) => {
         .map((test) => {
             const duration = test.finishedAt - test.startedAt
             const cause = causeToMermaidStatus(test.cause)
+            const start = test.startedAt - result.startedAt
+            const end = start + duration
 
-            return `${test.scenario.name}: ${cause} ${toMermaidTime(test.startedAt)}, ${toMermaidTime(duration)}`
+            return `${test.scenario.name}: ${cause} ${toMermaidTime(start)}, ${toMermaidTime(end)}`
         })
 
     return `
