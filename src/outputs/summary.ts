@@ -19,7 +19,11 @@ const printSummary = async (sessionEnd: PacketSessionEnd) => {
     summary.addRaw(getTestSummary(results, startedAt, finishedAt))
 
     if (getArguments().graphicalSummary)
+    {
+        console.log("Generating graphical summary...")
         summary.addRaw(generateGraphicalSummary(sessionEnd))
+    }
+
     summary.addRaw(getTestResultTable(results, true))
 
     await summary.write()
