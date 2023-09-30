@@ -10,7 +10,7 @@ export const generateGraphicalSummary = (result: PacketSessionEnd) => {
 
     return `
 
-## Graphical Summary
+### Graphical Summary
 
 \`\`\`mermaid
 ${ganttChart}
@@ -29,7 +29,9 @@ const generateGanttChart = (result: PacketSessionEnd) => {
     const dateFormat = "HH:mm:ss.SSS"
     const axisFormat = "%M:%S"
 
-    const results = result.results.map((test) => {
+    const results = result.results
+        .sort((a, b) => a.startedAt - b.startedAt)
+        .map((test) => {
         const duration = test.finishedAt - test.startedAt
         const durationString = toMermaidTime(duration)
         const cause = causeToMermaidStatus(test.cause)
@@ -51,7 +53,9 @@ const generatePieChart = (result: PacketSessionEnd) => {
     const title = "Scenamatica Test Results"
     const totalDuration = result.finishedAt - result.startedAt
 
-    const results = result.results.map((test) => {
+    const results = result.results
+        .sort((a, b) => (b.finishedAt - b.startedAt) - (a.finishedAt - a.startedAt))
+        .map((test) => {
         const duration = test.finishedAt - test.startedAt
         const ratio = duration / totalDuration
 

@@ -69196,7 +69196,7 @@ var require_graphical_summary = __commonJS({
       const pieChart = generatePieChart(result);
       return `
 
-## Graphical Summary
+### Graphical Summary
 
 \`\`\`mermaid
 ${ganttChart}
@@ -69213,7 +69213,7 @@ ${pieChart}
       const title = "Scenamatica Test Timeline";
       const dateFormat = "HH:mm:ss.SSS";
       const axisFormat = "%M:%S";
-      const results = result.results.map((test) => {
+      const results = result.results.sort((a, b) => a.startedAt - b.startedAt).map((test) => {
         const duration = test.finishedAt - test.startedAt;
         const durationString = toMermaidTime(duration);
         const cause = causeToMermaidStatus(test.cause);
@@ -69231,7 +69231,7 @@ gantt title ${title}
     var generatePieChart = /* @__PURE__ */ __name((result) => {
       const title = "Scenamatica Test Results";
       const totalDuration = result.finishedAt - result.startedAt;
-      const results = result.results.map((test) => {
+      const results = result.results.sort((a, b) => b.finishedAt - b.startedAt - (a.finishedAt - a.startedAt)).map((test) => {
         const duration = test.finishedAt - test.startedAt;
         const ratio = duration / totalDuration;
         return `"${test.scenario.name}": ${ratio}`;
@@ -69316,11 +69316,9 @@ var require_summary2 = __commonJS({
       const { results, finishedAt, startedAt } = sessionEnd;
       core_12.summary.addRaw((0, messages_1.getHeader)(false));
       core_12.summary.addRaw((0, messages_1.getTestSummary)(results, startedAt, finishedAt));
-      if ((0, utils_1.getArguments)().graphicalSummary) {
-        console.log("Generating graphical summary...");
-        core_12.summary.addRaw((0, graphical_summary_1.generateGraphicalSummary)(sessionEnd));
-      }
       core_12.summary.addRaw((0, messages_1.getTestResultTable)(results, true));
+      if ((0, utils_1.getArguments)().graphicalSummary)
+        core_12.summary.addRaw((0, graphical_summary_1.generateGraphicalSummary)(sessionEnd));
       yield core_12.summary.write();
     }), "printSummary");
     exports2.printSummary = printSummary;
