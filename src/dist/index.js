@@ -69213,14 +69213,10 @@ ${pieChart}
       const title = "Scenamatica Test Timeline";
       const dateFormat = "HH:mm:ss.SSS";
       const axisFormat = "%M:%S";
-      let last = "";
       const results = result.results.sort((a, b) => a.startedAt - b.startedAt).map((test) => {
-        const startedAt = last ? `after${last}` : toMermaidTime(0);
         const duration = test.finishedAt - test.startedAt;
-        const finishedAt = toMermaidTime(duration);
         const cause = causeToMermaidStatus(test.cause);
-        last = test.scenario.name;
-        return `${test.scenario.name}: ${cause} ${startedAt}, ${finishedAt}`;
+        return `${test.scenario.name}: ${cause} ${toMermaidTime(test.startedAt)}, ${toMermaidTime(duration)}`;
       });
       return `
 gantt title ${title}
