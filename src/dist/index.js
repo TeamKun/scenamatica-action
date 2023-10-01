@@ -69222,11 +69222,11 @@ ${pieChart}
       });
       return `
 gantt title ${title}
-    dateFormat ${dateFormat}
-    axisFormat ${axisFormat}
-    Session Start: milestone, 00:00:00.000, 0
-    ${results.join("\n")}
-    Session End: milestone, ${toMermaidTime(result.finishedAt - result.startedAt)}, 0
+dateFormat ${dateFormat}
+axisFormat ${axisFormat}
+Session Start: milestone, 00:00:00.000, 0
+${results.join("\n")}
+Session End: milestone, ${toMermaidTime(result.finishedAt - result.startedAt)}, 0
 `;
     }, "generateGanttChart");
     var generatePieChart = /* @__PURE__ */ __name((result) => {
@@ -69239,7 +69239,7 @@ gantt title ${title}
       });
       return `
 pie title ${title}
-    ${results.join("\n")}
+${results.join("\n")}
 `;
     }, "generatePieChart");
     var causeToMermaidStatus = /* @__PURE__ */ __name((cause) => {
