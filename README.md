@@ -30,6 +30,8 @@ steps:
     server-dir: "server"
     # The token to use for the GitHub API(Writing pull request comments). (default: ${{ github.token }})
     github-token: ${{ github.token }}
+    # Whether to generate a summary of the test results in the form of a graph.
+    graphical-summary: true
 ```
 
 If you want to run tests on pull requests, you need to set the `pull-requests` permission to `write` in the `permissions` section.
