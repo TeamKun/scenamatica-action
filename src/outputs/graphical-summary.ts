@@ -3,6 +3,7 @@
 import type {PacketSessionEnd} from "../packets";
 import {TestResultCause} from "../packets";
 
+const MAX_PIE_RESULTS = 20
 
 export const generateGraphicalSummary = (result: PacketSessionEnd) => {
     const ganttChart = generateGanttChart(result)
@@ -55,13 +56,21 @@ const generatePieChart = (result: PacketSessionEnd) => {
     const totalDuration = result.finishedAt - result.startedAt
 
     const results = result.results
-        .sort((a, b) => (b.finishedAt - b.startedAt) - (a.finishedAt - a.startedAt))
-        .map((test, idx) => {
-        const duration = test.finishedAt - test.startedAt
-        const ratio = duration / totalDuration
+        .sort((a, b) => {
+            const durationA = a.finishedAt - a.startedAt
+            const durationB = b.finishedAt - b.startedAt
 
-        return `"${idx + 1}. ${test.scenario.name}": ${ratio}`
-    })
+            return durationB - durationA  // Duration で降順ソート
+        })
+        .slice(0, MAX_PIE_RESULTS)
+        .map((test, idx) => {
+            const numStr = pad(idx + 1, 2)
+            const duration = test.finishedAt - test.startedAt
+            const durationStr = toMermaidTime(duration)
+            const ratio = duration / totalDuration
+
+            return `"${numStr}. ${durationStr} - ${test.scenario.name}": ${ratio}`
+        })
 
     return `
 pie title ${title}
@@ -94,13 +103,14 @@ const toMermaidTime = (timeMillis: number) => {
     const seconds = date.getSeconds()
     const milliseconds = date.getMilliseconds()
 
-    const pad = (num: number, size: number) => {
-        let s = `${num  }`
-
-        while (s.length < size) s = `0${  s}`
-
-        return s
-    }
 
     return `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds, 3)}`
+}
+
+const pad = (num: number, size: number) => {
+    let s = `${num  }`
+
+    while (s.length < size) s = `0${  s}`
+
+    return s
 }

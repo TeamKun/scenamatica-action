@@ -69191,6 +69191,7 @@ var require_graphical_summary = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.generateGraphicalSummary = void 0;
     var packets_1 = require_packets();
+    var MAX_PIE_RESULTS = 20;
     var generateGraphicalSummary = /* @__PURE__ */ __name((result) => {
       const ganttChart = generateGanttChart(result);
       const pieChart = generatePieChart(result);
@@ -69232,10 +69233,16 @@ Session End: milestone, ${toMermaidTime(result.finishedAt - result.startedAt)}, 
     var generatePieChart = /* @__PURE__ */ __name((result) => {
       const title = "Scenamatica Test Results";
       const totalDuration = result.finishedAt - result.startedAt;
-      const results = result.results.sort((a, b) => b.finishedAt - b.startedAt - (a.finishedAt - a.startedAt)).map((test, idx) => {
+      const results = result.results.sort((a, b) => {
+        const durationA = a.finishedAt - a.startedAt;
+        const durationB = b.finishedAt - b.startedAt;
+        return durationB - durationA;
+      }).slice(0, MAX_PIE_RESULTS).map((test, idx) => {
+        const numStr = pad(idx + 1, 2);
         const duration = test.finishedAt - test.startedAt;
+        const durationStr = toMermaidTime(duration);
         const ratio = duration / totalDuration;
-        return `"${idx + 1}. ${test.scenario.name}": ${ratio}`;
+        return `"${numStr}. ${durationStr} - ${test.scenario.name}": ${ratio}`;
       });
       return `
 pie title ${title}
@@ -69261,14 +69268,14 @@ ${results.join("\n")}
       const minutes = date.getMinutes();
       const seconds = date.getSeconds();
       const milliseconds = date.getMilliseconds();
-      const pad = /* @__PURE__ */ __name((num, size) => {
-        let s2 = `${num}`;
-        while (s2.length < size)
-          s2 = `0${s2}`;
-        return s2;
-      }, "pad");
       return `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds, 3)}`;
     }, "toMermaidTime");
+    var pad = /* @__PURE__ */ __name((num, size) => {
+      let s2 = `${num}`;
+      while (s2.length < size)
+        s2 = `0${s2}`;
+      return s2;
+    }, "pad");
   }
 });
 
