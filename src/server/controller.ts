@@ -1,4 +1,4 @@
-import {isNoScenamatica} from "../utils.js"
+import {getArguments, isNoScenamatica} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
 import {kill, onDataReceived} from "./client";
 import type {ChildProcess} from "node:child_process";
@@ -13,8 +13,11 @@ let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
 
 const genArgs = (executable: string, args: string[]) => {
+    const externalArgs = getArguments().jvmArgs
+
     return [
         ...args,
+        ...externalArgs,
         "-jar",
         executable,
         "nogui"

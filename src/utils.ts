@@ -41,6 +41,7 @@ interface Args {
     mcVersion: string
     scenamaticaVersion: string
     serverDir: string
+    jvmArgs: string[]
     pluginFile: string
     javaVersion: string
     githubToken: string
@@ -53,6 +54,7 @@ const getArguments = (): Args => {
         mcVersion: core.getInput("minecraft") || "1.16.5",
         scenamaticaVersion: core.getInput("scenamatica", ) || DEFAULT_SCENAMATICA_VERSION,
         serverDir: core.getInput("server-dir") || "server",
+        jvmArgs: core.getInput("jvm-args").split(" "),
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || "17",
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
