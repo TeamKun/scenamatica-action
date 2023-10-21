@@ -80,8 +80,9 @@ const processPacket = async (msg: string) => {
             }
 
             const errorPacket = packet as PacketScenamaticaError
+            const message = errorPacket.message || "null"
 
-            error(`An error occurred in Scenamatica: ${errorPacket.exception}: ${errorPacket.message}`)
+            error(`An error occurred in Scenamatica: ${errorPacket.exception}: ${message}`)
             await publishScenamaticaError(errorPacket)
             if (prInfo)
                 await publishPRComment(prInfo)

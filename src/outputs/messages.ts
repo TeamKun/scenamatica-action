@@ -192,7 +192,7 @@ const getErrorAndStacktrace = (packet: PacketScenamaticaError) => {
     let causedByString;
 
     if (causedBy) {
-        causedByString = joinLine(`Caused by: ${getErrorAndStacktrace(causedBy as PacketScenamaticaError)}`)
+        causedByString = joinLine(`Caused by: ${getErrorAndStacktrace(causedBy)}`)
     }
 
     return joinLine(
