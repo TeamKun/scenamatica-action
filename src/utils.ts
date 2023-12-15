@@ -20,6 +20,7 @@ const extractTestResults = (results: PacketTestEnd[]) => {
             ),
     ).length
 
+    const flakes = pickFlakes(results).length
 
     return {
         total,
@@ -27,7 +28,32 @@ const extractTestResults = (results: PacketTestEnd[]) => {
         failures,
         skipped,
         cancelled,
+        flakes,
     }
+}
+
+export const pickFlakes = (results: PacketTestEnd[]) => {
+    return results
+        .filter((r) => r.attemptOf)  // 以前のバージョンの Scenamatica では attemptOf がないので、その場合は除外
+        .filter((r) => r.attemptOf! > 1) // 2回以上実行されているものを抽出
+        .filter((r) => r.cause === TestResultCause.PASSED // 後に成功したものを抽出（2回以上実行 ＝ 1回目..は失敗）
+            || r.cause === TestResultCause.SKIPPED
+            || r.cause === TestResultCause.CANCELLED)
+        // 最大試行回数のPacketのみを抽出 (name が同じ かつ attemptOf が最大
+        .filter((r, index, arr) => {
+            const maxAttemptOf = calcMaxAttemptOf(r.scenario.name, arr);
+
+            return r.attemptOf === maxAttemptOf;  // 最大試行回数のPacketのみを抽出
+        });
+}
+
+
+const calcMaxAttemptOf = (targetName: string, results: PacketTestEnd[]) => {
+    return Math.max(
+        ...results
+            .filter((r) => r.scenario.name === targetName && r.attemptOf)
+            .map((r) => r.attemptOf as number)
+    );
 }
 
 export const isTestSucceed = (results: PacketTestEnd[]) => {

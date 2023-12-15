@@ -53,6 +53,7 @@ export class PacketTestEnd implements Packet<PacketTestEnd> {
         public cause: TestResultCause,
         public startedAt: number,
         public finishedAt: number,
+        public attemptOf?: number
     ) {}
 }
 
@@ -122,6 +123,7 @@ export const parsePacket = (
                         json.cause,
                         json.startedAt,
                         json.finishedAt,
+                        json.attemptOf,
                     )
                 }
             }

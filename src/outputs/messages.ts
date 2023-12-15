@@ -88,12 +88,13 @@ export const getTestSummary = (results: PacketTestEnd[], startedAt: number, fini
         passed,
         failures,
         skipped,
-        cancelled
+        cancelled,
+        flakes
     } = extractTestResults(results)
 
 
     return joinLine(
-        getSummaryHeader(total, elapsed, passed, failures, skipped, cancelled),
+        getSummaryHeader(total, elapsed, passed, failures, skipped, cancelled, flakes),
         "<hr />",
         wrap("h2", "Details")
     )
@@ -154,7 +155,8 @@ export const getTestResultTable = (results: PacketTestEnd[], minimize = false) =
     return table
 }
 
-const getSummaryHeader = (total: number, elapsed: number, passed: number, failures: number, skipped: number, cancelled: number) => {
+const getSummaryHeader = (total: number, elapsed: number, passed: number, failures: number, skipped: number,
+                          cancelled: number, flakes: number) => {
     const threshold = getArguments().failThreshold
 
     let messageSource: string[]
@@ -166,16 +168,23 @@ const getSummaryHeader = (total: number, elapsed: number, passed: number, failur
 
     const summaryText = messageSource[Math.floor(Math.random() * messageSource.length)]
 
+    const countTexts: string[] = [
+        `Tests run: ${total}`,
+        `Failures: ${failures}`,
+        `Skipped: ${skipped}`,
+        `Cancelled: ${cancelled}`,
+    ]
+    
+    if (flakes > 0) {
+        countTexts.push(`Flakes: ${flakes}`)
+    }
+    
+    countTexts.push(`Time elapsed: ${elapsed} sec`)
+    
     return joinLine(
         wrap("h4", summaryText),
         "<br />",
-        wrap("p", join(", ",
-            `Tests run: ${total}`,
-            `Failures: ${failures}`,
-            `Skipped: ${skipped}`,
-            `Cancelled: ${cancelled}`,
-            `Time elapsed: ${elapsed} sec`
-        ))
+        wrap("p", join(", ", ...countTexts))
     )
 }
 
