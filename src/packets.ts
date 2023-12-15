@@ -90,6 +90,10 @@ export class PacketScenamaticaError implements Packet<PacketScenamaticaError> {
     public constructor(public date: number, public exception: string, public message: string, public stackTrace: string[], public causedBy?: PacketScenamaticaError = null) {}
 }
 
+export class PacketActionRelated implements Packet<PacketActionRelated> {
+    public genre = "action"
+}
+
 export const parsePacket = (
     packet: string,
 ): Packet<PacketSessionEnd | PacketSessionStart | PacketTestEnd | PacketTestStart> | null => {
@@ -139,6 +143,9 @@ export const parsePacket = (
             }
 
             break
+        }
+        case "action": {
+            return new PacketActionRelated()
         }
     }
 
