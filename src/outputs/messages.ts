@@ -2,6 +2,7 @@ import {extractTestResults, getArguments} from "../utils";
 import type {PacketTestEnd} from "../packets";
 import {getEmojiForCause} from "../logging";
 import type {PacketScenamaticaError} from "../packets";
+import {BUG_REPORT_URL} from "../constants";
 
 const MESSAGES_PASSED = [
     ":tada: Congrats! All tests passed! :star2:",
@@ -54,8 +55,6 @@ const MESSAGES_PASSED_WITH_THRESHOLD = [
     "Victory is ours, with a sprinkle of defeat. Let's conquer those pesky failures! :crossed_swords:",
     "We're almost there, but a few tests are being rebellious. Let's bring them back to the flock! :sheep:"
 ];
-
-const REPORT_URL = "https://github.com/TeamKun/Scenamatica/issues/new?assignees=PeyaPeyaPeyang&labels=Type%3A+Bug&projects=&template=bug_report.yml&title=%E3%80%90%E3%83%90%E3%82%B0%E3%80%91"
 
 export const getHeader = (isError: boolean) => {
     const result = [ wrap("h1", "Scenamatica"), wrap("h2", "Summary"), "<hr />"]
@@ -217,7 +216,7 @@ export const getReportingMessage = () => {
         wrap("h2", "Reporting bugs"),
         wrap("p", combine(
             "If you believe this is a bug, please report it to ",
-            wrap("a", "Scenamatica", { href: REPORT_URL }),
+            wrap("a", "Scenamatica", { href: BUG_REPORT_URL }),
             " along with the contents of this error message, the above stack trace, and the environment information listed below."
         )),
         getEnvInfoMessage()

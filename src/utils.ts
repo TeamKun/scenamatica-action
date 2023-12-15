@@ -1,9 +1,11 @@
 import * as core from "@actions/core"
 import type {PacketTestEnd} from "./packets";
 import {TestResultCause} from "./packets";
+import {ENV_NO_SCENAMATICA, PARAMETER_DEFAULTS} from "./constants";
 
-const DEFAULT_SCENAMATICA_VERSION = "0.8.0"
-const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
+export const urlEncode = (str: string) => {
+    return encodeURIComponent(str).replace(/%20/g, "+")
+}
 
 const extractTestResults = (results: PacketTestEnd[]) => {
     const total = results.length
@@ -77,15 +79,15 @@ interface Args {
 
 const getArguments = (): Args => {
     return {
-        mcVersion: core.getInput("minecraft") || "1.16.5",
-        scenamaticaVersion: core.getInput("scenamatica", ) || DEFAULT_SCENAMATICA_VERSION,
-        serverDir: core.getInput("server-dir") || "server",
+        mcVersion: core.getInput("minecraft") || PARAMETER_DEFAULTS.minecraft,
+        scenamaticaVersion: core.getInput("scenamatica", ) || PARAMETER_DEFAULTS.scenamatica,
+        serverDir: core.getInput("server-dir") || PARAMETER_DEFAULTS.serverDir,
         jvmArgs: core.getInput("jvm-args").split(" "),
         pluginFile: core.getInput("plugin", { required: true }),
-        javaVersion: core.getInput("java") || "17",
+        javaVersion: core.getInput("java") || PARAMETER_DEFAULTS.java,
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
-        graphicalSummary: core.getBooleanInput("graphical-summary"),
-        failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || 0,
+        graphicalSummary: core.getBooleanInput("graphical-summary") || PARAMETER_DEFAULTS.graphicalSummary,
+        failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || PARAMETER_DEFAULTS.failThreshold,
     }
 }
 
