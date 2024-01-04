@@ -18,10 +18,10 @@ const MESSAGES_PASSED = [
 ];
 
 const MESSAGES_NO_TESTS = [
-    "Alright, who forgot to write tests? :face_with_raised_eyebrow:",
+    "Alright, who forgot to write tests? :raised_eyebrow:",
     "No tests? Time to break out the crystal ball. :crystal_ball:",
     "Tests? Who writes tests? :person_shrugging:",
-    "No tests found. Did they run away? :man_running: :woman_running:",
+    "No tests found. Did they run away? :running_man: :running_woman:",
     "No tests, no glory. :trophy:",
     "Tests? We don't need no stinkin' tests! :shushing_face:",
     "No tests? I guess we'll just have to wing it. :eagle:",
@@ -34,7 +34,7 @@ const MESSAGES_FAILED = [
     "Oops! Something went wrong! :scream_cat:",
     "Oh no! The tests have betrayed us! :scream:",
     "Houston, we have a problem. :rocket:",
-    "Looks like we have some debugging to do. :beetle:",
+    "Looks like we have some debugging to do. :bug:",
     "Failures? More like opportunities to improve! :muscle:",
     "This is not the result we were looking for. :confused:",
     "Looks like we need to rethink our strategy. :thinking:",
