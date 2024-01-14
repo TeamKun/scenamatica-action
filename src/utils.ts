@@ -3,10 +3,6 @@ import type {PacketTestEnd} from "./packets";
 import {TestResultCause} from "./packets";
 import {ENV_NO_SCENAMATICA, PARAMETER_DEFAULTS} from "./constants";
 
-export const urlEncode = (str: string) => {
-    return encodeURIComponent(str).replace(/%20/g, "+")
-}
-
 const extractTestResults = (results: PacketTestEnd[]) => {
     const total = results.length
     const passed = results.filter((t) => t.cause === TestResultCause.PASSED).length

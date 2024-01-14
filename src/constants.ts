@@ -1,5 +1,3 @@
-import {urlEncode} from "./utils";
-
 export const ENV_NO_SCENAMATICA = "NO_SCENAMATICA"
 
 export const PARAMETER_DEFAULTS = {
@@ -23,6 +21,8 @@ const BUG_REPORT_SETTINGS = {
     template: "bug_report.yml",
     title: "【バグ】 "
 }
+
+const urlEncode = (str: string) => encodeURIComponent(str).replace(/%20/g, "+")
 
 export const BUG_REPORT_URL = `https://github.com/${REPO.owner}/${REPO.name}/issues/new?`
     + `assignees=${urlEncode(BUG_REPORT_SETTINGS.assignees.join(","))}`
