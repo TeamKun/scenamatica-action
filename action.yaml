@@ -26,9 +26,6 @@ inputs:
   graphical-summary:
     description: "Whether to generate a summary of the test results in the form of a graph."
     default: "true"
-  upload-xml-report:
-    description: "Whether to upload the test results in the form of an XML file."
-    default: "true"
 outputs:
   # Runner outputs
   success:

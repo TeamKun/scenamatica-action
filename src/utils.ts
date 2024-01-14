@@ -70,7 +70,6 @@ interface Args {
     githubToken: string
     graphicalSummary: boolean
     failThreshold: number
-    uploadXMLReport: boolean
 }
 
 const getArguments = (): Args => {
@@ -83,7 +82,6 @@ const getArguments = (): Args => {
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
         graphicalSummary: core.getBooleanInput("graphical-summary") || PARAMETER_DEFAULTS.graphicalSummary,
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || PARAMETER_DEFAULTS.failThreshold,
-        uploadXMLReport: core.getBooleanInput("upload-xml-report") || PARAMETER_DEFAULTS.uploadXMLReport,
     }
 }
 

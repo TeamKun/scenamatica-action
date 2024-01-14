@@ -1,4 +1,4 @@
-import {getArguments, isNoScenamatica} from "../utils.js"
+import { isNoScenamatica} from "../utils.js"
 import {deployPlugin} from "./deployer.js"
 import {kill, onDataReceived} from "./client";
 import type {ChildProcess} from "node:child_process";
@@ -7,7 +7,6 @@ import type {Writable} from "node:stream";
 import * as fs from "node:fs";
 import path from "node:path";
 import {info, setFailed, warning} from "@actions/core";
-import artifact from "@actions/artifact";
 import {printFooter} from "../outputs/summary";
 
 let serverProcess: ChildProcess | undefined
@@ -113,28 +112,6 @@ const removeScenamatica = async (serverDir: string) => {
     }
 }
 
-const publishJUnitReport = async () => {
-    info("Uploading JUnit report...")
-
-    const serverDirectory = getArguments().serverDir
-
-    const reports = await fs.promises.readdir(path.join(serverDirectory, "plugins/Scenamatica"))
-        .then((files) => files.filter((file) => file.endsWith(".xml")))
-
-    if (reports.length === 0) {
-        warning("No JUnit report found.")
-
-        return
-    }
-
-    // upload artifact
-    await artifact.uploadArtifact(
-        "junit-report",
-        reports,
-        path.join(serverDirectory, "plugins/Scenamatica")
-    )
-}
-
 export const endTests = async (succeed: boolean) => {
     info("Ending tests, shutting down server...")
 
@@ -142,8 +119,6 @@ export const endTests = async (succeed: boolean) => {
     stopServer()
 
     await printFooter()
-    if (getArguments().uploadXMLReport)
-        await publishJUnitReport()
 
     let code: number
 
