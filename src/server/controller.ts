@@ -118,7 +118,7 @@ const publishJUnitReport = async () => {
 
     const serverDirectory = getArguments().serverDir
 
-    const reports = await fs.promises.readdir(path.join(serverDirectory, "plugins/Scenamatica/reports"))
+    const reports = await fs.promises.readdir(path.join(serverDirectory, "plugins/Scenamatica"))
         .then((files) => files.filter((file) => file.endsWith(".xml")))
 
     if (reports.length === 0) {
@@ -130,7 +130,7 @@ const publishJUnitReport = async () => {
     await artifact.uploadArtifact(
         "junit-report",
         reports,
-        path.join(serverDirectory, "plugins/Scenamatica/reports")
+        path.join(serverDirectory, "plugins/Scenamatica")
     )
 }
 
