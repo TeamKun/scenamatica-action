@@ -11,8 +11,6 @@ inputs:
   server-dir:
     description: "Server directory."
     default: "server"
-  jvm-args:
-    description: "JVM arguments for the server vm."
   plugin:
     description: "The path to your plugin jar file."
     required: true

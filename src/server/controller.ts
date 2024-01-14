@@ -14,17 +14,12 @@ let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
 
 const genArgs = (executable: string, args: string[]) => {
-    const externalArgs = getArguments().jvmArgs
-
     const argus = [
         ...args,
         "-jar",
         executable,
         "nogui"
     ]
-
-    if (externalArgs.length > 0)
-        argus.unshift(...externalArgs)
 
     return argus
 }
