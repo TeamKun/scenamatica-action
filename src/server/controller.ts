@@ -10,20 +10,23 @@ import {info, setFailed, warning} from "@actions/core";
 import artifact from "@actions/artifact";
 import {printFooter} from "../outputs/summary";
 
-let serverDirectory: string | undefined
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
 
 const genArgs = (executable: string, args: string[]) => {
     const externalArgs = getArguments().jvmArgs
 
-    return [
+    const argus = [
         ...args,
-        ...externalArgs,
         "-jar",
         executable,
         "nogui"
     ]
+
+    if (externalArgs.length > 0)
+        argus.unshift(...externalArgs)
+
+    return argus
 }
 
 const createServerProcess = (workDir: string, executable: string, args: string[] = []) => {
@@ -37,7 +40,6 @@ const createServerProcess = (workDir: string, executable: string, args: string[]
 
     serverStdin = cp.stdin
     serverProcess = cp
-    serverDirectory = workDir
 
     return cp
 }
@@ -119,7 +121,9 @@ const removeScenamatica = async (serverDir: string) => {
 const publishJUnitReport = async () => {
     info("Uploading JUnit report...")
 
-    const reports = await fs.promises.readdir(path.join(serverDirectory!, "plugins/Scenamatica/reports"))
+    const serverDirectory = getArguments().serverDir
+
+    const reports = await fs.promises.readdir(path.join(serverDirectory, "plugins/Scenamatica/reports"))
         .then((files) => files.filter((file) => file.endsWith(".xml")))
 
     if (reports.length === 0) {
@@ -131,7 +135,7 @@ const publishJUnitReport = async () => {
     await artifact.uploadArtifact(
         "junit-report",
         reports,
-        path.join(serverDirectory!, "plugins/Scenamatica/reports")
+        path.join(serverDirectory, "plugins/Scenamatica/reports")
     )
 }
 
