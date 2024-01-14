@@ -1,6 +1,6 @@
 {
   "name": "@scenamatica/action",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Scenamatica is a sc1enario testing tool for PaperMC plugins.",
   "scripts": {
     "build": "tsc --build",
