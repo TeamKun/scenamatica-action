@@ -123,7 +123,8 @@ const publishJUnitReport = async () => {
 
     if (reports.length === 0) {
         warning("No JUnit report found.")
-        
+
+        return
     }
 
     // upload artifact
