@@ -54,7 +54,7 @@ const calcMaxAttemptOf = (targetName: string, results: PacketTestEnd[]) => {
     return Math.max(
         ...results
             .filter((r) => r.scenario.name === targetName && r.attemptOf)
-            .map((r) => r.attemptOf as number)
+            .map((r) => r.attemptOf!)
     );
 }
 
@@ -75,6 +75,7 @@ interface Args {
     githubToken: string
     graphicalSummary: boolean
     failThreshold: number
+    uploadXMLReport: boolean
 }
 
 const getArguments = (): Args => {
@@ -88,6 +89,7 @@ const getArguments = (): Args => {
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
         graphicalSummary: core.getBooleanInput("graphical-summary") || PARAMETER_DEFAULTS.graphicalSummary,
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || PARAMETER_DEFAULTS.failThreshold,
+        uploadXMLReport: core.getBooleanInput("upload-xml-report") || PARAMETER_DEFAULTS.uploadXMLReport,
     }
 }
 

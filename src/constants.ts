@@ -8,7 +8,8 @@ export const PARAMETER_DEFAULTS = {
     minecraft: "1.16.5",
     scenamatica: "0.8.0",
     failThreshold: 0,
-    graphicalSummary: true
+    graphicalSummary: true,
+    uploadXMLReport: true
 }
 
 const REPO = {

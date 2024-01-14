@@ -10,6 +10,7 @@ import fetch from "node-fetch"
 import {startServerOnly} from "./controller";
 import {info} from "@actions/core";
 import {compare} from "compare-versions";
+import {getArguments} from "../utils";
 
 const PAPER_NAME = "paper.jar"
 const PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/"
@@ -197,11 +198,16 @@ const initScenamaticaConfig = async (configDir: string, scenamaticaVersion: stri
         },
         reporting?: {  // v0.6.1 から。
             raw: boolean
+            junit: {
+                enabled: boolean
+            }
         }
     }
 
     if (compare(scenamaticaVersion, "0.7.0", ">=")) {
         configData["reporting"]!["raw"] = true
+        if (getArguments().uploadXMLReport)
+            configData["reporting"]!["junit"]["enabled"] = true
     } else {
         configData["interfaces"]!["raw"] = true
     }

@@ -7,8 +7,10 @@ import type {Writable} from "node:stream";
 import * as fs from "node:fs";
 import path from "node:path";
 import {info, setFailed, warning} from "@actions/core";
+import artifact from "@actions/artifact";
 import {printFooter} from "../outputs/summary";
 
+let serverDirectory: string | undefined
 let serverProcess: ChildProcess | undefined
 let serverStdin: Writable | undefined
 
@@ -35,6 +37,7 @@ const createServerProcess = (workDir: string, executable: string, args: string[]
 
     serverStdin = cp.stdin
     serverProcess = cp
+    serverDirectory = workDir
 
     return cp
 }
@@ -113,6 +116,25 @@ const removeScenamatica = async (serverDir: string) => {
     }
 }
 
+const publishJUnitReport = async () => {
+    info("Uploading JUnit report...")
+
+    const reports = await fs.promises.readdir(path.join(serverDirectory!, "plugins/Scenamatica/reports"))
+        .then((files) => files.filter((file) => file.endsWith(".xml")))
+
+    if (reports.length === 0) {
+        warning("No JUnit report found.")
+        
+    }
+
+    // upload artifact
+    await artifact.uploadArtifact(
+        "junit-report",
+        reports,
+        path.join(serverDirectory!, "plugins/Scenamatica/reports")
+    )
+}
+
 export const endTests = async (succeed: boolean) => {
     info("Ending tests, shutting down server...")
 
@@ -120,6 +142,8 @@ export const endTests = async (succeed: boolean) => {
     stopServer()
 
     await printFooter()
+    if (getArguments().uploadXMLReport)
+        await publishJUnitReport()
 
     let code: number
 
