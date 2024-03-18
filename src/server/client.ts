@@ -1,147 +1,155 @@
-import type {
-    PacketScenamaticaError,
-    PacketSessionEnd,
-    PacketSessionStart,
-    PacketTestEnd,
-    PacketTestStart
-} from "../packets.js"
-import {parsePacket} from "../packets.js"
-import {error, info} from "@actions/core";
-import {
-    publishRunning,
-    publishScenamaticaError,
-    publishSessionEnd
-} from "../outputs/publisher";
-import {logSessionEnd, logSessionStart, logTestEnd, logTestStart} from "../logging";
-import type {PullRequestInfo} from "../outputs/pull-request/appender";
-import {endTests} from "./controller";
-import {isTestSucceed} from "../utils";
+import type { PacketSessionEnd, PacketSessionStart, PacketTestEnd, PacketTestStart, PacketScenamaticaError} from "../packets";
+import { parsePacket } from "../packets.js";
+import { error, info } from "@actions/core";
+import { logSessionEnd, logSessionStart, logTestEnd, logTestStart } from "../logging";
+import { isTestSucceed } from "../utils";
+import type { PullRequestInfo} from "../outputs/pull-request/appender";
 import {publishPRComment} from "../outputs/pull-request/appender";
+import type OutputPublisher from "../outputs/publisher";
 
-let incomingBuffer: string | undefined
-let alive = true
-let prInfo: PullRequestInfo | undefined
+class ScenamaticaPacketProcessor {
+    private readonly publisher: OutputPublisher
 
-export const initPullRequest = (pi: PullRequestInfo) => {
-    prInfo = pi
+    private onEndTests: (succeed: boolean) => Promise<void>;
 
-    publishRunning(pi)
-}
+    private incomingBuffer: string | undefined;
 
-export const onDataReceived = async (chunkMessage: string) => {
-    incomingBuffer = incomingBuffer ? incomingBuffer + chunkMessage : chunkMessage
+    private alive = true;
 
-    while (incomingBuffer && incomingBuffer.includes("\n")) {
-        const messages: string[] = incomingBuffer.split("\n")
+    private prInfo: PullRequestInfo | undefined;
 
-        incomingBuffer = messages.slice(1).join("\n") || undefined
-        if (!await processPacket(messages[0]))
-            info(messages[0])
-    }
-}
-
-export const kill = () => {
-    alive = false
-}
-
-const processPacket = async (msg: string) => {
-    if (!alive) {
-        return false
+    public constructor(publisher: OutputPublisher, onEndTests: (succeed: boolean) => Promise<void>) {
+        this.publisher = publisher
+        this.onEndTests = onEndTests
     }
 
-    let packet
-
-    try {
-        packet = parsePacket(msg)
-    } catch {
-        return false
+    public enablePullRequestMode(pi: PullRequestInfo): void {
+        this.prInfo = pi;
+        this.publisher.publishRunning(pi)
     }
 
-    if (!packet) {
-        return false
+    public async onDataReceived(chunkMessage: string): Promise<void> {
+        this.incomingBuffer = this.incomingBuffer ? this.incomingBuffer + chunkMessage : chunkMessage;
+
+        while (this.incomingBuffer && this.incomingBuffer.includes("\n")) {
+            const messages: string[] = this.incomingBuffer.split("\n");
+
+            this.incomingBuffer = messages.slice(1).join("\n") || undefined;
+
+            if (!await this.processPacket(messages[0])) {
+                info(messages[0]);
+            }
+        }
     }
 
-    switch (packet.genre) {
-        case "session": {
-            await processSessionPackets(packet as PacketSessionEnd | PacketSessionStart)
+    public kill(): void {
+        this.alive = false;
+    }
 
-            break
+    private async processPacket(msg: string): Promise<boolean> {
+        if (!this.alive) {
+            return false;
         }
 
-        case "test": {
-            processTestsPacket(packet as PacketTestEnd | PacketTestStart)
+        let packet;
 
-            break
+        try {
+            packet = parsePacket(msg);
+        } catch {
+            return false;
         }
 
-        case "general": {
-            if (packet.type !== "error") {
-                return false // general ジャンルは、エラーのみしかない
+        if (!packet) {
+            return false;
+        }
+
+        switch (packet.genre) {
+            case "session": {
+                await this.processSessionPackets(packet as PacketSessionEnd | PacketSessionStart);
+
+                break;
             }
 
-            const errorPacket = packet as PacketScenamaticaError
-            const message = errorPacket.message || "null"
+            case "test": {
+                this.processTestsPacket(packet as PacketTestEnd | PacketTestStart);
 
-            error(`An error occurred in Scenamatica: ${errorPacket.exception}: ${message}`)
-            await publishScenamaticaError(errorPacket)
-            if (prInfo)
-                await publishPRComment(prInfo)
+                break;
+            }
 
-            await endTests(false)
+            case "general": {
+                if (packet.type !== "error") {
+                    return false; // general ジャンルは、エラーのみしかない
+                }
 
-            break
+                const errorPacket = packet as PacketScenamaticaError;
+                const message = errorPacket.message || "null";
+
+                error(`An error occurred in Scenamatica: ${errorPacket.exception}: ${message}`);
+                await this.publisher.publishScenamaticaError(errorPacket)
+
+                if (this.prInfo) {
+                    await publishPRComment(this.prInfo);
+                }
+
+                await this.onEndTests(false)
+
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    private processTestsPacket(packet: PacketTestEnd | PacketTestStart): void {
+        switch (packet.type) {
+            case "start": {
+                logTestStart(packet.scenario);
+
+                break;
+            }
+
+            case "end": {
+                const endPacket = packet as PacketTestEnd;
+
+                logTestEnd(
+                    packet.scenario.name,
+                    endPacket.state,
+                    endPacket.cause,
+                    endPacket.startedAt,
+                    endPacket.finishedAt
+                );
+
+                break;
+            }
         }
     }
 
-    return true
-}
+    private async processSessionPackets(packet: PacketSessionEnd | PacketSessionStart): Promise<void> {
+        switch (packet.type) {
+            case "start": {
+                const sessionStart = packet as PacketSessionStart;
 
-const processTestsPacket = (packet: PacketTestEnd | PacketTestStart) => {
-    switch (packet.type) {
-        case "start": {
-            logTestStart(packet.scenario)
+                logSessionStart(packet.startedAt, sessionStart.tests.length);
 
-            break
-        }
+                break;
+            }
 
-        case "end": {
-            const endPacket = packet as PacketTestEnd
+            case "end": {
+                const sessionEnd = packet as PacketSessionEnd;
 
-            logTestEnd(
-                packet.scenario.name,
-                endPacket.state,
-                endPacket.cause,
-                endPacket.startedAt,
-                endPacket.finishedAt
-            )
+                logSessionEnd(sessionEnd);
+                await this.publisher.publishSessionEnd(sessionEnd)
 
-            break
-        }
-    }
-}
+                if (this.prInfo) {
+                    await publishPRComment(this.prInfo);
+                }
 
-const processSessionPackets = async (packet: PacketSessionEnd | PacketSessionStart) => {
-    switch (packet.type) {
-        case "start": {
-            const sessionStart = packet as PacketSessionStart
+                await this.onEndTests(isTestSucceed(sessionEnd.results));
 
-            logSessionStart(packet.startedAt, sessionStart.tests.length)
-
-            break
-        }
-
-        case "end": {
-            const sessionEnd = packet as PacketSessionEnd
-
-            logSessionEnd(sessionEnd)
-            await publishSessionEnd(sessionEnd)
-            if (prInfo)
-                await publishPRComment(prInfo)
-
-            await endTests(isTestSucceed(sessionEnd.results))
-
-            break
+                break;
+            }
         }
     }
 }
 
+export default ScenamaticaPacketProcessor;

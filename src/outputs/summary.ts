@@ -1,54 +1,57 @@
-import type {PacketSessionEnd} from "../packets"
-import {summary} from "@actions/core";
+import type { PacketSessionEnd } from "../packets";
+import { summary } from "@actions/core";
 import {
     getExceptionString,
     getFooter,
     getHeader,
     getReportingMessage,
     getTestResultTable,
-    getTestSummary
+    getTestSummary,
 } from "./messages";
-import type {PacketScenamaticaError} from "../packets";
-import {generateGraphicalSummary} from "./graphical-summary";
-import {getArguments} from "../utils";
+import type { PacketScenamaticaError } from "../packets";
+import { generateGraphicalSummary } from "./graphical-summary";
+import { getArguments } from "../utils";
 
-const printSummary = async (sessionEnd: PacketSessionEnd) => {
-    const {results, finishedAt, startedAt} = sessionEnd
+class SummaryPrinter {
+    private errorHeaderPrinted = false;
 
-    summary.addRaw(getHeader(false))
-    summary.addRaw(getTestSummary(results, startedAt, finishedAt))
+    private errorReportingMessagePrinted = false;
 
-    summary.addRaw(getTestResultTable(results, true))
+    public async printSummary(sessionEnd: PacketSessionEnd): Promise<void> {
+        const { results, finishedAt, startedAt } = sessionEnd;
 
-    if (getArguments().graphicalSummary)
-        summary.addRaw(generateGraphicalSummary(sessionEnd))
+        summary.addRaw(getHeader(false));
+        summary.addRaw(getTestSummary(results, startedAt, finishedAt));
 
-    await summary.write()
-}
+        summary.addRaw(getTestResultTable(results, true));
 
-let errorHeaderPrinted = false
-let errorReportingMessagePrinted = false
+        if (getArguments().graphicalSummary)
+            summary.addRaw(generateGraphicalSummary(sessionEnd));
 
-const printErrorSummary = async (packet: PacketScenamaticaError) => {
-    if (!errorHeaderPrinted) {
-        summary.addRaw(getHeader(true))
-        errorHeaderPrinted = true
+        await summary.write();
     }
 
-    summary.addRaw(getExceptionString(packet))
+    public async printErrorSummary(packet: PacketScenamaticaError): Promise<void> {
+        if (!this.errorHeaderPrinted) {
+            summary.addRaw(getHeader(true));
+            this.errorHeaderPrinted = true;
+        }
 
-    if (!errorReportingMessagePrinted) {
-        summary.addRaw(getReportingMessage())
-        errorReportingMessagePrinted = true
+        summary.addRaw(getExceptionString(packet));
+
+        if (!this.errorReportingMessagePrinted) {
+            summary.addRaw(getReportingMessage());
+            this.errorReportingMessagePrinted = true;
+        }
+
+        await summary.write();
     }
 
-    await summary.write()
+    public async printFooter(): Promise<void> {
+        summary.addRaw(getFooter());
+
+        await summary.write();
+    }
 }
 
-const printFooter = async () => {
-    summary.addRaw(getFooter())
-
-    await summary.write()
-}
-
-export { printSummary, printErrorSummary, printFooter }
+export default SummaryPrinter;

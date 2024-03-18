@@ -1,137 +1,150 @@
-import { isNoScenamatica} from "../utils.js"
-import {deployPlugin} from "./deployer.js"
-import {kill, onDataReceived} from "./client";
-import type {ChildProcess} from "node:child_process";
-import {spawn} from "node:child_process";
-import type {Writable} from "node:stream";
+import { isNoScenamatica } from "../utils.js";
+import ServerDeployer from "./deployer.js";
+import type { ChildProcess } from "node:child_process";
+import { spawn } from "node:child_process";
+import type { Writable } from "node:stream";
 import * as fs from "node:fs";
 import path from "node:path";
-import {info, setFailed, warning} from "@actions/core";
-import {printFooter} from "../outputs/summary";
+import { info, setFailed, warning } from "@actions/core";
+import ScenamaticaPacketProcessor from "./client";
+import type {PullRequestInfo} from "../outputs/pull-request/appender";
+import OutputPublisher from "../outputs/publisher";
 
-let serverProcess: ChildProcess | undefined
-let serverStdin: Writable | undefined
+class ServerManager {
+    private readonly publisher: OutputPublisher;
 
-const genArgs = (executable: string, args: string[]) => {
-    const argus = [
-        ...args,
-        "-jar",
-        executable,
-        "nogui"
-    ]
+    private readonly client: ScenamaticaPacketProcessor;
 
-    return argus
-}
+    private serverProcess: ChildProcess | undefined;
 
-const createServerProcess = (workDir: string, executable: string, args: string[] = []) => {
-    const cp = spawn(
-        "java",
-        genArgs(executable, args),
-        {
-            cwd: workDir
-        }
-    )
+    private serverStdin: Writable | undefined;
 
-    serverStdin = cp.stdin
-    serverProcess = cp
+    public constructor() {
+        this.publisher = new OutputPublisher()
+        this.client = new ScenamaticaPacketProcessor(this.publisher, this.endTests.bind(this))
+    }
 
-    return cp
-}
+    private genArgs(executable: string, args: string[]): string[] {
+        return [
+            ...args,
+            "-jar",
+            executable,
+            "nogui"
+        ];
+    }
 
-export const startServerOnly = async (workDir: string, executable: string, args: string[] = []) => {
-    info(`Starting server with executable ${executable} and args ${args.join(" ")}`)
+    private createServerProcess(workDir: string, executable: string, args: string[] = []): ChildProcess {
+        const cp = spawn(
+            "java",
+            this.genArgs(executable, args),
+            {
+                cwd: workDir
+            }
+        );
 
-    const cp = createServerProcess(workDir, executable, args)
+        this.serverStdin = cp.stdin;
+        this.serverProcess = cp;
 
-    cp.stdout.on("data", (data: Buffer) => {
-        const line = data.toString("utf8")
+        return cp;
+    }
 
-        if (line.includes("Done") && line.includes("For help, type \"help\""))
-            serverStdin?.write("stop\n")
+    public async startServerOnly(workDir: string, executable: string, args: string[] = []): Promise<number> {
+        info(`Starting server with executable ${executable} and args ${args.join(" ")}`);
 
-        if (line.endsWith("\n"))
-            info(line.slice(0, - 1))
-        else
-            info(line)
-    })
+        const cp = this.createServerProcess(workDir, executable, args);
 
-    return new Promise<number>((resolve, reject) => {
-        cp.on("exit", (code) => {
-            if (code === 0)
-                resolve(code)
+        cp.stdout!.on("data", (data: Buffer) => {
+            const line = data.toString("utf8");
+
+            if (line.includes("Done") && line.includes("For help, type \"help\""))
+                this.serverStdin?.write("stop\n");
+
+            if (line.endsWith("\n"))
+                info(line.slice(0, -1));
             else
-                reject(code)
-        })
-    })
-}
+                info(line);
+        });
 
-export const stopServer = () => {
-    if (!serverStdin || !serverProcess)
-        return
+        return new Promise<number>((resolve, reject) => {
+            cp.on("exit", (code) => {
+                if (code === 0)
+                    resolve(code);
+                else
+                    reject(code);
+            });
+        });
+    }
 
-    info("Stopping server...")
+    public stopServer(): void {
+        if (!this.serverStdin || !this.serverProcess)
+            return;
 
-    serverStdin.write("stop\n")
-    
-    setTimeout(() => {
-        if (serverProcess!.killed)
-            return
+        info("Stopping server...");
 
-        warning("Server didn't stop in time, killing it...")
-        serverProcess?.kill("SIGKILL")
-    }, 1000 * 20)
-}
+        this.serverStdin.write("stop\n");
 
-export const startTests = async (serverDir: string, executable: string, pluginFile: string) => {
-    info(`Starting tests of plugin ${pluginFile}.`)
+        setTimeout(() => {
+            if (this.serverProcess!.killed)
+                return;
 
-    if (isNoScenamatica())
-        await removeScenamatica(serverDir)
+            warning("Server didn't stop in time, killing it...");
+            this.serverProcess?.kill("SIGKILL");
+        }, 1000 * 20);
+    }
 
+    private async removeScenamatica(serverDir: string): Promise<void> {
+        info("Removing Scenamatica from server...");
 
-    await deployPlugin(serverDir, pluginFile)
+        const pluginDir = path.join(serverDir, "plugins");
+        const files = await fs.promises.readdir(pluginDir);
 
-    const cp = createServerProcess(serverDir, executable)
-
-    cp.stdout.on("data", async (data: Buffer) => {
-        await onDataReceived(data.toString("utf8"))
-    })
-}
-
-const removeScenamatica = async (serverDir: string) => {
-    info("Removing Scenamatica from server...")
-
-    const pluginDir = path.join(serverDir, "plugins")
-    const files = await fs.promises.readdir(pluginDir)
-
-    for (const file of files) {
-        if (file.includes("Scenamatica") && file.endsWith(".jar")) {
-            info(`Removing ${file}...`)
-            await fs.promises.rm(path.join(pluginDir, file))
+        for (const file of files) {
+            if (file.includes("Scenamatica") && file.endsWith(".jar")) {
+                info(`Removing ${file}...`);
+                await fs.promises.rm(path.join(pluginDir, file));
+            }
         }
     }
-}
 
-export const endTests = async (succeed: boolean) => {
-    info("Ending tests, shutting down server...")
+    public async startTests(serverDir: string, executable: string, pluginFile: string): Promise<void> {
+        info(`Starting tests of plugin ${pluginFile}.`);
 
-    kill()
-    stopServer()
+        if (isNoScenamatica())
+            await this.removeScenamatica(serverDir);
 
-    await printFooter()
+        await ServerDeployer.deployPlugin(serverDir, pluginFile);
 
-    let code: number
+        const cp = this.createServerProcess(serverDir, executable);
 
-    if (succeed) {
-        info("Tests succeeded")
-
-        code = 0
-    } else {
-        setFailed("Tests failed")
-
-        code = 1
+        cp.stdout!.on("data", async (data: Buffer) => {
+            await this.client.onDataReceived(data.toString("utf8"))
+        })
     }
 
+    public async endTests(succeed: boolean): Promise<void> {
+        info("Ending tests, shutting down server...");
 
-    process.exit(code)
+        // Implement kill function here
+        this.stopServer();
+
+        await this.publisher.summaryPrinter.printFooter();
+
+        let code: number;
+
+        if (succeed) {
+            info("Tests succeeded");
+            code = 0;
+        } else {
+            setFailed("Tests failed");
+            code = 1;
+        }
+
+        process.exit(code);
+    }
+
+    public enablePullRequestMode(pullRequest: PullRequestInfo): void {
+        this.client.enablePullRequestMode(pullRequest)
+    }
 }
+
+export default ServerManager

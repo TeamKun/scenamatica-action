@@ -1,63 +1,83 @@
-import * as fs from "node:fs"
-import { deployServer } from "./server/deployer.js"
-import { startTests } from "./server/controller.js"
-import type { Args } from "./utils.js"
-import { getArguments } from "./utils.js"
-import {info, setFailed} from "@actions/core";
-import {context, getOctokit} from "@actions/github";
-import type {PullRequestInfo} from "./outputs/pull-request/appender";
-import {initPullRequest} from "./server/client";
+import * as fs from "node:fs";
+import ServerDeployer from "./server/deployer.js";
+import type { Args } from "./utils.js";
+import { getArguments } from "./utils.js";
+import { info, setFailed } from "@actions/core";
+import { context, getOctokit } from "@actions/github";
+import type { PullRequestInfo } from "./outputs/pull-request/appender";
+import ServerManager from "./server/controller";
 
-const main = async (): Promise<void> => {
-    const args: Args = getArguments()
+class Main {
+    private readonly args: Args;
 
-    const { mcVersion,
-        javaVersion,
-        scenamaticaVersion,
-        serverDir,
-        pluginFile,
-        githubToken
-    } = args
+    private readonly pullRequest: { number: number } | undefined;
 
-    const pullRequest = context.payload.pull_request
+    private readonly githubToken: string;
 
-    if (pullRequest) {
-        initPRMode(pullRequest, githubToken)
+    public constructor() {
+        this.args = getArguments();
+        this.pullRequest = context.payload.pull_request;
+        this.githubToken = this.args.githubToken;
     }
 
-    if (!fs.existsSync(pluginFile)) {
-        setFailed(`Plugin file ${pluginFile} does not exist`)
+    public async run(): Promise<void> {
+        const {
+            mcVersion,
+            javaVersion,
+            scenamaticaVersion,
+            serverDir,
+            pluginFile,
+        } = this.args;
 
-        return
+        if (!fs.existsSync(pluginFile)) {
+            setFailed(`Plugin file ${pluginFile} does not exist`);
+
+            return;
+        }
+
+        const paper = await ServerDeployer.deployServer(
+            serverDir,
+            javaVersion,
+            mcVersion,
+            scenamaticaVersion
+        );
+
+        info("Starting tests...");
+
+        const controller = new ServerManager()
+
+        if (this.pullRequest) {
+            Main.initPRMode(controller, this.pullRequest, this.githubToken);
+        }
+
+        await controller.startTests(
+            serverDir,
+            paper,
+            pluginFile
+        )
     }
 
-    const paper = await deployServer(serverDir, javaVersion, mcVersion, scenamaticaVersion)
+    private static initPRMode(client: ServerManager, pullRequest: { number: number }, token: string): void {
+        info(`Running in Pull Request mode for PR #${pullRequest.number}`);
 
-    info("Starting tests...")
+        const prInfo: PullRequestInfo = {
+            number: pullRequest.number,
+            octokit: getOctokit(token),
+            owner: context.repo.owner,
+            repository: context.repo.repo,
+        };
 
-    await startTests(serverDir, paper, pluginFile)
+        client.enablePullRequestMode(prInfo)
+    }
 }
 
-const initPRMode = (pullRequest: {number: number}, token: string) => {
-    info(`Running in Pull Request mode for PR #${pullRequest.number}`)
+const deployment = new Main();
 
-    const prInfo: PullRequestInfo = {
-        number: pullRequest.number,
-        octokit: getOctokit(token),
-        owner: context.repo.owner,
-        repository: context.repo.repo
-    }
-
-
-    initPullRequest(prInfo)
-}
-
-main().catch((error) => {
-    if (error instanceof Error)
-        setFailed(error)
+deployment.run().catch((error) => {
+    if (error instanceof Error) setFailed(error);
     else {
-        const message = error as string
+        const message = error as string;
 
-        setFailed(message)
+        setFailed(message);
     }
-})
+});
