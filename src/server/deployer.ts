@@ -141,7 +141,8 @@ class ServerDeployer {
         }
     }
 
-    public static async deployServer(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string): Promise<string> {
+    public static async deployServer(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string,
+                                     uploadXMLReport: boolean): Promise<string> {
         const pluginDir = path.join(dir, "plugins");
         // キャッシュの復元
         const cached = await ServerDeployer.restoreCache(dir, javaVersion, mcVersion, scenamaticaVersion);
@@ -161,17 +162,20 @@ class ServerDeployer {
         await io.mkdirP(pluginDir);
         await ServerDeployer.downloadLatestPaper(dir, mcVersion);
         await ServerDeployer.downloadScenamatica(pluginDir, scenamaticaVersion);
-        
+
         await ServerDeployer.writeEula(dir); // eula.txt を書き込まないと Paper が起動しない
-        
-        const controller = new ServerManager()
+
+        const controller = new ServerManager(dir)
 
         await controller.startServerOnly(
-            dir,
             ServerDeployer.PAPER_NAME
         )
 
-        await ServerDeployer.initScenamaticaConfig(path.join(pluginDir, "Scenamatica"), scenamaticaVersion);
+        await ServerDeployer.initScenamaticaConfig(
+            controller.getScenamaticaDirectory(),
+            scenamaticaVersion,
+            uploadXMLReport
+        );
 
         await cache.saveCache([dir], ServerDeployer.genCacheKey(javaVersion, mcVersion, scenamaticaVersion));
 
@@ -182,11 +186,10 @@ class ServerDeployer {
         const pluginDir = path.join(serverDir, "plugins");
 
         await io.mkdirP(pluginDir);
-
         await io.cp(pluginFile, pluginDir);
     }
 
-    private static async initScenamaticaConfig(configDir: string, scenamaticaVersion: string): Promise<void> {
+    private static async initScenamaticaConfig(configDir: string, scenamaticaVersion: string, uploadXMLReport: boolean): Promise<void> {
         const configPath = path.join(configDir, "config.yml");
 
         const configData = yaml.load(await fs.promises.readFile(configPath, "utf8")) as {
@@ -205,6 +208,10 @@ class ServerDeployer {
             configData["reporting"]!["raw"] = true;
         } else {
             configData["interfaces"]!["raw"] = true;
+        }
+
+        if (uploadXMLReport) {
+            configData["reporting"]!["junit"]["enabled"] = true;
         }
 
         await fs.promises.writeFile(configPath, yaml.dump(configData));

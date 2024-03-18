@@ -1,8 +1,11 @@
-import type  { PacketSessionEnd, PacketScenamaticaError } from "../packets";
+import type {PacketScenamaticaError, PacketSessionEnd} from "../packets";
 import SummaryPrinter from "./summary";
-import { publishOutput } from "./action-output";
-import type { PullRequestInfo} from "./pull-request/appender";
+import {publishOutput} from "./action-output";
+import type {PullRequestInfo} from "./pull-request/appender";
 import {publishPRComment, reportRunning, reportSessionEnd} from "./pull-request/appender";
+import {info, warning} from "@actions/core";
+import {DefaultArtifactClient} from "@actions/artifact";
+import path from "node:path";
 
 class OutputPublisher {
     public readonly summaryPrinter: SummaryPrinter
@@ -25,10 +28,27 @@ class OutputPublisher {
         reportError(packet);
     }
 
-    public publishRunning(info: PullRequestInfo): void {
+    public publishRunning(pullRequestInfo: PullRequestInfo): void {
         reportRunning();
-        publishPRComment(info) // 即反映
+        publishPRComment(pullRequestInfo) // 即反映
             .catch(console.error);
+    }
+
+    public async publishXMLReports(paths: string[]): Promise<void> {
+        if (paths.length === 0) {
+            warning("No report to upload found.")
+        }
+
+        const artifact = new DefaultArtifactClient()
+        const baseDirectory = path.dirname(paths[0])
+
+        const uploadResult = await artifact.uploadArtifact(
+            "scenamatica-reports",
+            paths,
+            baseDirectory
+        )
+        
+        info(`Artifacts uploaded successfully: ${paths.join(", ")} with id ${uploadResult.id!} of size ${uploadResult.size!}`)
     }
 }
 

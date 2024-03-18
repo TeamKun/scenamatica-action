@@ -1,16 +1,18 @@
-import { isNoScenamatica } from "../utils.js";
+import {getArguments, isNoScenamatica} from "../utils.js";
 import ServerDeployer from "./deployer.js";
-import type { ChildProcess } from "node:child_process";
-import { spawn } from "node:child_process";
-import type { Writable } from "node:stream";
+import type {ChildProcess} from "node:child_process";
+import {spawn} from "node:child_process";
+import type {Writable} from "node:stream";
 import * as fs from "node:fs";
 import path from "node:path";
-import { info, setFailed, warning } from "@actions/core";
+import {info, setFailed, warning} from "@actions/core";
 import ScenamaticaPacketProcessor from "./client";
 import type {PullRequestInfo} from "../outputs/pull-request/appender";
 import OutputPublisher from "../outputs/publisher";
 
 class ServerManager {
+    private readonly serverDirectory: string
+
     private readonly publisher: OutputPublisher;
 
     private readonly client: ScenamaticaPacketProcessor;
@@ -19,9 +21,14 @@ class ServerManager {
 
     private serverStdin: Writable | undefined;
 
-    public constructor() {
+    public constructor(serverDirectory: string) {
+        this.serverDirectory = serverDirectory
         this.publisher = new OutputPublisher()
         this.client = new ScenamaticaPacketProcessor(this.publisher, this.endTests.bind(this))
+    }
+
+    public getScenamaticaDirectory(): string {
+        return path.join(this.serverDirectory, "plugins", "Scenamatica")
     }
 
     private genArgs(executable: string, args: string[]): string[] {
@@ -33,12 +40,12 @@ class ServerManager {
         ];
     }
 
-    private createServerProcess(workDir: string, executable: string, args: string[] = []): ChildProcess {
+    private createServerProcess(executable: string, args: string[] = []): ChildProcess {
         const cp = spawn(
             "java",
             this.genArgs(executable, args),
             {
-                cwd: workDir
+                cwd: this.serverDirectory
             }
         );
 
@@ -48,10 +55,10 @@ class ServerManager {
         return cp;
     }
 
-    public async startServerOnly(workDir: string, executable: string, args: string[] = []): Promise<number> {
+    public async startServerOnly(executable: string, args: string[] = []): Promise<number> {
         info(`Starting server with executable ${executable} and args ${args.join(" ")}`);
 
-        const cp = this.createServerProcess(workDir, executable, args);
+        const cp = this.createServerProcess(executable, args);
 
         cp.stdout!.on("data", (data: Buffer) => {
             const line = data.toString("utf8");
@@ -92,10 +99,10 @@ class ServerManager {
         }, 1000 * 20);
     }
 
-    private async removeScenamatica(serverDir: string): Promise<void> {
+    private async removeScenamatica(): Promise<void> {
         info("Removing Scenamatica from server...");
 
-        const pluginDir = path.join(serverDir, "plugins");
+        const pluginDir = path.join(this.serverDirectory, "plugins");
         const files = await fs.promises.readdir(pluginDir);
 
         for (const file of files) {
@@ -106,15 +113,15 @@ class ServerManager {
         }
     }
 
-    public async startTests(serverDir: string, executable: string, pluginFile: string): Promise<void> {
+    public async startTests(executable: string, pluginFile: string): Promise<void> {
         info(`Starting tests of plugin ${pluginFile}.`);
 
         if (isNoScenamatica())
-            await this.removeScenamatica(serverDir);
+            await this.removeScenamatica();
 
-        await ServerDeployer.deployPlugin(serverDir, pluginFile);
+        await ServerDeployer.deployPlugin(this.serverDirectory, pluginFile);
 
-        const cp = this.createServerProcess(serverDir, executable);
+        const cp = this.createServerProcess(executable);
 
         cp.stdout!.on("data", async (data: Buffer) => {
             await this.client.onDataReceived(data.toString("utf8"))
@@ -124,7 +131,16 @@ class ServerManager {
     public async endTests(succeed: boolean): Promise<void> {
         info("Ending tests, shutting down server...");
 
-        // Implement kill function here
+        if (getArguments().uploadXMLReport) {
+            info("Waiting for the server for 5 seconds to save the reports.")
+            await new Promise<void>(resolve => {
+                setTimeout(async () => {
+                    await this.publisher.publishXMLReports(this.findReportPaths())
+                    resolve()
+                }, 5000)
+            })
+        }
+
         this.stopServer();
 
         await this.publisher.summaryPrinter.printFooter();
@@ -140,6 +156,45 @@ class ServerManager {
         }
 
         process.exit(code);
+    }
+
+    public findReportPaths(): string[] {
+        const baseDir = this.getScenamaticaDirectory();
+        const reportsDir = path.join(baseDir, 'reports');
+
+        if (!fs.existsSync(reportsDir)) {
+            warning(`Reports directory not found at ${reportsDir}`);
+
+            return []
+        }
+
+        const files = fs.readdirSync(reportsDir);
+        const xmlFiles = files.filter(file => path.extname(file).toLowerCase() === '.xml');
+
+        if (xmlFiles.length === 0) {
+            warning(`No XML report files found in ${reportsDir}`);
+
+            return []
+        }
+
+        // フルパスに変換して返す
+        return xmlFiles.map(file => path.join(reportsDir, file))
+    }
+
+    public  getDirectoryContents(directoryPath: string): void {
+        const items = fs.readdirSync(directoryPath);
+
+        for (const item of items) {
+            // アイテムのパスを取得
+            const itemPath = path.join(directoryPath, item);
+            const isFile = fs.statSync(itemPath).isFile();
+
+            if (isFile) {
+                console.log(itemPath)
+            } else {
+                this.getDirectoryContents(itemPath)
+            }
+        }
     }
 
     public enablePullRequestMode(pullRequest: PullRequestInfo): void {

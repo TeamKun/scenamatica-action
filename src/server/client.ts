@@ -10,7 +10,7 @@ import type OutputPublisher from "../outputs/publisher";
 class ScenamaticaPacketProcessor {
     private readonly publisher: OutputPublisher
 
-    private onEndTests: (succeed: boolean) => Promise<void>;
+    private readonly onEndTests: (succeed: boolean) => Promise<void>;
 
     private incomingBuffer: string | undefined;
 

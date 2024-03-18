@@ -27,6 +27,7 @@ class Main {
             scenamaticaVersion,
             serverDir,
             pluginFile,
+            uploadXMLReport
         } = this.args;
 
         if (!fs.existsSync(pluginFile)) {
@@ -39,19 +40,19 @@ class Main {
             serverDir,
             javaVersion,
             mcVersion,
-            scenamaticaVersion
+            scenamaticaVersion,
+            uploadXMLReport
         );
 
         info("Starting tests...");
 
-        const controller = new ServerManager()
+        const controller = new ServerManager(serverDir)
 
         if (this.pullRequest) {
             Main.initPRMode(controller, this.pullRequest, this.githubToken);
         }
 
         await controller.startTests(
-            serverDir,
             paper,
             pluginFile
         )
