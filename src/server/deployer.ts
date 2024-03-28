@@ -79,13 +79,18 @@ class ServerDeployer {
     }
 
     private static async downloadScenamatica(destDir: string, version: string): Promise<string> {
-        const url = ServerDeployer.SCENAMATICA_URL.replace(/\{version}/g, version);
+        let normalizedVersion = version;
 
-        info(`Downloading Scenamatica ${version} from ${url}`);
+        if (normalizedVersion.startsWith("v"))
+            normalizedVersion = normalizedVersion.slice(1);
 
-        const destPath = await tc.downloadTool(url, path.join(destDir, `Scenamatica-${version}.jar`));
+        const url = ServerDeployer.SCENAMATICA_URL.replace(/\{version}/g, normalizedVersion);
 
-        info(`Downloaded Scenamatica ${version} to ${destPath}`);
+        info(`Downloading Scenamatica ${normalizedVersion} from ${url}`);
+
+        const destPath = await tc.downloadTool(url, path.join(destDir, `Scenamatica-${normalizedVersion}.jar`));
+
+        info(`Downloaded Scenamatica ${normalizedVersion} to ${destPath}`);
 
         return destPath;
     }
