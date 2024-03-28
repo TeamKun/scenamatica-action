@@ -2,7 +2,7 @@ import type {PacketScenamaticaError, PacketSessionEnd} from "../packets";
 import SummaryPrinter from "./summary";
 import {publishOutput} from "./action-output";
 import type {PullRequestInfo} from "./pull-request/appender";
-import {publishPRComment, reportRunning, reportSessionEnd} from "./pull-request/appender";
+import {publishPRComment, reportRunning, reportSessionEnd, reportError} from "./pull-request/appender";
 import {info, warning} from "@actions/core";
 import {DefaultArtifactClient} from "@actions/artifact";
 import path from "node:path";
