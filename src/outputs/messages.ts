@@ -57,7 +57,13 @@ const MESSAGES_PASSED_WITH_THRESHOLD = [
 ];
 
 export const getHeader = (isError: boolean) => {
-    const result = [ wrap("h1", "Scenamatica"), wrap("h2", "Summary"), "<hr />"]
+    const runArgs = getArguments()
+
+    const result = [
+        wrap("h1", `Scenamatica for Minecraft ${runArgs.mcVersion}`),
+        wrap("h2", "Summary"),
+        "<hr />"
+    ]
 
     if (isError) {
         result.push(
