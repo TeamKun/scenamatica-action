@@ -6,6 +6,7 @@ import {publishPRComment, reportRunning, reportSessionEnd, reportError} from "./
 import {info, warning} from "@actions/core";
 import {DefaultArtifactClient} from "@actions/artifact";
 import path from "node:path";
+import {getArguments} from "../utils";
 
 class OutputPublisher {
     public readonly summaryPrinter: SummaryPrinter
@@ -37,13 +38,15 @@ class OutputPublisher {
     public async publishXMLReports(paths: string[]): Promise<void> {
         if (paths.length === 0) {
             warning("No report to upload found.")
+
+            return
         }
 
         const artifact = new DefaultArtifactClient()
         const baseDirectory = path.dirname(paths[0])
 
         const uploadResult = await artifact.uploadArtifact(
-            "scenamatica-reports",
+            getArguments().reportArtifactName,
             paths,
             baseDirectory
         )

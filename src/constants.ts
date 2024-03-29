@@ -7,7 +7,8 @@ export const PARAMETER_DEFAULTS = {
     scenamatica: "0.8.0",
     failThreshold: 0,
     graphicalSummary: true,
-    uploadXMLReport: true
+    uploadXMLReport: true,
+    reportArtifactName: "scenamatica-reports",
 }
 
 const REPO = {

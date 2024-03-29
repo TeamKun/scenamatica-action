@@ -29,6 +29,10 @@ inputs:
   upload-xml-report:
     description: "Whether to upload the test results in the form of an XML report."
     default: "true"
+  report-artifact-name:
+    description: "The name of the artifact that will be uploaded."
+    default: "scenamatica-reports"
+    required: true
 outputs:
   # Runner outputs
   success:
