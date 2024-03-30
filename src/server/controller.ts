@@ -41,8 +41,10 @@ class ServerManager {
     }
 
     private createServerProcess(javaBin: string, executable: string, args: string[] = []): ChildProcess {
+        const fullPathOfBin = path.resolve(javaBin)
+
         const cp = spawn(
-            javaBin,
+            fullPathOfBin,
             this.genArgs(executable, args),
             {
                 cwd: this.serverDirectory

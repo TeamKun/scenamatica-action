@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import * as yaml from "js-yaml";
 import { exec } from "@actions/exec";
 import fetch from "node-fetch";
-import { info } from "@actions/core";
+import { info} from "@actions/core";
 import { compare } from "compare-versions";
 import ServerManager from "./controller";
 import {getArguments} from "../utils";
@@ -22,7 +22,7 @@ class ServerDeployer {
 
     private static readonly JAVA_FETCH_URL = "https://api.azul.com/zulu/download/community/v1.0/bundles/?os={os}&arch={arch}&ext={ext}&java_version={version}&type=jdk";
 
-    private static getDirectoryContents(directoryPath: string): void {
+    public  getDirectoryContents(directoryPath: string): void {
         const items = fs.readdirSync(directoryPath);
 
         for (const item of items) {
@@ -38,7 +38,8 @@ class ServerDeployer {
         }
     }
 
-private static genCacheKey(javaVersion: string, mcVersion: string, scenamaticaVersion: string): string {
+
+    private static genCacheKey(javaVersion: string, mcVersion: string, scenamaticaVersion: string): string {
         return `server-${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`;
     }
 
@@ -142,12 +143,30 @@ private static genCacheKey(javaVersion: string, mcVersion: string, scenamaticaVe
 
         info(`Downloaded Java ${version} to ${dest}`);
 
-        const destDir = path.join(destBaseDir, "java");
+        const destDir = path.join(destBaseDir, "java-extracted");
 
         info("Extracting...");
         await (isTar ? tc.extractTar(dest, destDir) : tc.extractZip(dest, destDir));
 
-        this.getDirectoryContents(destDir);
+        // destBaseDir/java/わからない名前/ になるので、その中身を destBaseDir/java/ に移動する
+        const items = fs.readdirSync(destDir);
+
+        let srcDir;
+
+        for (const item of items) {
+            if (item.startsWith("zulu") && item.endsWith("linux_x64")) {
+                srcDir = path.join(destDir, item);
+
+                break;
+            }
+        }
+
+        if (srcDir) {
+            info(`Moving ${srcDir} to java...`);
+            fs.renameSync(srcDir, path.join(destBaseDir, "java"));
+        } else {
+            throw new Error("Could not find the extracted Java directory.");
+        }
 
         info(`Installed Java ${version}`);
     }
