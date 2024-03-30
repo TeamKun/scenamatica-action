@@ -5,6 +5,9 @@ branding:
   icon: book-open
   color: blue
 inputs:
+  java:
+    description: "Target Java version."
+    default: "11"
   minecraft:
     description: "Target Minecraft version."
     default: "1.16.5"

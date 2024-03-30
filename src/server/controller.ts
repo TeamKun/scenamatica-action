@@ -40,9 +40,9 @@ class ServerManager {
         ];
     }
 
-    private createServerProcess(executable: string, args: string[] = []): ChildProcess {
+    private createServerProcess(javaBin: string, executable: string, args: string[] = []): ChildProcess {
         const cp = spawn(
-            "java",
+            javaBin,
             this.genArgs(executable, args),
             {
                 cwd: this.serverDirectory
@@ -58,7 +58,11 @@ class ServerManager {
     public async startServerOnly(executable: string, args: string[] = []): Promise<number> {
         info(`Starting server with executable ${executable} and args ${args.join(" ")}`);
 
-        const cp = this.createServerProcess(executable, args);
+        const cp = this.createServerProcess(
+            path.join(this.serverDirectory, "java", "bin", "java"),
+            executable,
+            args
+        );
 
         cp.stdout!.on("data", (data: Buffer) => {
             const line = data.toString("utf8");
@@ -121,7 +125,7 @@ class ServerManager {
 
         await ServerDeployer.deployPlugin(this.serverDirectory, pluginFile);
 
-        const cp = this.createServerProcess(executable);
+        const cp = this.createServerProcess(path.join(this.serverDirectory, "java", "bin", "java"), executable);
 
         cp.stdout!.on("data", async (data: Buffer) => {
             await this.client.onDataReceived(data.toString("utf8"))

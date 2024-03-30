@@ -1,7 +1,6 @@
 import * as tc from "@actions/tool-cache";
 import * as cache from "@actions/cache";
 import * as io from "@actions/io";
-import * as core from "@actions/core";
 import path from "node:path";
 import * as fs from "node:fs";
 import * as yaml from "js-yaml";
@@ -115,7 +114,7 @@ class ServerDeployer {
         };
     }
 
-    private static async downloadJava(destBaseDir: string, version: string): Promise<void> {
+    private static async installJava(destBaseDir: string, version: string): Promise<void> {
         info(`Retrieving latest Java build for ${version}`);
 
         const { url, isTar } = await ServerDeployer.fetchLatestJavaLinkFor(version); // 最新の Java ビルドの URL を取得
@@ -131,19 +130,7 @@ class ServerDeployer {
         info("Extracting...");
         await (isTar ? tc.extractTar(dest, destDir) : tc.extractZip(dest, destDir));
 
-        core.addPath(path.join(destDir, "bin"));
-
         info(`Installed Java ${version}`);
-    }
-
-    private static async isJavaInstalled(): Promise<boolean> {
-        try {
-            await exec("java", ["-version"]);
-
-            return true;
-        } catch {
-            return false;
-        }
     }
 
     public static async deployServer(dir: string, javaVersion: string, mcVersion: string, scenamaticaVersion: string,
@@ -160,8 +147,8 @@ class ServerDeployer {
 
         info("Building server...");
 
-        // Java のダウンロード
-        if (!(await ServerDeployer.isJavaInstalled())) await ServerDeployer.downloadJava(dir, javaVersion);
+        // Java のダウンロード&インストール
+        await ServerDeployer.installJava(dir, javaVersion);
 
         // Paper のダウンロード
         await io.mkdirP(pluginDir);
