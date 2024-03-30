@@ -22,7 +22,23 @@ class ServerDeployer {
 
     private static readonly JAVA_FETCH_URL = "https://api.azul.com/zulu/download/community/v1.0/bundles/?os={os}&arch={arch}&ext={ext}&java_version={version}&type=jdk";
 
-    private static genCacheKey(javaVersion: string, mcVersion: string, scenamaticaVersion: string): string {
+    private static getDirectoryContents(directoryPath: string): void {
+        const items = fs.readdirSync(directoryPath);
+
+        for (const item of items) {
+            // アイテムのパスを取得
+            const itemPath = path.join(directoryPath, item);
+            const isFile = fs.statSync(itemPath).isFile();
+
+            if (isFile) {
+                console.log(itemPath)
+            } else {
+                this.getDirectoryContents(itemPath)
+            }
+        }
+    }
+
+private static genCacheKey(javaVersion: string, mcVersion: string, scenamaticaVersion: string): string {
         return `server-${mcVersion}-scenamatica-v${scenamaticaVersion}@java-${javaVersion}`;
     }
 
@@ -130,6 +146,8 @@ class ServerDeployer {
 
         info("Extracting...");
         await (isTar ? tc.extractTar(dest, destDir) : tc.extractZip(dest, destDir));
+
+        this.getDirectoryContents(destDir);
 
         info(`Installed Java ${version}`);
     }
