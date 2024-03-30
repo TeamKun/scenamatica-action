@@ -185,22 +185,6 @@ class ServerManager {
         return xmlFiles.map(file => path.join(reportsDir, file))
     }
 
-    public  getDirectoryContents(directoryPath: string): void {
-        const items = fs.readdirSync(directoryPath);
-
-        for (const item of items) {
-            // アイテムのパスを取得
-            const itemPath = path.join(directoryPath, item);
-            const isFile = fs.statSync(itemPath).isFile();
-
-            if (isFile) {
-                console.log(itemPath)
-            } else {
-                this.getDirectoryContents(itemPath)
-            }
-        }
-    }
-
     public enablePullRequestMode(pullRequest: PullRequestInfo): void {
         this.client.enablePullRequestMode(pullRequest)
     }
