@@ -67,6 +67,7 @@ interface Args {
     serverDir: string
     pluginFile: string
     javaVersion: string
+    javaArguments: string[]
     githubToken: string
     graphicalSummary: boolean
     failThreshold: number
@@ -82,6 +83,7 @@ const getArguments = (): Args => {
         serverDir: core.getInput("server-dir") || PARAMETER_DEFAULTS.serverDir,
         pluginFile: core.getInput("plugin", { required: true }),
         javaVersion: core.getInput("java") || PARAMETER_DEFAULTS.java,
+        javaArguments: core.getInput("java-arguments").split(" "),
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
         graphicalSummary: core.getBooleanInput("graphical-summary") || PARAMETER_DEFAULTS.graphicalSummary,
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || PARAMETER_DEFAULTS.failThreshold,

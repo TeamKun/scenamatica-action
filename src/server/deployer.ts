@@ -9,6 +9,7 @@ import fetch from "node-fetch";
 import { info } from "@actions/core";
 import { compare } from "compare-versions";
 import ServerManager from "./controller";
+import {getArguments} from "../utils";
 
 class ServerDeployer {
     private static readonly PAPER_NAME = "paper.jar";
@@ -158,9 +159,11 @@ class ServerDeployer {
         await ServerDeployer.writeEula(dir); // eula.txt を書き込まないと Paper が起動しない
 
         const controller = new ServerManager(dir)
+        const extraJavaArguments = getArguments().javaArguments
 
         await controller.startServerOnly(
-            ServerDeployer.PAPER_NAME
+            ServerDeployer.PAPER_NAME,
+            extraJavaArguments
         )
 
         await ServerDeployer.initScenamaticaConfig(

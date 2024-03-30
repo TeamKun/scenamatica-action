@@ -125,7 +125,8 @@ class ServerManager {
 
         await ServerDeployer.deployPlugin(this.serverDirectory, pluginFile);
 
-        const cp = this.createServerProcess(path.join(this.serverDirectory, "java", "bin", "java"), executable);
+        const extraJavaArguments = getArguments().javaArguments
+        const cp = this.createServerProcess(path.join(this.serverDirectory, "java", "bin", "java"), executable, extraJavaArguments);
 
         cp.stdout!.on("data", async (data: Buffer) => {
             await this.client.onDataReceived(data.toString("utf8"))
