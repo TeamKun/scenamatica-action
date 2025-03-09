@@ -66,11 +66,15 @@ class ServerManager {
             args
         );
 
+        let isServerWorked: boolean
+
         cp.stdout!.on("data", (data: Buffer) => {
             const line = data.toString("utf8");
 
-            if (line.includes("Done") && line.includes("For help, type \"help\""))
+            if (line.includes("Done") && line.includes("For help, type \"help\"")) {
                 this.serverStdin?.write("stop\n");
+                isServerWorked = true
+            }
 
             if (line.endsWith("\n"))
                 info(line.slice(0, -1));
@@ -80,10 +84,18 @@ class ServerManager {
 
         return new Promise<number>((resolve, reject) => {
             cp.on("exit", (code) => {
-                if (code === 0)
+                if (code === 0 && isServerWorked)
                     resolve(code);
                 else
+                {
+                    if (!isServerWorked)
+                    {
+                        warning("Server didn't start properly, most like due to mismatched Java version.");
+                        warning("Please check the Java version and try again.");
+                    }
+
                     reject(code);
+                }
             });
         });
     }
