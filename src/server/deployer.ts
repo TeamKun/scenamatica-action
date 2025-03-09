@@ -14,7 +14,7 @@ import {getArguments} from "../utils";
 class ServerDeployer {
     private static readonly PAPER_NAME = "paper.jar";
 
-    private static readonly PAPER_VERSION_URL = "https://papermc.io/api/v2/projects/paper/versions/{version}/";
+    private static readonly PAPER_VERSION_URL = "https://api.papermc.io/v2/projects/paper/versions/{version}/";
 
     private static readonly PAPER_DOWNLOAD_URL = `${ServerDeployer.PAPER_VERSION_URL}/builds/{build}/downloads/paper-{version}-{build}.jar`;
 
