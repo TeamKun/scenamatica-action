@@ -9,6 +9,8 @@ export const PARAMETER_DEFAULTS = {
     graphicalSummary: true,
     uploadXMLReport: true,
     reportArtifactName: "scenamatica-reports",
+    pullRequest: true,
+    detailedReportInPRComment: true,
 }
 
 const REPO = {

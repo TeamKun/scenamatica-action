@@ -68,6 +68,10 @@ interface Args {
 
     uploadXMLReport: boolean
     reportArtifactName: string
+
+    // PR settings
+    pullRequest: boolean
+    detailedReportInPRComment: boolean
 }
 
 const getArguments = (): Args => {
@@ -83,6 +87,8 @@ const getArguments = (): Args => {
         failThreshold: Number.parseInt(core.getInput("fail-threshold"), 10) || PARAMETER_DEFAULTS.failThreshold,
         uploadXMLReport: core.getBooleanInput("upload-xml-report") || PARAMETER_DEFAULTS.uploadXMLReport,
         reportArtifactName: core.getInput("report-artifact-name") || PARAMETER_DEFAULTS.reportArtifactName,
+        pullRequest: core.getBooleanInput("pull-request") || PARAMETER_DEFAULTS.pullRequest,
+        detailedReportInPRComment: core.getBooleanInput("detailed-report-in-pr-comment") || PARAMETER_DEFAULTS.detailedReportInPRComment,
     }
 }
 

@@ -98,25 +98,26 @@ export const getTestSummary = (results: PacketTestEnd[], startedAt: number, fini
 
     return joinLine(
         getSummaryHeader(total, elapsed, passed, failures, skipped, cancelled, flakes),
-        "<hr />",
-        wrap("h2", "Details")
+        "<hr />"
     )
 }
 
 export const getTestResultTable = (results: PacketTestEnd[], minimize = false) => {
-    const header = wrap("thead", joinLine(
-            wrap("tr", joinLine(
-                wrap("th", " "),
-                wrap("th", "Test"),
-                wrap("th", "Cause"),
-                wrap("th", "State"),
-                wrap("th", "Started at"),
-                wrap("th", "Finished at"),
-                wrap("th", "Elapsed"),
-                wrap("th", "Test description")
-            ))
-        )
-    )
+    const header = joinLine(
+        wrap("h2", "Details"),
+        wrap("thead", joinLine(
+                wrap("tr", joinLine(
+                    wrap("th", " "),
+                    wrap("th", "Test"),
+                    wrap("th", "Cause"),
+                    wrap("th", "State"),
+                    wrap("th", "Started at"),
+                    wrap("th", "Finished at"),
+                    wrap("th", "Elapsed"),
+                    wrap("th", "Test description")
+                ))
+            )
+        ))
 
     const body = wrap("tbody", joinLine(...results.map((result) => {
             const {

@@ -3,13 +3,13 @@ import {
     getExceptionString,
     getFooter,
     getHeader, getReportingMessage,
-    getRunningMessage,
-    getTestResultTable,
+    getRunningMessage, getTestResultTable,
     getTestSummary
 } from "../messages";
 import { upsertReport} from "./writer";
 import type {PacketScenamaticaError} from "../../packets";
 import type {GitHub} from "@actions/github/lib/utils";
+import {args} from "../../utils";
 
 let headerPrinted = false
 let containsError = false
@@ -41,9 +41,9 @@ export const reportSessionEnd = (packet: PacketSessionEnd) => {
 
     appendHeaderIfNotPrinted()
 
-    outMessage += `${getTestSummary(results, startedAt, finishedAt)}
-        ${getTestResultTable(results, true)}
-    `
+    outMessage += getTestSummary(results, startedAt, finishedAt)
+    if (args.detailedReportInPRComment)
+        outMessage += `\n${getTestResultTable(results, true)}`
 }
 
 const appendHeaderIfNotPrinted = () => {

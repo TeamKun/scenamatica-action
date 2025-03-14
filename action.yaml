@@ -8,12 +8,15 @@ inputs:
   java:
     description: "Target Java version."
     default: "11"
+    required: true
   minecraft:
     description: "Target Minecraft version."
     default: "1.16.5"
+    required: true
   server-dir:
     description: "Server directory."
     default: "server"
+    required: true
   java-arguments:
     description: "Extra Java arguments for the server."
   plugin:
@@ -25,18 +28,29 @@ inputs:
   fail-threshold:
     description: "The number of failed tests that will cause the action to fail. Negative values will cause the action to always pass."
     default: "0"
+    required: true
   github-token:
     description: "GitHub token for writing pull request comments."
     default: "${{ github.token }}"
   graphical-summary:
     description: "Whether to generate a summary of the test results in the form of a graph."
     default: "true"
+    required: true
   upload-xml-report:
     description: "Whether to upload the test results in the form of an XML report."
     default: "true"
+    required: true
   report-artifact-name:
     description: "The name of the artifact that will be uploaded."
     default: "scenamatica-reports"
+    required: true
+  pull-request:
+    description: "Whether to use the pull request mode for the test. The bot will comment on the pull request with the test results if this is true."
+    default: "true"
+    required: true
+  detailed-report-in-pr-comment:
+    description: "Whether to use the detailed report in the pull request comment."
+    default: "true"
     required: true
 outputs:
   # Runner outputs
