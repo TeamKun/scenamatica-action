@@ -54,12 +54,6 @@ const calcMaxAttemptOf = (targetName: string, results: PacketTestEnd[]) => {
     );
 }
 
-export const isTestSucceed = (results: PacketTestEnd[]) => {
-    const {failures} = extractTestResults(results)
-    const threshold = getArguments().failThreshold
-
-    return failures <= threshold
-}
 
 interface Args {
     mcVersion: string
@@ -79,9 +73,9 @@ interface Args {
 const getArguments = (): Args => {
     return {
         mcVersion: core.getInput("minecraft") || PARAMETER_DEFAULTS.minecraft,
-        scenamaticaVersion: core.getInput("scenamatica", ) || PARAMETER_DEFAULTS.scenamatica,
+        scenamaticaVersion: core.getInput("scenamatica",) || PARAMETER_DEFAULTS.scenamatica,
         serverDir: core.getInput("server-dir") || PARAMETER_DEFAULTS.serverDir,
-        pluginFile: core.getInput("plugin", { required: true }),
+        pluginFile: core.getInput("plugin", {required: true}),
         javaVersion: core.getInput("java") || PARAMETER_DEFAULTS.java,
         javaArguments: core.getInput("java-arguments").split(" "),
         githubToken: core.getInput("github-token") || process.env.GITHUB_TOKEN!,
@@ -92,8 +86,17 @@ const getArguments = (): Args => {
     }
 }
 
+export const args = getArguments();
+
 const isNoScenamatica = (): boolean => {
     return process.env[ENV_NO_SCENAMATICA] === "true"
 }
 
-export { extractTestResults, getArguments, Args, isNoScenamatica }
+export const isTestSucceed = (results: PacketTestEnd[]) => {
+    const {failures} = extractTestResults(results)
+    const threshold = args.failThreshold
+
+    return failures <= threshold
+}
+
+export { extractTestResults, Args, isNoScenamatica }

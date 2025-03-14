@@ -1,4 +1,4 @@
-import {extractTestResults, getArguments} from "../utils";
+import {args, extractTestResults} from "../utils";
 import type {PacketTestEnd} from "../packets";
 import {getEmojiForCause} from "../logging";
 import type {PacketScenamaticaError} from "../packets";
@@ -57,10 +57,8 @@ const MESSAGES_PASSED_WITH_THRESHOLD = [
 ];
 
 export const getHeader = (isError: boolean) => {
-    const runArgs = getArguments()
-
     const result = [
-        wrap("h1", `Scenamatica for Minecraft ${runArgs.mcVersion}`),
+        wrap("h1", `Scenamatica for Minecraft ${args.mcVersion}`),
         wrap("h2", "Summary"),
         "<hr />"
     ]
@@ -162,7 +160,7 @@ export const getTestResultTable = (results: PacketTestEnd[], minimize = false) =
 
 const getSummaryHeader = (total: number, elapsed: number, passed: number, failures: number, skipped: number,
                           cancelled: number, flakes: number) => {
-    const threshold = getArguments().failThreshold
+    const threshold = args.failThreshold
 
     let messageSource: string[]
 
@@ -237,13 +235,12 @@ export const getFooter = () => {
 }
 
 const getEnvInfoMessage = () => {
-    const runArgs = getArguments()
 
     const envInfo = [
         "+ Versions:",
-        `  - Scenamatica: ${runArgs.scenamaticaVersion}`,
-        `  - Minecraft: ${runArgs.mcVersion}`,
-        `  - Java: ${runArgs.javaVersion}`,
+        `  - Scenamatica: ${args.scenamaticaVersion}`,
+        `  - Minecraft: ${args.mcVersion}`,
+        `  - Java: ${args.javaVersion}`,
         `  - Node.js: ${process.version}`,
         "+ Runner:",
         `  - OS: ${process.platform}`,

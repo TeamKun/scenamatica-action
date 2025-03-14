@@ -10,7 +10,7 @@ import {
 } from "./messages";
 import type { PacketScenamaticaError } from "../packets";
 import { generateGraphicalSummary } from "./graphical-summary";
-import { getArguments } from "../utils";
+import {args} from "../utils";
 
 class SummaryPrinter {
     private errorHeaderPrinted = false;
@@ -25,7 +25,7 @@ class SummaryPrinter {
 
         summary.addRaw(getTestResultTable(results, true));
 
-        if (getArguments().graphicalSummary)
+        if (args.graphicalSummary)
             summary.addRaw(generateGraphicalSummary(sessionEnd));
 
         await summary.write();

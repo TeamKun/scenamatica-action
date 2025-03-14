@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import ServerDeployer from "./server/deployer.js";
-import type { Args } from "./utils.js";
-import { getArguments } from "./utils.js";
+import type {Args} from "./utils.js";
+import {args} from "./utils.js";
 import { info, setFailed } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import type { PullRequestInfo } from "./outputs/pull-request/appender";
@@ -15,7 +15,7 @@ class Main {
     private readonly githubToken: string;
 
     public constructor() {
-        this.args = getArguments();
+        this.args = args;
         this.pullRequest = context.payload.pull_request;
         this.githubToken = this.args.githubToken;
     }

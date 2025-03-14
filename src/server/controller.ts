@@ -1,4 +1,4 @@
-import {getArguments, isNoScenamatica} from "../utils.js";
+import {args, isNoScenamatica} from "../utils.js";
 import ServerDeployer from "./deployer.js";
 import type {ChildProcess} from "node:child_process";
 import {spawn} from "node:child_process";
@@ -31,21 +31,21 @@ class ServerManager {
         return path.join(this.serverDirectory, "plugins", "Scenamatica")
     }
 
-    private genArgs(executable: string, args: string[]): string[] {
+    private genArgs(executable: string, processArgs: string[]): string[] {
         return [
-            ...args,
+            ...processArgs,
             "-jar",
             executable,
             "nogui"
         ];
     }
 
-    private createServerProcess(javaBin: string, executable: string, args: string[] = []): ChildProcess {
+    private createServerProcess(javaBin: string, executable: string, processArgs: string[] = []): ChildProcess {
         const fullPathOfBin = path.resolve(javaBin)
 
         const cp = spawn(
             fullPathOfBin,
-            this.genArgs(executable, args),
+            this.genArgs(executable, processArgs),
             {
                 cwd: this.serverDirectory
             }
@@ -57,13 +57,13 @@ class ServerManager {
         return cp;
     }
 
-    public async startServerOnly(executable: string, args: string[] = []): Promise<number> {
-        info(`Starting server with executable ${executable} and args ${args.join(" ")}`);
+    public async startServerOnly(executable: string, processArgs: string[] = []): Promise<number> {
+        info(`Starting server with executable ${executable} and args ${processArgs.join(" ")}`);
 
         const cp = this.createServerProcess(
             path.join(this.serverDirectory, "java", "bin", "java"),
             executable,
-            args
+            processArgs
         );
 
         let isServerWorked: boolean
@@ -139,7 +139,7 @@ class ServerManager {
 
         await ServerDeployer.deployPlugin(this.serverDirectory, pluginFile);
 
-        const extraJavaArguments = getArguments().javaArguments
+        const extraJavaArguments = args.javaArguments
         const cp = this.createServerProcess(path.join(this.serverDirectory, "java", "bin", "java"), executable, extraJavaArguments);
 
         cp.stdout!.on("data", async (data: Buffer) => {
@@ -150,7 +150,7 @@ class ServerManager {
     public async endTests(succeed: boolean): Promise<void> {
         info("Ending tests, shutting down server...");
 
-        if (getArguments().uploadXMLReport) {
+        if (args.uploadXMLReport) {
             info("Waiting for the server for 5 seconds to save the reports.")
             await new Promise<void>(resolve => {
                 setTimeout(async () => {

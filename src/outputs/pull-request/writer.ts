@@ -1,8 +1,8 @@
-import {getArguments} from "../../utils";
+import {args} from "../../utils";
 import type {IssueComment, Maybe, Repository} from "@octokit/graphql-schema";
 import type {GitHub} from "@actions/github/lib/utils";
 
-const COMMENT_IDENTIFIER = `<!-- ### Scenamatica plugin analysis report for MC ${getArguments().mcVersion} ### -->`;
+const COMMENT_IDENTIFIER = `<!-- ### Scenamatica plugin analysis report for MC ${args.mcVersion} ### -->`;
 const COMMENT_AUTHOR_LOGIN = "github-actions"
 
 export const findFirstReportComment = async (

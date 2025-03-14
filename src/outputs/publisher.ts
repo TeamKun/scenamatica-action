@@ -6,7 +6,7 @@ import {publishPRComment, reportRunning, reportSessionEnd, reportError} from "./
 import {info, warning} from "@actions/core";
 import {DefaultArtifactClient} from "@actions/artifact";
 import path from "node:path";
-import {getArguments} from "../utils";
+import {args} from "../utils";
 
 class OutputPublisher {
     public readonly summaryPrinter: SummaryPrinter
@@ -46,7 +46,7 @@ class OutputPublisher {
         const baseDirectory = path.dirname(paths[0])
 
         const uploadResult = await artifact.uploadArtifact(
-            getArguments().reportArtifactName,
+            args.reportArtifactName,
             paths,
             baseDirectory
         )
