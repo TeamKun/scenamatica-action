@@ -1,7 +1,7 @@
 {
   "name": "@scenamatica/action",
-  "version": "2.1.0",
-  "description": "Scenamatica is a sc1enario testing tool for PaperMC plugins.",
+  "version": "2.2.0",
+  "description": "Scenamatica is a scenario testing tool for PaperMC plugins.",
   "scripts": {
     "build": "tsc --build",
     "package": "esbuild --bundle lib/main.js --keep-names --outfile=src/dist/index.js --platform=node",
